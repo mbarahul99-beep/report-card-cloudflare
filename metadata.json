@@ -1,0 +1,8 @@
+{
+  "name": "Remix: WordPress Student Report Card Generator",
+  "description": "A student report card generator with bulk CSV upload, custom grading, student query dashboard, and a downloadable WordPress plugin (.zip) for your school website.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

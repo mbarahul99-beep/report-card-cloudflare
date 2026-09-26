@@ -1,0 +1,444 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;550;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-indigo-650: #4f46e5;
+}
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-scaleIn {
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Custom scrollbars for spreadsheet tables */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Hide scrollbar completely for clean modern responsive view */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+/* Print Overlays optimized for A4 single-page layouts */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  @page {
+    margin: 8mm 8mm !important;
+  }
+
+  @page portrait_layout {
+    size: A4 portrait;
+    margin: 8mm 8mm !important;
+  }
+
+  @page landscape_layout {
+    size: A4 landscape;
+    margin: 8mm 8mm !important;
+  }
+  
+  /* Resiliently hide all elements that are NOT print containers, NOT their ancestors, and NOT their descendants */
+  body *:not(:has(#report_card_print_ref)):not(#report_card_print_ref):not(#report_card_print_ref *):not(:has(#master_report_print_ref)):not(#master_report_print_ref):not(#master_report_print_ref *) {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    visibility: hidden !important;
+  }
+  
+  #report_card_print_ref, #report_card_print_ref *,
+  #master_report_print_ref, #master_report_print_ref * {
+    visibility: visible !important;
+  }
+
+  .no-print, header, footer, nav, button, .visual-tool-rail, [role="tablist"], sidebar, aside {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    position: static !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Mobile Adaptive Scaler print resets */
+  .mobile-adaptive-viewport-container {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .mobile-adaptive-viewport-scaler {
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  #report_card_print_ref {
+    position: relative !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2mm !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    box-sizing: border-box !important;
+  }
+
+  #report_card_print_ref.print-portrait-card {
+    page: portrait_layout;
+    height: auto !important;
+    max-height: 280mm !important; /* Spans safe printable height of portrait A4 page (297mm - 16mm margin) */
+  }
+
+  #report_card_print_ref.print-landscape-card {
+    page: landscape_layout;
+    height: auto !important;
+    max-height: 193mm !important; /* Spans safe printable height of landscape A4 page (210mm - 16mm margin) */
+  }
+
+  #master_report_print_ref {
+    page: landscape_layout;
+    position: relative !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Strip all backgrounds, borders, padding, heights, and layout constraints from ancestors of printable regions to ensure perfect fit and prevent blank pages */
+  :has(#report_card_print_ref),
+  :has(#master_report_print_ref) {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    position: static !important;
+    transform: none !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  /* Ultimate scrollbar & overflow prevention for all nested print tags, excluding actual rounded boxes like student photo */
+  #report_card_print_ref,
+  #report_card_print_ref *:not(.overflow-hidden):not(#student_profile_row div):not(.rounded-md),
+  #master_report_print_ref,
+  #master_report_print_ref *:not(.overflow-hidden) {
+    overflow: visible !important;
+    max-height: none !important;
+    scrollbar-width: none !important; /* Firefox */
+  }
+  #report_card_print_ref *::-webkit-scrollbar,
+  #master_report_print_ref *::-webkit-scrollbar {
+    display: none !important; /* Chrome, Edge, Safari */
+  }
+
+  /* Force the double border card content to cover the available container height */
+  #report_card_print_ref div.border-double {
+    height: 100% !important;
+    box-sizing: border-box !important;
+    border-width: 4px !important;
+    padding: var(--print-border-padding, 12px 16px) !important;
+    border-radius: 4px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  /* Reset vertical margin on children within flex layout to let flex justify-content distribute spacing */
+  #report_card_print_ref div.border-double > * + *,
+  #report_card_print_ref div.border-double > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0 !important;
+  }
+
+  /* Use variable-based scaling with safety standard fallbacks */
+  #report_card_print_ref h1 {
+    font-size: var(--print-school-name-font-size, calc(var(--print-font, 9.5px) * 1.8 + 4px)) !important;
+    font-family: var(--print-school-name-font-family, inherit) !important;
+    margin-bottom: 2px !important;
+    line-height: 1.1 !important;
+  }
+  #report_card_print_ref h2:not(.brand-report-title) {
+    font-size: calc(var(--print-font, 9.5px) * 1.3) !important;
+    line-height: 1.1 !important;
+  }
+  #report_card_print_ref h2.brand-report-title {
+    font-size: var(--print-report-title-font-size, calc(var(--print-font, 9.5px) * 1.5 + 2.5px)) !important;
+    color: #ffffff !important;
+    line-height: 1.2 !important;
+  }
+  #report_card_print_ref p {
+    font-size: var(--print-font, 9.5px) !important;
+    line-height: 1.25 !important;
+  }
+  #report_card_print_ref p.school-header-text {
+    font-size: var(--print-header-details-font-size, var(--print-font, 9.5px)) !important;
+    font-family: var(--print-header-details-font-family, inherit) !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+  }
+  #report_card_print_ref p.school-header-helpline {
+    font-size: var(--print-helpline-font-size, var(--print-font, 9.5px)) !important;
+    font-family: var(--print-header-details-font-family, inherit) !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+  }
+  #report_card_print_ref table {
+    font-size: var(--print-font, 9.5px) !important;
+    line-height: 1.15 !important;
+  }
+  #report_card_print_ref th, #report_card_print_ref td {
+    padding: var(--print-padding-y, 3.5px) var(--print-padding-x, 6px) !important;
+    font-size: var(--print-font, 9.5px) !important;
+  }
+  #report_card_print_ref th {
+    font-size: var(--print-header-font, 10px) !important;
+  }
+
+  /* School Logo container styling and image */
+  #report_card_print_ref .school-logo-container,
+  #report_card_print_ref div.rounded-full:has(> img),
+  #report_card_print_ref div.rounded-full:has(> svg) {
+    width: var(--print-logo-size, 64px) !important;
+    height: var(--print-logo-size, 64px) !important;
+    padding: var(--print-logo-padding, 2px) !important;
+  }
+  #report_card_print_ref .school-logo-container img,
+  #report_card_print_ref .school-logo-container svg,
+  #report_card_print_ref div.rounded-full img,
+  #report_card_print_ref div.rounded-full svg {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  #report_card_print_ref div.min-h-\[85px\] {
+    min-height: auto !important;
+    padding-bottom: 3px !important;
+  }
+
+  /* Student Details Row compact spacing */
+  #report_card_print_ref div#student_profile_row {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    padding-bottom: 6px !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+  }
+  #report_card_print_ref div#student_profile_row > div.col-span-5,
+  #report_card_print_ref div#student_profile_row > div.col-span-4,
+  #report_card_print_ref div#student_profile_row > div.col-span-6 {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    height: auto !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+  }
+  #report_card_print_ref div#student_profile_row strong {
+    font-size: var(--print-font, 9.5px) !important;
+  }
+  #report_card_print_ref div#student_profile_row span.flex-grow {
+    font-size: var(--print-font, 9.5px) !important;
+  }
+
+  /* Student photo box sizing lock */
+  #report_card_print_ref div#student_profile_row div.col-span-3 {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    height: auto !important;
+  }
+  #report_card_print_ref div#student_profile_row div.col-span-3 > div {
+    width: var(--print-photo-width, 98px) !important;
+    height: var(--print-photo-height, 115px) !important;
+    max-height: none !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    border-width: 2px !important;
+    border-style: solid !important;
+    border-color: var(--theme-brand) !important;
+  }
+  #report_card_print_ref div#student_profile_row div.col-span-3 img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 0 !important;
+    display: block !important;
+  }
+
+  /* Combined summary status details bar compact lock */
+  #report_card_print_ref .summary-status-bar {
+    font-size: var(--print-font, 9.5px) !important;
+  }
+  #report_card_print_ref .summary-status-bar div {
+    padding: var(--print-padding-y, 3.5px) !important;
+  }
+  #report_card_print_ref .summary-status-bar strong {
+    font-size: calc(var(--print-font, 9.5px) * 0.85) !important;
+  }
+  #report_card_print_ref .summary-status-bar span {
+    font-size: calc(var(--print-font, 9.5px) * 1.1) !important;
+  }
+
+  /* Co-Scholastic split grids */
+  #report_card_print_ref div.grid-cols-2 {
+    gap: 12px !important;
+  }
+
+  /* Teacher remarks and congratulations container tight */
+  #report_card_print_ref div.grid-cols-12:has(> .col-span-8) {
+    padding: 6px 8px !important;
+    gap: 10px !important;
+  }
+  #report_card_print_ref div.grid-cols-12:has(> .col-span-8) p {
+    font-size: calc(var(--print-font, 9.5px) * 0.95) !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Signature columns tight spacing row */
+  #report_card_print_ref div:has(> .sig-col) {
+    padding-top: 2px !important;
+    gap: 12px !important;
+  }
+  #report_card_print_ref .sig-col {
+    height: var(--print-sig-height, 45px) !important;
+    font-size: var(--print-font, 9.5px) !important;
+  }
+  #report_card_print_ref .sig-col > div {
+    padding-top: 2px !important;
+  }
+
+  /* Grading scales compact styling override */
+  #report_card_print_ref .grading-scale-table {
+    table-layout: fixed !important;
+    width: 100% !important;
+  }
+  #report_card_print_ref .grading-scale-table th,
+  #report_card_print_ref .grading-scale-table td {
+    padding: 1.5px 0.5px !important;
+    font-size: calc(var(--print-font, 9.5px) * 0.74) !important; /* ~7px */
+    line-height: 1.1 !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+  #report_card_print_ref .grading-scale-table td:first-child {
+    font-size: calc(var(--print-font, 9.5px) * 0.7) !important; /* ~6.6px for 'Range (%)' headers to fit */
+    font-weight: 800 !important;
+  }
+
+  /* Prevent single words from breaking in middle, but allow wrapping (words adjust one above another) */
+  #report_card_print_ref th,
+  #report_card_print_ref td:not(.grading-scale-table td) {
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+  }
+  #report_card_print_ref th {
+    white-space: normal !important;
+  }
+
+  /* Ensure all general report card text is in solid black except for those explicitly in color */
+  #report_card_print_ref, 
+  #report_card_print_ref span, 
+  #report_card_print_ref p, 
+  #report_card_print_ref th, 
+  #report_card_print_ref td, 
+  #report_card_print_ref div:not([style*="color"]):not([style*="background-color"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-sky"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-amber"]):not([class*="text-orange"]):not([class*="text-yellow"]):not([class*="text-white"]):not([class*="bg-indigo"]):not([class*="bg-sky"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not(.text-white) {
+    color: #000000 !important;
+  }
+
+  /* Specificity overrides to preserve original colors for white-text elements such as overall grade / board grade badges during printing */
+  #report_card_print_ref .text-white,
+  #report_card_print_ref *.text-white,
+  #report_card_print_ref span.text-white,
+  #report_card_print_ref strong.text-white,
+  #report_card_print_ref span[class*="text-white"],
+  #report_card_print_ref strong[class*="text-white"] {
+    color: #ffffff !important;
+  }
+}
