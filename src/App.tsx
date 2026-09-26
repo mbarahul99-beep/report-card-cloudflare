@@ -114,12 +114,9 @@ export default function App() {
   }, [dismissedNotifIds]);
 
   const setActiveTab = (tab: any) => {
-    if (isSchoolPendingPlanActivation && tab !== 'billing') {
-      alert("⚠️ Access locked! Please select and activate a subscription plan (Free Starter or Premium Annual) first to unlock full dashboard access.");
-      return;
-    }
     const isSaaS = localStorage.getItem('class_on_saas_is_saas_admin') === 'true';
-    if (['branding', 'grades', 'structures'].includes(tab) && !isSaaS && !isImpersonating) {
+    const isImp = localStorage.getItem('class_on_saas_impersonating') === 'true';
+    if (['branding', 'grades', 'structures'].includes(tab) && !isSaaS && !isImp) {
       setActiveTabState('dashboard');
       return;
     }
