@@ -37,8 +37,7 @@ const auth = {};
 const googleProvider = {};
 const signInWithPopup = async (..._args: any[]) => ({ user: { uid: 'cf_user_1', email: 'admin@school.com', displayName: 'School Admin' } });
 const fbSignOut = async (..._args: any[]) => {};
-const onAuthStateChanged = (_auth: any, callback: (user: FirebaseUser | null) => void) => {
-  callback({ uid: 'cf_user_1', email: 'admin@school.com', displayName: 'School Admin' });
+const onAuthStateChanged = (_auth: any, _callback: (user: FirebaseUser | null) => void) => {
   return () => {};
 };
 import { 
@@ -4861,9 +4860,40 @@ export default function App() {
           </div>
         )}
 
-        {/* Small aesthetic footer */}
-        <div className="flex flex-col items-center gap-1.5 mt-2.5 select-none text-center">
-          <p className="text-[9px] text-slate-400 font-mono tracking-tight leading-none">
+        {/* Master Admin Bypass & Quick Access Tools */}
+        <div className="flex flex-col items-center gap-1.5 mt-3 select-none text-center w-full max-w-[350px]">
+          <div className="flex items-center gap-2 w-full justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentRole('main_admin');
+                setCurrentSchoolId(null);
+                setIsImpersonating(false);
+                setIsSaaSAdmin(true);
+                localStorage.setItem('class_on_saas_role', 'main_admin');
+                localStorage.setItem('class_on_saas_is_saas_admin', 'true');
+                setActiveTab('saas_owner');
+              }}
+              className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold text-[10px] rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
+            >
+              <Shield className="w-3.5 h-3.5 text-amber-100 animate-pulse" />
+              ⚡ Master Admin Bypass &rarr;
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegistering(false);
+                setAuthError('');
+                setSchoolInput('demo');
+                setPasswordInput('Demo@123');
+              }}
+              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-extrabold text-[10px] rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1 cursor-pointer uppercase tracking-wider"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              Demo School
+            </button>
+          </div>
+          <p className="text-[9px] text-slate-400 font-mono tracking-tight leading-none mt-1">
             School Report Card Systems &copy; 2026
           </p>
           <button
