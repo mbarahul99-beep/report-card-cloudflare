@@ -483,5 +483,24 @@ export interface SaaSRecycleBinItem {
   payload: any;
 }
 
+export interface FullSchoolData {
+  branding: SchoolBranding;
+  scoreColumns: ScoreColumn[];
+  subjects: SubjectColumn[];
+  gradeScales: GradeScale[];
+  students: Student[];
+  studentGrades: StudentGrades[];
+  reportCardStructures?: ReportCardStructure[];
+  recycleBin?: RecycleBinItem[];
+  classes?: SchoolClassItem[];
+  classNamingStyle?: 'roman' | 'ordinal' | 'number' | 'custom';
+  schoolName?: string;
+  portalCode?: string;
+  updatedAt?: string;
+  serverSavedAt?: string;
+  notes?: string;
+}
+
+
 
 

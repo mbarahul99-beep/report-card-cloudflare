@@ -1,0 +1,9 @@
+name = "report-card-cloudflare"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-09-26"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "report-card-d1"
+database_id = "5384ec04-0241-4fcf-8d04-cd205491ac70"

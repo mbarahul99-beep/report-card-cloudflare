@@ -682,115 +682,36 @@ export default function App() {
     }
     try {
       const rawCloudSchools = await loadAllSchoolsFromCloud();
-      if (rawCloudSchools) {
+      if (rawCloudSchools && rawCloudSchools.length > 0) {
         const cloudSchools = rawCloudSchools.filter(s => s.id !== 'sc_xavier' && s.id !== 'sc_dps');
-        if (cloudSchools.length === 0) {
-          // Seeding mechanism: Cloud is completely empty!
-          console.log("Seeding initial schools to Firestore cloud because the cloud registry is completely empty...");
-          for (const sch of initialSaasSchools) {
-            try {
-              await saveSaaSSchoolToCloud(sch, "default-owner");
-            } catch (seedErr) {
-              console.warn(`Initial school seeding deferred for ${sch.id} (using persistent local storage instead):`, seedErr);
-            }
-          }
-          setCloudSchoolIds(initialSaasSchools.map(s => s.id));
-          setSchools(initialSaasSchools.map(s => ({ ...s, cloudSynced: true })));
-          return;
-        }
-
         setCloudSchoolIds(cloudSchools.map(s => s.id));
         setSchools(prev => {
-          const cloudSchoolIdsSet = new Set(cloudSchools.map(s => s.id));
-          
-          // Purge local storage cache for schools deleted on the cloud
-          prev.forEach(s => {
-            const isCustomSchool = s.id.startsWith('sc_') && s.id !== 'sc_xavier' && s.id !== 'sc_dps';
-            if (isCustomSchool && !cloudSchoolIdsSet.has(s.id)) {
-              console.log(`[SaaS Sync] School "${s.name}" (${s.id}) was deleted on the cloud. Purging local storage cache.`);
-              try {
-                localStorage.removeItem(`class_on_branding_${s.id}`);
-                localStorage.removeItem(`class_on_score_columns_${s.id}`);
-                localStorage.removeItem(`class_on_subjects_${s.id}`);
-                localStorage.removeItem(`class_on_grade_scales_${s.id}`);
-                localStorage.removeItem(`class_on_students_${s.id}`);
-                localStorage.removeItem(`class_on_student_grades_${s.id}`);
-                localStorage.removeItem(`class_on_structures_${s.id}`);
-                localStorage.removeItem(`class_on_recycle_bin_${s.id}`);
-              } catch (e) {
-                console.warn("Purging deleted school local storage error:", e);
-              }
-            }
-          });
-
-          // Filter out schools that are considered deleted on the cloud
-          const filteredPrev = prev.filter(s => {
-            const isCustomSchool = s.id.startsWith('sc_') && s.id !== 'sc_xavier' && s.id !== 'sc_dps';
-            if (isCustomSchool && !cloudSchoolIdsSet.has(s.id)) {
-              return false;
-            }
-            return true;
-          });
-
-          const merged = [...filteredPrev];
+          const mergedMap = new Map<string, SaasSchool>();
+          prev.forEach(s => mergedMap.set(s.id, s));
           cloudSchools.forEach(cs => {
-            const idx = merged.findIndex(s => s.id === cs.id);
-            if (idx >= 0) {
-              const existing = merged[idx].portalCode;
-              merged[idx] = { 
-                ...merged[idx], 
-                ...cs, 
-                cloudSynced: true,
-                portalCode: cs.portalCode || existing || ""
-              };
-            } else {
-              merged.push({ ...cs, cloudSynced: true });
-            }
+            const existing = mergedMap.get(cs.id);
+            mergedMap.set(cs.id, { ...existing, ...cs, cloudSynced: true });
           });
+          const merged = Array.from(mergedMap.values());
           const finalMapped = merged.map(s => {
             let code = s.portalCode;
             if (!code) {
-              if (s.id === 'sc_xavier') {
-                code = 'XAVI-9821';
-              } else if (s.id === 'sc_dps') {
-                code = 'DELH-3091';
-              } else {
-                const prefix = s.name.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase() || 'SCH';
-                let hash = 0;
-                const key = s.id || s.name;
-                for (let i = 0; i < key.length; i++) {
-                  hash = key.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                const stableNum = 1000 + (Math.abs(hash) % 9000);
-                code = `${prefix}-${stableNum}`;
+              const prefix = s.name.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase() || 'SCH';
+              let hash = 0;
+              const key = s.id || s.name;
+              for (let i = 0; i < key.length; i++) {
+                hash = key.charCodeAt(i) + ((hash << 5) - hash);
               }
+              const stableNum = 1000 + (Math.abs(hash) % 9000);
+              code = `${prefix}-${stableNum}`;
             }
             return { ...s, portalCode: code };
           });
           return deduplicateSchools(finalMapped);
         });
-
-        if (isManual) {
-          const currentSchoolIdVal = localStorage.getItem('class_on_saas_school_id');
-          const mySchool = cloudSchools.find(s => s.id === currentSchoolIdVal);
-          if (mySchool) {
-            if (mySchool.approvalStatus === 'approved') {
-              setLastCheckMessage("🎉 Success! Your registration has been approved. All tabs are now functional.");
-            } else if (mySchool.approvalStatus === 'rejected') {
-              setLastCheckMessage("❌ Your onboarding request was declined. Please check with support.");
-            } else {
-              setLastCheckMessage("⏳ Your application is still pending review. Please try again shortly!");
-            }
-          } else {
-            setLastCheckMessage("⏳ Application lookup completed. No changes detected yet.");
-          }
-        }
       }
     } catch (err) {
       console.warn("Could not load cloud school registries:", err);
-      if (isManual) {
-        setLastCheckMessage("❌ Error reaching the server. Please check your network connection.");
-      }
     } finally {
       if (isManual) {
         setIsRefreshingApproval(false);
@@ -805,73 +726,28 @@ export default function App() {
     let unsubscribe = () => {};
     try {
       unsubscribe = subscribeSchoolsFromCloud((rawCloudSchools) => {
-        if (rawCloudSchools) {
+        if (rawCloudSchools && rawCloudSchools.length > 0) {
           const cloudSchools = rawCloudSchools.filter(s => s.id !== 'sc_xavier' && s.id !== 'sc_dps');
           setCloudSchoolIds(cloudSchools.map(s => s.id));
           setSchools(prev => {
-            const cloudSchoolIdsSet = new Set(cloudSchools.map(s => s.id));
-            
-            // Purge local storage cache for schools deleted on the cloud
-            prev.forEach(s => {
-              const isCustomSchool = s.id.startsWith('sc_') && s.id !== 'sc_xavier' && s.id !== 'sc_dps';
-              if (isCustomSchool && !cloudSchoolIdsSet.has(s.id)) {
-                console.log(`[SaaS Real-time Sync] School "${s.name}" (${s.id}) was deleted on the cloud. Purging local storage cache.`);
-                try {
-                  localStorage.removeItem(`class_on_branding_${s.id}`);
-                  localStorage.removeItem(`class_on_score_columns_${s.id}`);
-                  localStorage.removeItem(`class_on_subjects_${s.id}`);
-                  localStorage.removeItem(`class_on_grade_scales_${s.id}`);
-                  localStorage.removeItem(`class_on_students_${s.id}`);
-                  localStorage.removeItem(`class_on_student_grades_${s.id}`);
-                  localStorage.removeItem(`class_on_structures_${s.id}`);
-                  localStorage.removeItem(`class_on_recycle_bin_${s.id}`);
-                } catch (e) {
-                  console.warn("Purging deleted school local storage error:", e);
-                }
-              }
-            });
-
-            // Filter out schools that are considered deleted on the cloud
-            const filteredPrev = prev.filter(s => {
-              const isCustomSchool = s.id.startsWith('sc_') && s.id !== 'sc_xavier' && s.id !== 'sc_dps';
-              if (isCustomSchool && !cloudSchoolIdsSet.has(s.id)) {
-                return false;
-              }
-              return true;
-            });
-
-            const merged = [...filteredPrev];
+            const mergedMap = new Map<string, SaasSchool>();
+            prev.forEach(s => mergedMap.set(s.id, s));
             cloudSchools.forEach(cs => {
-              const idx = merged.findIndex(s => s.id === cs.id);
-              if (idx >= 0) {
-                const existing = merged[idx].portalCode;
-                merged[idx] = { 
-                  ...merged[idx], 
-                  ...cs, 
-                  cloudSynced: true,
-                  portalCode: cs.portalCode || existing || ""
-                };
-              } else {
-                merged.push({ ...cs, cloudSynced: true });
-              }
+              const existing = mergedMap.get(cs.id);
+              mergedMap.set(cs.id, { ...existing, ...cs, cloudSynced: true });
             });
+            const merged = Array.from(mergedMap.values());
             const finalMapped = merged.map(s => {
               let code = s.portalCode;
               if (!code) {
-                if (s.id === 'sc_xavier') {
-                  code = 'XAVI-9821';
-                } else if (s.id === 'sc_dps') {
-                  code = 'DELH-3091';
-                } else {
-                  const prefix = s.name.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase() || 'SCH';
-                  let hash = 0;
-                  const key = s.id || s.name;
-                  for (let i = 0; i < key.length; i++) {
-                    hash = key.charCodeAt(i) + ((hash << 5) - hash);
-                  }
-                  const stableNum = 1000 + (Math.abs(hash) % 9000);
-                  code = `${prefix}-${stableNum}`;
+                const prefix = s.name.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase() || 'SCH';
+                let hash = 0;
+                const key = s.id || s.name;
+                for (let i = 0; i < key.length; i++) {
+                  hash = key.charCodeAt(i) + ((hash << 5) - hash);
                 }
+                const stableNum = 1000 + (Math.abs(hash) % 9000);
+                code = `${prefix}-${stableNum}`;
               }
               return { ...s, portalCode: code };
             });
