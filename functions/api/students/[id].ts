@@ -1,9 +1,5 @@
-interface Env {
-  DB: D1Database;
-}
-
 // GET /api/students/:id — Get a specific student
-export async function onRequestGet(context: EventContext<Env, 'id', any>) {
+export async function onRequestGet(context: any) {
   const { env, params } = context;
   try {
     const student = await env.DB.prepare(
@@ -24,7 +20,7 @@ export async function onRequestGet(context: EventContext<Env, 'id', any>) {
 }
 
 // PUT /api/students/:id — Update a specific student
-export async function onRequestPut(context: EventContext<Env, 'id', any>) {
+export async function onRequestPut(context: any) {
   const { env, params, request } = context;
   try {
     const body: any = await request.json();
@@ -69,7 +65,7 @@ export async function onRequestPut(context: EventContext<Env, 'id', any>) {
 }
 
 // DELETE /api/students/:id — Delete a specific student
-export async function onRequestDelete(context: EventContext<Env, 'id', any>) {
+export async function onRequestDelete(context: any) {
   const { env, params } = context;
   try {
     await env.DB.prepare("DELETE FROM student_grades WHERE student_id = ?").bind(params.id).run();

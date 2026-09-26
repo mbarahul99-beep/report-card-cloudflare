@@ -1,9 +1,5 @@
-interface Env {
-  DB: D1Database;
-}
-
 // GET /api/student-grades — List student grades (optionally filtered by ?school_id=... or ?student_id=...)
-export async function onRequestGet(context: EventContext<Env, any, any>) {
+export async function onRequestGet(context: any) {
   const { env, request } = context;
   try {
     const url = new URL(request.url);
@@ -27,7 +23,7 @@ export async function onRequestGet(context: EventContext<Env, any, any>) {
 }
 
 // POST /api/student-grades — Save or update student grades
-export async function onRequestPost(context: EventContext<Env, any, any>) {
+export async function onRequestPost(context: any) {
   const { env, request } = context;
   try {
     const body: any = await request.json();

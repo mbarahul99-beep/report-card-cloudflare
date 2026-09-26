@@ -1,9 +1,5 @@
-interface Env {
-  DB: D1Database;
-}
-
 // GET /api/schools — List all schools
-export async function onRequestGet(context: EventContext<Env, any, any>) {
+export async function onRequestGet(context: any) {
   const { env } = context;
   try {
     const rows = await env.DB.prepare(
@@ -53,7 +49,7 @@ export async function onRequestGet(context: EventContext<Env, any, any>) {
 }
 
 // POST /api/schools — Create or update a school
-export async function onRequestPost(context: EventContext<Env, any, any>) {
+export async function onRequestPost(context: any) {
   const { env, request } = context;
   try {
     const body: any = await request.json();

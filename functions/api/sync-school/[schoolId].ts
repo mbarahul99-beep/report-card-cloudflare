@@ -1,9 +1,5 @@
-interface Env {
-  DB: D1Database;
-}
-
 // GET /api/sync-school/:schoolId — Get full school payload
-export async function onRequestGet(context: EventContext<Env, 'schoolId', any>) {
+export async function onRequestGet(context: any) {
   const { env, params } = context;
   try {
     const cleanId = params.schoolId.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -26,7 +22,7 @@ export async function onRequestGet(context: EventContext<Env, 'schoolId', any>) 
 }
 
 // POST /api/sync-school/:schoolId — Save full school payload and synchronize across D1 tables
-export async function onRequestPost(context: EventContext<Env, 'schoolId', any>) {
+export async function onRequestPost(context: any) {
   const { env, params, request } = context;
   try {
     const cleanId = params.schoolId.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -137,7 +133,7 @@ export async function onRequestPost(context: EventContext<Env, 'schoolId', any>)
 }
 
 // DELETE /api/sync-school/:schoolId — Delete full school data
-export async function onRequestDelete(context: EventContext<Env, 'schoolId', any>) {
+export async function onRequestDelete(context: any) {
   const { env, params } = context;
   try {
     const cleanId = params.schoolId.replace(/[^a-zA-Z0-9_-]/g, '_');
