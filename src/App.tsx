@@ -1722,13 +1722,13 @@ export default function App() {
     }
   };
 
-  // Listen to Firebase Auth state transitions to sync table schemas
+  // Listen to Auth state transitions to sync table schemas
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
       if (user) {
-        setIsCloudSyncing(true);
-        setCloudSyncMessage("Syncing school cloud database...");
+        setIsCloudSyncing(false);
+        setCloudSyncMessage("Cloud database active");
         try {
           const isOwnerEmail = user.email ? (
             user.email.toLowerCase().trim() === 'mbarahul99::gmail.com' ||
