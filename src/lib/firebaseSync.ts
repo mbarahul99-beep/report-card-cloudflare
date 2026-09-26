@@ -162,7 +162,7 @@ export async function saveSaaSSchoolToCloud(school: SaasSchool, _ownerId?: strin
 
   // 2. Prepare payload
   const existingLocalData = getLocalSchoolData(cleanSchoolId);
-  const payload: FullSchoolData = {
+  const payload: FullSchoolData & { saasMeta?: SaasSchool } = {
     branding: existingLocalData?.branding || {
       schoolName: school.name,
       address: school.address || '',
@@ -179,6 +179,7 @@ export async function saveSaaSSchoolToCloud(school: SaasSchool, _ownerId?: strin
     reportCardStructures: existingLocalData?.reportCardStructures || [],
     schoolName: school.name,
     portalCode: school.portalCode,
+    saasMeta: school,
     updatedAt: new Date().toISOString()
   };
 

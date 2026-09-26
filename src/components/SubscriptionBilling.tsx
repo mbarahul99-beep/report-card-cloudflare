@@ -5,7 +5,7 @@ import {
   ArrowRight, ArrowLeft, School, GraduationCap, CheckCircle
 } from "lucide-react";
 import { SaasSchool, PricingTier } from "../types";
-import { DEFAULT_PRICING_TIERS, loadGlobalSettings, GlobalSettings } from "../lib/firebaseSync";
+import { DEFAULT_PRICING_TIERS, loadGlobalSettings, GlobalSettings, saveSaaSSchoolToCloud, saveNotificationToCloud } from "../lib/firebaseSync";
 
 export function getPrefilledPaymentLink(baseLink: string, school: SaasSchool, studentCount: number, amount: number) {
   const separator = baseLink.includes('?') ? '&' : '?';
@@ -180,17 +180,18 @@ export default function SubscriptionBilling({ school, onRefreshSchool, setActive
   const handleActivateFreePlan = async () => {
     try {
       setIsSubmittingRequest(true);
-      const schoolRef = doc(db, 'schools', school.id);
       
-      // Free plan has limits: 50 students, 1 teacher, and clears any pending upgrade requests
-      await updateDoc(schoolRef, {
-        partnershipType: 'trial' as const,
+      const updatedSchool: SaasSchool = {
+        ...school,
+        partnershipType: 'trial',
         maxStudentsLimit: 50,
         maxTeachersLimit: 1,
         maxCumulativeStudentsLimit: 100,
-        subscriptionRequest: null,
+        subscriptionRequest: undefined,
         updatedAt: new Date().toISOString()
-      });
+      };
+
+      await saveSaaSSchoolToCloud(updatedSchool);
 
       setLocalFeedback("🎉 Free Plan (50 students, 1 teacher limit) successfully activated!");
       setWizardStep('free_activated');
@@ -213,7 +214,6 @@ export default function SubscriptionBilling({ school, onRefreshSchool, setActive
 
     try {
       setIsSubmittingRequest(true);
-      const schoolRef = doc(db, 'schools', school.id);
       
       const reqData = {
         studentCount: studentCountInput,
@@ -224,16 +224,17 @@ export default function SubscriptionBilling({ school, onRefreshSchool, setActive
         requestedAt: new Date().toISOString()
       };
       
-      // Update school document in Firestore with pending request
-      await updateDoc(schoolRef, {
+      const updatedSchool: SaasSchool = {
+        ...school,
         subscriptionRequest: reqData,
         updatedAt: new Date().toISOString()
-      });
+      };
+
+      await saveSaaSSchoolToCloud(updatedSchool);
 
       // Send a targeted notification to the cloud
       const notifId = `notif_upgr_req_${Date.now()}`;
-      const notifRef = doc(db, 'notifications', notifId);
-      await setDoc(notifRef, {
+      await saveNotificationToCloud({
         id: notifId,
         title: "⏳ Subscription Payment Verification Pending",
         message: `Your upgrade request for "${school.name}" to the Premium Plan with ${studentCountInput} student licenses (₹${calculatedTotal.toLocaleString()}/year) was submitted. Our admins are verifying the payment status and will activate your profile within 24 hours.`,
@@ -273,11 +274,12 @@ export default function SubscriptionBilling({ school, onRefreshSchool, setActive
     
     try {
       setIsSubmittingRequest(true);
-      const schoolRef = doc(db, 'schools', school.id);
-      await updateDoc(schoolRef, {
-        subscriptionRequest: null,
+      const updatedSchool: SaasSchool = {
+        ...school,
+        subscriptionRequest: undefined,
         updatedAt: new Date().toISOString()
-      });
+      };
+      await saveSaaSSchoolToCloud(updatedSchool);
       
       alert("Upgrade request cancelled successfully.");
       onRefreshSchool();

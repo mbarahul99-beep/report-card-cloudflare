@@ -29,8 +29,19 @@ export async function onRequestPost(context: any) {
     const payload: any = await request.json();
     const now = new Date().toISOString();
 
+    let existingSaasMeta = {};
+    try {
+      const existing = await env.DB.prepare("SELECT payload_json FROM school_sync_data WHERE school_id = ?").bind(cleanId).first();
+      if (existing && existing.payload_json) {
+        const parsed = JSON.parse(existing.payload_json as string);
+        existingSaasMeta = parsed.saasMeta || {};
+      }
+    } catch {}
+
+    const saasMeta = { ...existingSaasMeta, ...(payload.saasMeta || {}) };
     const dataWithTimestamp = {
       ...payload,
+      saasMeta,
       updatedAt: payload.updatedAt || now,
       serverSavedAt: now,
     };
@@ -56,6 +67,22 @@ export async function onRequestPost(context: any) {
         branding_json = excluded.branding_json,
         updated_at = excluded.updated_at
     `).bind(cleanId, schoolName, JSON.stringify(payload.branding || {}), now).run();
+
+    // 2b. Upsert into users table
+    const userEmail = saasMeta.email || payload.branding?.email || `${cleanId}@school.com`;
+    const userFullName = saasMeta.contactPerson || payload.branding?.contactPerson || schoolName;
+    try {
+      await env.DB.prepare(`
+        INSERT INTO users (user_id, school_id, email, role, full_name, created_at)
+        VALUES (?, ?, ?, 'admin', ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(user_id) DO UPDATE SET
+          school_id = excluded.school_id,
+          email = excluded.email,
+          full_name = excluded.full_name
+      `).bind(cleanId, cleanId, userEmail, userFullName).run();
+    } catch (uErr: any) {
+      console.warn(`[sync-school] users table insert error for ${cleanId}:`, uErr.message);
+    }
 
     // 3. Sync students to students table
     if (Array.isArray(payload.students)) {

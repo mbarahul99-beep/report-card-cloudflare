@@ -26,7 +26,7 @@ export async function onRequestGet(context: any) {
 
       return {
         id: r.school_id,
-        name: r.name || branding.schoolName || r.school_id,
+        name: r.name || saasMeta.name || branding.schoolName || r.school_id,
         username: saasMeta.username || r.school_id,
         password: saasMeta.password || '',
         contactPerson: saasMeta.contactPerson || branding.contactPerson || 'School Admin',
@@ -39,6 +39,9 @@ export async function onRequestGet(context: any) {
         createdAt: saasMeta.createdAt || r.updated_at || new Date().toISOString(),
         teachers: saasMeta.teachers || [],
         ...saasMeta,
+        // Enforce exact credentials if stored in saasMeta
+        username: saasMeta.username || r.school_id,
+        password: saasMeta.password || '',
       };
     });
 
@@ -96,6 +99,22 @@ export async function onRequestPost(context: any) {
         payload_json = excluded.payload_json,
         updated_at = excluded.updated_at
     `).bind(cleanId, JSON.stringify(payload), now).run();
+
+    // 3. Upsert into D1 users table
+    const userEmail = school.email || `${cleanId}@school.com`;
+    const userFullName = school.contactPerson || name;
+    try {
+      await env.DB.prepare(`
+        INSERT INTO users (user_id, school_id, email, role, full_name, created_at)
+        VALUES (?, ?, ?, 'admin', ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(user_id) DO UPDATE SET
+          school_id = excluded.school_id,
+          email = excluded.email,
+          full_name = excluded.full_name
+      `).bind(cleanId, cleanId, userEmail, userFullName).run();
+    } catch (uErr: any) {
+      console.warn("[POST /api/schools] user insert skipped or error:", uErr.message);
+    }
 
     return Response.json({ success: true, schoolId: cleanId });
   } catch (err: any) {
