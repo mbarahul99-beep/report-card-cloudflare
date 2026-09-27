@@ -58,15 +58,19 @@ export async function onRequestPost(context: any) {
         updated_at = excluded.updated_at
     `).bind(cleanId, payloadStr, now).run();
 
-    // 2. Save metadata to schools table
+    // 2. Save metadata to schools table including grade scales & report structures
+    const gradeScalesStr = JSON.stringify(payload.gradeScales || []);
+    const structuresStr = JSON.stringify(payload.reportCardStructures || []);
     await env.DB.prepare(`
-      INSERT INTO schools (school_id, name, branding_json, updated_at)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO schools (school_id, name, branding_json, grade_scales_json, report_structures_json, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_id) DO UPDATE SET
         name = excluded.name,
         branding_json = excluded.branding_json,
+        grade_scales_json = excluded.grade_scales_json,
+        report_structures_json = excluded.report_structures_json,
         updated_at = excluded.updated_at
-    `).bind(cleanId, schoolName, JSON.stringify(payload.branding || {}), now).run();
+    `).bind(cleanId, schoolName, JSON.stringify(payload.branding || {}), gradeScalesStr, structuresStr, now).run();
 
     // 2b. Upsert into users table
     const userEmail = saasMeta.email || payload.branding?.email || `${cleanId}@school.com`;

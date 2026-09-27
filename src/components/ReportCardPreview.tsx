@@ -232,7 +232,7 @@ export default function ReportCardPreview({
                   <td className={tdClassHeader}>Grade</td>
                   {resolvedGradeScales.map((scale, idx) => (
                     <td key={`grade_val_${idx}`} className={tdClassCell}>
-                      {scale.grade}
+                      {scale.grade}{scale.description ? ` (${scale.description})` : ''}
                     </td>
                   ))}
                 </tr>
