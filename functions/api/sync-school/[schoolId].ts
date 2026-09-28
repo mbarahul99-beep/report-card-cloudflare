@@ -89,9 +89,12 @@ export async function onRequestPost(context: any) {
     }
 
     // 3. Sync students to students table
+    const studentMap = new Map<string, any>();
     if (Array.isArray(payload.students)) {
       for (const s of payload.students) {
         if (!s || !s.id) continue;
+        studentMap.set(s.id, s);
+        
         const extra = { ...s };
         delete extra.id;
         delete extra.name;
@@ -103,12 +106,19 @@ export async function onRequestPost(context: any) {
         delete extra.dob;
         delete extra.gender;
         delete extra.mobile;
+        delete extra.mobileNumber;
+        delete extra.phone_number;
+        delete extra.photoUrl;
+        delete extra.photo_url;
+
+        const phoneNo = s.mobileNumber || s.mobile || s.phone_number || s.phone || '';
+        const photoUrl = s.photoUrl || s.photo_url || s.photo || '';
 
         await env.DB.prepare(`
           INSERT INTO students (
             student_id, school_id, roll_number, full_name, father_name, mother_name,
-            class_name, section, dob, gender, phone_number, extra_details_json, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            class_name, section, dob, gender, phone_number, photo_url, extra_details_json, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(student_id) DO UPDATE SET
             roll_number = excluded.roll_number,
             full_name = excluded.full_name,
@@ -119,13 +129,14 @@ export async function onRequestPost(context: any) {
             dob = excluded.dob,
             gender = excluded.gender,
             phone_number = excluded.phone_number,
+            photo_url = excluded.photo_url,
             extra_details_json = excluded.extra_details_json,
             updated_at = excluded.updated_at
         `).bind(
           s.id, cleanId, s.rollNo || s.roll_number || '', s.name || s.full_name || 'Student',
           s.fatherName || s.father_name || '', s.motherName || s.mother_name || '',
           s.className || s.class_name || '', s.section || '', s.dob || '', s.gender || '',
-          s.mobile || s.phone_number || '', JSON.stringify(extra), now
+          phoneNo, photoUrl, JSON.stringify(extra), now
         ).run();
       }
     }
@@ -134,8 +145,27 @@ export async function onRequestPost(context: any) {
     if (Array.isArray(payload.studentGrades)) {
       for (const g of payload.studentGrades) {
         if (!g || !g.studentId) continue;
+        const studentObj = studentMap.get(g.studentId) || {};
         const gradeId = g.id || `${cleanId}_${g.studentId}_${g.termName || 'term1'}`;
-        const marksData = g.subjects || g.marks_data_json || {};
+        const className = g.className || g.class_name || studentObj.className || '';
+        const remarks = g.teacherRemarks || g.teacher_remarks || studentObj.remarks || '';
+        const aiRemarks = g.aiRemarks || g.ai_remarks || '';
+        
+        // Extract marks data (handles g.scholastic, g.subjects, or g.marks_data_json)
+        const marksDataObj = g.scholastic || g.subjects || g.marks_data_json || {};
+        const marksDataStr = typeof marksDataObj === 'object' ? JSON.stringify(marksDataObj) : String(marksDataObj);
+
+        // Parse attendance string like "99/105" or attendance object
+        let attendancePresent = g.attendancePresent || g.attendance_present || 0;
+        let attendanceTotal = g.attendanceTotal || g.attendance_total || 0;
+        if (!attendancePresent && g.attendance) {
+          const attVal = typeof g.attendance === 'object' ? (g.attendance.term1 || g.attendance.term2 || '') : String(g.attendance);
+          if (typeof attVal === 'string' && attVal.includes('/')) {
+            const parts = attVal.split('/');
+            attendancePresent = parseInt(parts[0], 10) || 0;
+            attendanceTotal = parseInt(parts[1], 10) || 0;
+          }
+        }
 
         await env.DB.prepare(`
           INSERT INTO student_grades (
@@ -143,6 +173,7 @@ export async function onRequestPost(context: any) {
             marks_data_json, teacher_remarks, ai_remarks, attendance_present, attendance_total, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET
+            class_name = excluded.class_name,
             marks_data_json = excluded.marks_data_json,
             teacher_remarks = excluded.teacher_remarks,
             ai_remarks = excluded.ai_remarks,
@@ -150,9 +181,9 @@ export async function onRequestPost(context: any) {
             attendance_total = excluded.attendance_total,
             updated_at = excluded.updated_at
         `).bind(
-          gradeId, cleanId, g.studentId, g.className || '', g.academicYear || '2025-2026',
-          g.termName || 'Term 1', typeof marksData === 'object' ? JSON.stringify(marksData) : marksData,
-          g.teacherRemarks || '', g.aiRemarks || '', g.attendancePresent || 0, g.attendanceTotal || 0, now
+          gradeId, cleanId, g.studentId, className, g.academicYear || g.academic_year || '2025-2026',
+          g.termName || g.term_name || 'Term 1', marksDataStr,
+          remarks, aiRemarks, attendancePresent, attendanceTotal, now
         ).run();
       }
     }
