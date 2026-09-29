@@ -2217,21 +2217,6 @@ export default function App() {
             setGradeScales(cloudData.gradeScales || defaultGradeScales);
 
             let finalLoadedStudents = (cloudData.students && Array.isArray(cloudData.students)) ? [...cloudData.students] : [];
-            const cleanFetchId = normalizeCloudSchoolId(fetchId || currentSchoolId || '');
-            const localSavedAtStr = cleanFetchId ? localStorage.getItem(`class_on_last_saved_at_${cleanFetchId}`) : null;
-
-            try {
-              const localCache = localStorage.getItem(`class_on_students_${currentSchoolId}`) ||
-                                 localStorage.getItem(`class_on_students_${fetchId}`);
-              if (localCache) {
-                const parsedLocal: Student[] = JSON.parse(localCache);
-                if (Array.isArray(parsedLocal)) {
-                  if (localSavedAtStr || finalLoadedStudents.length === 0) {
-                    finalLoadedStudents = parsedLocal;
-                  }
-                }
-              }
-            } catch {}
 
             if (finalLoadedStudents.length === 0 && (!fetchId || fetchId === 'demo')) {
               finalLoadedStudents = defaultStudents;
@@ -2239,18 +2224,6 @@ export default function App() {
             setStudents(finalLoadedStudents);
 
             let finalLoadedGrades = (cloudData.studentGrades && Array.isArray(cloudData.studentGrades)) ? [...cloudData.studentGrades] : [];
-            try {
-              const localGradesCache = localStorage.getItem(`class_on_student_grades_${currentSchoolId}`) ||
-                                       localStorage.getItem(`class_on_student_grades_${fetchId}`);
-              if (localGradesCache) {
-                const parsedGrades: StudentGrades[] = JSON.parse(localGradesCache);
-                if (Array.isArray(parsedGrades)) {
-                  if (localSavedAtStr || finalLoadedGrades.length === 0) {
-                    finalLoadedGrades = parsedGrades;
-                  }
-                }
-              }
-            } catch {}
 
             if (finalLoadedGrades.length === 0 && (!fetchId || fetchId === 'demo')) {
               finalLoadedGrades = defaultStudentGrades;
@@ -2374,10 +2347,22 @@ export default function App() {
       }
     };
     fetchSchoolDataFromCloud();
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === 'visible') {
+        fetchSchoolDataFromCloud();
+      }
+    };
+
+    window.addEventListener('focus', handleFocusOrVisible);
+    document.addEventListener('visibilitychange', handleFocusOrVisible);
+
     return () => {
       if (unsubscribeSchoolData) {
         unsubscribeSchoolData();
       }
+      window.removeEventListener('focus', handleFocusOrVisible);
+      document.removeEventListener('visibilitychange', handleFocusOrVisible);
     };
   }, [currentSchoolId]);
 
