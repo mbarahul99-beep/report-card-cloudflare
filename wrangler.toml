@@ -1,17 +1,24 @@
-name = "report-card-cloudflare"
-pages_build_output_dir = "./dist"
-compatibility_date = "2026-09-26"
-compatibility_flags = ["nodejs_compat"]
+# wrangler.toml — Cloudflare Pages Functions with D1, R2, and KV
+# Usage: npx wrangler pages dev dist --d1 DB=5384ec04-0241-4fcf-8d04-cd205491ac70
 
+name = "report-card-cloudflare"
+compatibility_date = "2026-09-26"
+
+# ── D1 Database ──────────────────────────────────────────────
 [[d1_databases]]
 binding = "DB"
 database_name = "report-card-d1"
 database_id = "5384ec04-0241-4fcf-8d04-cd205491ac70"
 
+# ── R2 Bucket (report-card assets: logos, watermarks, photos) ─
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "report-card-assets"
+
+# ── KV Namespace (fast config caching) ────────────────────────
+# Create this namespace in the dashboard or via:
+#   npx wrangler kv namespace create CONFIG_CACHE
+# Then replace the id below with the returned namespace ID.
 [[kv_namespaces]]
 binding = "CONFIG_CACHE"
-id = "CONFIG_CACHE"
-
-[[r2_buckets]]
-binding = "REPORT_CARD_ASSETS"
-bucket_name = "report-card-assets"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
