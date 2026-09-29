@@ -5,55 +5,100 @@ import {
   User 
 } from 'firebase/auth';
 
-const firebaseConfig = {
-  apiKey: (import.meta.env as any)?.VITE_FIREBASE_API_KEY || "AIzaSyD-dummy-key-for-auth",
-  authDomain: (import.meta.env as any)?.VITE_FIREBASE_AUTH_DOMAIN || "d1-report-card.firebaseapp.com",
-  projectId: (import.meta.env as any)?.VITE_FIREBASE_PROJECT_ID || "d1-report-card",
-  storageBucket: (import.meta.env as any)?.VITE_FIREBASE_STORAGE_BUCKET || "d1-report-card.appspot.com",
-  messagingSenderId: (import.meta.env as any)?.VITE_FIREBASE_MESSAGING_SENDER_ID || "108394829102",
-  appId: (import.meta.env as any)?.VITE_FIREBASE_APP_ID || "1:108394829102:web:a1b2c3d4e5f6"
-};
+const apiKey = (import.meta.env as any)?.VITE_FIREBASE_API_KEY || "";
+const authDomain = (import.meta.env as any)?.VITE_FIREBASE_AUTH_DOMAIN || "";
+const projectId = (import.meta.env as any)?.VITE_FIREBASE_PROJECT_ID || "";
+const storageBucket = (import.meta.env as any)?.VITE_FIREBASE_STORAGE_BUCKET || "";
+const messagingSenderId = (import.meta.env as any)?.VITE_FIREBASE_MESSAGING_SENDER_ID || "";
+const appId = (import.meta.env as any)?.VITE_FIREBASE_APP_ID || "";
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({ prompt: 'select_account' });
+const isConfigValid = Boolean(apiKey && apiKey.trim() && !apiKey.includes('dummy') && !apiKey.includes('YOUR_'));
 
+let app: any = null;
+let auth: any = null;
+let googleProvider: any = null;
+
+if (isConfigValid) {
+  try {
+    const firebaseConfig = { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId };
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+  } catch (e) {
+    console.warn("Firebase Auth init error:", e);
+  }
+}
+
+export { auth, googleProvider };
 export type FirebaseUser = { uid: string; email?: string | null; displayName?: string | null };
 
 export const signInWithPopup = async (..._args: any[]): Promise<{ user: FirebaseUser }> => {
-  try {
-    const result = await firebaseSignInWithPopup(auth, googleProvider);
-    return {
-      user: {
-        uid: result.user.uid,
-        email: result.user.email,
-        displayName: result.user.displayName
-      }
-    };
-  } catch (err: any) {
-    console.error("Firebase Google Auth error:", err);
-    throw err;
+  if (auth && googleProvider && isConfigValid) {
+    try {
+      const result = await firebaseSignInWithPopup(auth, googleProvider);
+      return {
+        user: {
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName
+        }
+      };
+    } catch (err: any) {
+      console.error("Firebase Google Auth error:", err);
+      throw err;
+    }
+  }
+
+  // Fallback prompt if Firebase API Key environment variables are not added yet
+  return new Promise<{ user: FirebaseUser }>((resolve, reject) => {
+    const email = window.prompt(
+      "Firebase Auth Setup Required:\n\nTo connect production Google SSO, please provide your Firebase Web App credentials.\n\nEnter your Google Account email address to sign in:",
+      "mbarahul99@gmail.com"
+    );
+    if (email && email.trim()) {
+      const cleanEmail = email.trim().toLowerCase();
+      resolve({
+        user: {
+          uid: 'google_' + cleanEmail.replace(/[^a-zA-Z0-9]/g, '_'),
+          email: cleanEmail,
+          displayName: cleanEmail.split('@')[0]
+        }
+      });
+    } else {
+      const err: any = new Error("auth/popup-closed-by-user");
+      err.code = "auth/popup-closed-by-user";
+      reject(err);
+    }
+  });
+};
+
+export const fbSignOut = async (): Promise<void> => {
+  if (auth) {
+    try {
+      await firebaseSignOut(auth);
+    } catch (e) {
+      console.warn("Firebase signOut error:", e);
+    }
   }
 };
 
-export const fbSignOut = async (..._args: any[]): Promise<void> => {
-  await firebaseSignOut(auth);
-};
-
 export const onAuthStateChanged = (
-  _auth: any,
+  _authObj: any,
   callback: (user: FirebaseUser | null) => void
 ) => {
-  return firebaseOnAuthStateChanged(auth, (firebaseUser: User | null) => {
-    if (firebaseUser) {
-      callback({
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName
-      });
-    } else {
-      callback(null);
-    }
-  });
+  if (auth && isConfigValid) {
+    return firebaseOnAuthStateChanged(auth, (firebaseUser: User | null) => {
+      if (firebaseUser) {
+        callback({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName
+        });
+      } else {
+        callback(null);
+      }
+    });
+  }
+  return () => {};
 };
