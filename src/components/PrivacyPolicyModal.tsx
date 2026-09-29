@@ -42,7 +42,7 @@ export default function PrivacyPolicyModal({ isOpen, onClose }: PrivacyPolicyMod
               <span className="text-[11px] uppercase tracking-wide">Strict Database Sandboxing</span>
             </div>
             <p className="text-slate-600 leading-normal text-[11px]">
-              Every school on the School Report Card platform is allocated a cryptographically and logically isolated database partition. All data reads, writes, and updates are strictly sandboxed under the school's unique, system-generated path (<code>/schools/{"{schoolId}"}/...</code>). Cross-tenant database queries or unauthorized cross-school lookups are prevented by physical network segregation and robust Firestore security policies.
+              Every school on the School Report Card platform is allocated a cryptographically and logically isolated database partition in Cloudflare D1. All data reads, writes, and updates are strictly sandboxed under the school's unique database tenant records. Cross-tenant database queries or unauthorized cross-school lookups are prevented by physical network segregation and robust D1 security policies.
             </p>
           </div>
 
@@ -114,7 +114,7 @@ export default function PrivacyPolicyModal({ isOpen, onClose }: PrivacyPolicyMod
             <p className="font-extrabold text-teal-400 uppercase tracking-wider text-[11px] font-sans">🛡️ Active Cloud Security Guards</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 pt-1">
               <div>• SSL Transit Protocol: <span className="text-white">TLS 1.3 Strict</span></div>
-              <div>• Tenant Isolation: <span className="text-white">Active (Firestore Sandboxing)</span></div>
+              <div>• Tenant Isolation: <span className="text-white">Active (Cloudflare D1 SQL Isolation)</span></div>
               <div>• Google SSO Integration: <span className="text-white">Supported (Passwordless OAuth2)</span></div>
               <div>• Database Audits: <span className="text-white">Platform Admin Monitored</span></div>
             </div>

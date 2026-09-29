@@ -2335,7 +2335,7 @@ export default function StudentManager({
     onUpdateStudents(updatedStudentsList);
     onUpdateGrades(updatedGradesList);
 
-    // 2. Resolve effective school ID and write immediately to local storage and Cloud Firestore
+    // 2. Resolve effective school ID and write immediately to local storage and Cloudflare D1
     const effectiveSchoolId = currentSchoolId || localStorage.getItem('class_on_saas_school_id') || '';
     if (effectiveSchoolId) {
       try {

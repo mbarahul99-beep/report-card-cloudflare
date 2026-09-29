@@ -1581,7 +1581,7 @@ export default function MainAdminDashboard({
                   </h4>
                   <p className="text-slate-600 text-xs mt-1 leading-relaxed max-w-2xl font-sans">
                     You registered or onboarded <strong className="text-amber-700 font-bold">{unsyncedSchoolsCount} school account(s)</strong> while the console was in Offline Mode. 
-                    These schools exist locally in your browser storage, but their logins and academic deep databases (students, grades, branding) have not been saved permanently to Firestore.
+                    These schools exist locally in your browser storage, but their logins and academic deep databases (students, grades, branding) have not been saved permanently to Cloudflare D1.
                   </p>
                 </div>
               </div>
@@ -3219,7 +3219,7 @@ export default function MainAdminDashboard({
                           const updated = schools.map(s => s.id === finalSchool.id ? finalSchool : s);
                           onUpdateSchools(updated);
                           setViewingSchool(finalSchool);
-                          alert(`Successfully synchronized and saved subscription and record limits for ${finalSchool.name} to Cloud Firestore!`);
+                          alert(`Successfully synchronized and saved subscription and record limits for ${finalSchool.name} to Cloudflare D1!`);
                         } catch (err: any) {
                           console.error("Cloud plan save failure:", err);
                           alert(`Failed to save plan changes to Cloud: ${err.message || err}`);
