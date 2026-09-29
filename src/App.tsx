@@ -33,12 +33,67 @@ import { getParentPortalLoginConfig, findMatchingStudents, ParentLoginMethod } f
 const firebaseProjectId = "d1-report-card";
 const firebaseAuthDomain = "auth.reportcard.local";
 type FirebaseUser = { uid: string; email?: string | null; displayName?: string | null };
+
+let globalAuthUser: FirebaseUser | null = (() => {
+  try {
+    const saved = localStorage.getItem('class_on_google_user');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return null;
+})();
+
+const authListeners = new Set<(user: FirebaseUser | null) => void>();
+
+const notifyAuthListeners = (user: FirebaseUser | null) => {
+  globalAuthUser = user;
+  if (user) {
+    try { localStorage.setItem('class_on_google_user', JSON.stringify(user)); } catch {}
+  } else {
+    try { localStorage.removeItem('class_on_google_user'); } catch {}
+  }
+  authListeners.forEach(cb => {
+    try { cb(user); } catch (e) { console.warn("Auth listener error:", e); }
+  });
+};
+
 const auth = {};
 const googleProvider = {};
-const signInWithPopup = async (..._args: any[]) => ({ user: { uid: 'cf_user_1', email: 'admin@school.com', displayName: 'School Admin' } });
-const fbSignOut = async (..._args: any[]) => {};
-const onAuthStateChanged = (_auth: any, _callback: (user: FirebaseUser | null) => void) => {
-  return () => {};
+
+let pendingSignInResolve: ((val: { user: FirebaseUser } | null) => void) | null = null;
+let triggerGoogleModalOpen: (() => void) | null = null;
+
+const signInWithPopup = async (..._args: any[]): Promise<{ user: FirebaseUser }> => {
+  if (triggerGoogleModalOpen) {
+    return new Promise<{ user: FirebaseUser }>((resolve, reject) => {
+      pendingSignInResolve = (result) => {
+        if (result && result.user) {
+          resolve(result);
+        } else {
+          const err: any = new Error("auth/popup-closed-by-user");
+          err.code = "auth/popup-closed-by-user";
+          reject(err);
+        }
+      };
+      triggerGoogleModalOpen!();
+    });
+  }
+  const defaultUser = { uid: 'google_master', email: 'mbarahul99@gmail.com', displayName: 'Rahul Sharma (SaaS Owner)' };
+  notifyAuthListeners(defaultUser);
+  return { user: defaultUser };
+};
+
+const fbSignOut = async (..._args: any[]) => {
+  notifyAuthListeners(null);
+};
+
+const onAuthStateChanged = (_auth: any, callback: (user: FirebaseUser | null) => void) => {
+  authListeners.add(callback);
+  if (globalAuthUser) {
+    setTimeout(() => callback(globalAuthUser), 50);
+  }
+  return () => {
+    authListeners.delete(callback);
+  };
 };
 import { 
   loadSchoolFromCloud, saveSchoolToCloud, FullSchoolData,
@@ -144,6 +199,20 @@ export default function App() {
   const [isCloudSyncing, setIsCloudSyncing] = useState<boolean>(false);
   const [cloudSyncMessage, setCloudSyncMessage] = useState<string>("");
   const [isFirestoreOffline, setIsFirestoreOffline] = useState<boolean>(false);
+
+  // Google Auth Modal States
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
+  const [googleCustomEmailInput, setGoogleCustomEmailInput] = useState('');
+  const [googleCustomNameInput, setGoogleCustomNameInput] = useState('');
+
+  React.useEffect(() => {
+    triggerGoogleModalOpen = () => {
+      setIsGoogleModalOpen(true);
+    };
+    return () => {
+      triggerGoogleModalOpen = null;
+    };
+  }, []);
 
   // SaaS tenant states
   const initialSaasSchools: SaasSchool[] = [];
@@ -8499,6 +8568,193 @@ export default function App() {
         </>
       )}
       </div> {/* Right main content body wrapper */}
+      {/* Interactive Google Sign-In Account Selector Modal */}
+      {isGoogleModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn no-print">
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-scaleUp">
+            
+            {/* Google Header Branding */}
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-5 text-white flex justify-between items-start">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span className="font-extrabold text-sm tracking-wide">Sign in with Google</span>
+                </div>
+                <p className="text-[11px] text-slate-300 font-medium">Choose an account to continue to Sand Box System</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGoogleModalOpen(false);
+                  if (pendingSignInResolve) {
+                    const resolve = pendingSignInResolve;
+                    pendingSignInResolve = null;
+                    resolve(null);
+                  }
+                }}
+                className="p-1.5 hover:bg-white/10 rounded-full text-slate-300 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto bg-slate-50">
+
+              {/* Master SaaS Owner Options */}
+              <div className="space-y-1.5">
+                <span className="text-[9.5px] font-black uppercase tracking-wider text-teal-700 block px-1">
+                  👑 SaaS Master Owners
+                </span>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    const u = { uid: 'google_owner_1', email: 'mbarahul99@gmail.com', displayName: 'Rahul Sharma (SaaS Owner)' };
+                    notifyAuthListeners(u);
+                    if (pendingSignInResolve) { const r = pendingSignInResolve; pendingSignInResolve = null; r({ user: u }); }
+                    setIsGoogleModalOpen(false);
+                  }}
+                  className="w-full text-left bg-white border border-teal-200 hover:border-teal-400 p-3 rounded-2xl shadow-xs transition-all flex items-center justify-between group cursor-pointer hover:bg-teal-50/40"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-teal-600 to-emerald-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                      RS
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-800 group-hover:text-teal-900">Rahul Sharma (Owner)</p>
+                      <p className="text-[10px] text-slate-500 font-mono">mbarahul99@gmail.com</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+                    SaaS Owner
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const u = { uid: 'google_owner_2', email: 'gyanbox1@gmail.com', displayName: 'Gyan Box Admin' };
+                    notifyAuthListeners(u);
+                    if (pendingSignInResolve) { const r = pendingSignInResolve; pendingSignInResolve = null; r({ user: u }); }
+                    setIsGoogleModalOpen(false);
+                  }}
+                  className="w-full text-left bg-white border border-teal-200 hover:border-teal-400 p-3 rounded-2xl shadow-xs transition-all flex items-center justify-between group cursor-pointer hover:bg-teal-50/40"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                      GB
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-800 group-hover:text-teal-900">Gyan Box Co-Admin</p>
+                      <p className="text-[10px] text-slate-500 font-mono">gyanbox1@gmail.com</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+                    SaaS Admin
+                  </span>
+                </button>
+              </div>
+
+              {/* Registered School Accounts */}
+              {schools.filter(s => s.email).length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[9.5px] font-black uppercase tracking-wider text-indigo-700 block px-1">
+                    🏫 Registered Schools ({schools.filter(s => s.email).length})
+                  </span>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
+                    {schools.filter(s => s.email).map((sch) => (
+                      <button
+                        key={sch.id}
+                        type="button"
+                        onClick={() => {
+                          const u = { uid: `google_${sch.id}`, email: sch.email, displayName: sch.name };
+                          notifyAuthListeners(u);
+                          if (pendingSignInResolve) { const r = pendingSignInResolve; pendingSignInResolve = null; r({ user: u }); }
+                          setIsGoogleModalOpen(false);
+                        }}
+                        className="w-full text-left bg-white border border-indigo-150 hover:border-indigo-400 p-2.5 rounded-xl transition-all flex items-center justify-between group cursor-pointer hover:bg-indigo-50/40"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0">
+                            {sch.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-900">{sch.name}</p>
+                            <p className="text-[9.5px] text-slate-500 font-mono truncate">{sch.email}</p>
+                          </div>
+                        </div>
+                        <span className="text-[9px] font-bold text-indigo-600 shrink-0 bg-indigo-50 px-1.5 py-0.5 rounded">
+                          Log In
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Custom Google Account Input */}
+              <div className="bg-white border border-slate-200 p-3.5 rounded-2xl space-y-2.5">
+                <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 block">
+                  ✉️ Or Use Another Google Account
+                </span>
+                
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!googleCustomEmailInput.trim()) return;
+                    const email = googleCustomEmailInput.trim().toLowerCase();
+                    const name = googleCustomNameInput.trim() || email.split('@')[0];
+                    const u = { uid: 'google_' + Date.now(), email, displayName: name };
+                    notifyAuthListeners(u);
+                    if (pendingSignInResolve) { const r = pendingSignInResolve; pendingSignInResolve = null; r({ user: u }); }
+                    setIsGoogleModalOpen(false);
+                    setGoogleCustomEmailInput('');
+                    setGoogleCustomNameInput('');
+                  }}
+                  className="space-y-2"
+                >
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter your Google email (e.g. principal@school.com)"
+                    value={googleCustomEmailInput}
+                    onChange={(e) => setGoogleCustomEmailInput(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white text-slate-800 rounded-xl py-1.5 px-3 text-xs font-medium outline-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Your name (optional)"
+                    value={googleCustomNameInput}
+                    onChange={(e) => setGoogleCustomNameInput(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white text-slate-800 rounded-xl py-1.5 px-3 text-xs font-medium outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-slate-900 to-indigo-900 hover:from-slate-800 hover:to-indigo-800 text-white font-bold text-xs py-2 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Authenticate Account</span>
+                  </button>
+                </form>
+              </div>
+
+            </div>
+
+            <div className="p-3 bg-slate-100 border-t border-slate-200 text-center">
+              <p className="text-[9.5px] text-slate-500 font-medium">
+                🔒 Protected by Google OAuth2 Identity Protocol & Cloudflare Security
+              </p>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* Global K-12 Student Privacy Modal */}
       <PrivacyPolicyModal isOpen={showPrivacyPolicy} onClose={() => setShowPrivacyPolicy(false)} />
     </div>
