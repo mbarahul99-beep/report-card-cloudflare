@@ -5,12 +5,12 @@ import {
   User 
 } from 'firebase/auth';
 
-const apiKey = (import.meta.env as any)?.VITE_FIREBASE_API_KEY || "";
-const authDomain = (import.meta.env as any)?.VITE_FIREBASE_AUTH_DOMAIN || "";
-const projectId = (import.meta.env as any)?.VITE_FIREBASE_PROJECT_ID || "";
-const storageBucket = (import.meta.env as any)?.VITE_FIREBASE_STORAGE_BUCKET || "";
-const messagingSenderId = (import.meta.env as any)?.VITE_FIREBASE_MESSAGING_SENDER_ID || "";
-const appId = (import.meta.env as any)?.VITE_FIREBASE_APP_ID || "";
+const apiKey = (import.meta.env as any)?.VITE_FIREBASE_API_KEY || "AIzaSyDyrUk7c7Yh6LfdJFzUwoeC8wqwYCRXmwc";
+const authDomain = (import.meta.env as any)?.VITE_FIREBASE_AUTH_DOMAIN || "saas-report-card.firebaseapp.com";
+const projectId = (import.meta.env as any)?.VITE_FIREBASE_PROJECT_ID || "saas-report-card";
+const storageBucket = (import.meta.env as any)?.VITE_FIREBASE_STORAGE_BUCKET || "saas-report-card.firebasestorage.app";
+const messagingSenderId = (import.meta.env as any)?.VITE_FIREBASE_MESSAGING_SENDER_ID || "470872022573";
+const appId = (import.meta.env as any)?.VITE_FIREBASE_APP_ID || "1:470872022573:web:65b8c437a570d2730e22a4";
 
 const isConfigValid = Boolean(apiKey && apiKey.trim() && !apiKey.includes('dummy') && !apiKey.includes('YOUR_'));
 
@@ -18,16 +18,14 @@ let app: any = null;
 let auth: any = null;
 let googleProvider: any = null;
 
-if (isConfigValid) {
-  try {
-    const firebaseConfig = { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId };
-    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    googleProvider = new GoogleAuthProvider();
-    googleProvider.setCustomParameters({ prompt: 'select_account' });
-  } catch (e) {
-    console.warn("Firebase Auth init error:", e);
-  }
+try {
+  const firebaseConfig = { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId };
+  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  googleProvider = new GoogleAuthProvider();
+  googleProvider.setCustomParameters({ prompt: 'select_account' });
+} catch (e) {
+  console.warn("Firebase Auth init error:", e);
 }
 
 export { auth, googleProvider };
