@@ -491,6 +491,7 @@ export interface FullSchoolData {
   students: Student[];
   studentGrades: StudentGrades[];
   reportCardStructures?: ReportCardStructure[];
+  layouts?: Record<string, any> | ReportCardStructure[];
   recycleBin?: RecycleBinItem[];
   classes?: SchoolClassItem[];
   classNamingStyle?: 'roman' | 'ordinal' | 'number' | 'custom';

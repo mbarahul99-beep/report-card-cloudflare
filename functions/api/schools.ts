@@ -1,28 +1,18 @@
-// GET /api/schools — List all schools
+// GET /api/schools — List all registered SaaS schools directly from schools table
 export async function onRequestGet(context: any) {
   const { env } = context;
   try {
-    const rows = await env.DB.prepare(
-      "SELECT school_id, name, subdomain, branding_json, grade_scales_json, report_structures_json, class_naming_style, updated_at FROM schools ORDER BY updated_at DESC"
-    ).all();
-
-    const syncRows = await env.DB.prepare(
-      "SELECT school_id, payload_json, updated_at FROM school_sync_data"
-    ).all();
-
-    const syncMap = new Map<string, any>();
-    (syncRows.results || []).forEach((r: any) => {
-      try {
-        syncMap.set(r.school_id, JSON.parse(r.payload_json));
-      } catch {}
-    });
+    const rows = await env.DB.prepare(`
+      SELECT school_id, name, subdomain, branding_json, grade_scales_json,
+             report_structures_json, layouts_json, class_naming_style, saas_meta_json, updated_at
+      FROM schools ORDER BY updated_at DESC
+    `).all();
 
     const schools = (rows.results || []).map((r: any) => {
       let branding: any = {};
-      try { branding = JSON.parse(r.branding_json || '{}'); } catch {}
-
-      const syncPayload = syncMap.get(r.school_id) || {};
-      const saasMeta = syncPayload.saasMeta || {};
+      let saasMeta: any = {};
+      try { if (r.branding_json) branding = JSON.parse(r.branding_json); } catch {}
+      try { if (r.saas_meta_json) saasMeta = JSON.parse(r.saas_meta_json); } catch {}
 
       return {
         id: r.school_id,
@@ -35,11 +25,10 @@ export async function onRequestGet(context: any) {
         email: saasMeta.email || branding.email || '',
         board: saasMeta.board || 'CBSE',
         approvalStatus: saasMeta.approvalStatus || 'approved',
-        portalCode: saasMeta.portalCode || syncPayload.portalCode || '',
+        portalCode: saasMeta.portalCode || '',
         createdAt: saasMeta.createdAt || r.updated_at || new Date().toISOString(),
         teachers: saasMeta.teachers || [],
         ...saasMeta,
-        // Enforce exact credentials if stored in saasMeta
         username: saasMeta.username || r.school_id,
         password: saasMeta.password || '',
       };
@@ -51,7 +40,7 @@ export async function onRequestGet(context: any) {
   }
 }
 
-// POST /api/schools — Create or update a school
+// POST /api/schools — Create or update SaaS school configuration directly in schools table and KV cache
 export async function onRequestPost(context: any) {
   const { env, request } = context;
   try {
@@ -64,43 +53,48 @@ export async function onRequestPost(context: any) {
     const brandingJson = JSON.stringify(school.branding || { schoolName: name });
     const gradeScalesJson = JSON.stringify(school.gradeScales || []);
     const reportStructuresJson = JSON.stringify(school.reportCardStructures || []);
+    const layoutsJson = JSON.stringify(school.layouts || school.reportCardStructures || {});
+    const saasMetaJson = JSON.stringify(school);
     const classNamingStyle = school.classNamingStyle || 'roman';
 
     const stmt = env.DB.prepare(`
-      INSERT INTO schools (school_id, name, subdomain, branding_json, grade_scales_json, report_structures_json, class_naming_style, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO schools (
+        school_id, name, subdomain, branding_json, grade_scales_json,
+        report_structures_json, layouts_json, class_naming_style, saas_meta_json, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_id) DO UPDATE SET
         name = excluded.name,
         branding_json = excluded.branding_json,
         grade_scales_json = excluded.grade_scales_json,
         report_structures_json = excluded.report_structures_json,
+        layouts_json = excluded.layouts_json,
         class_naming_style = excluded.class_naming_style,
+        saas_meta_json = excluded.saas_meta_json,
         updated_at = excluded.updated_at
-    `).bind(cleanId, name, school.subdomain || cleanId, brandingJson, gradeScalesJson, reportStructuresJson, classNamingStyle, now);
+    `).bind(cleanId, name, school.subdomain || cleanId, brandingJson, gradeScalesJson, reportStructuresJson, layoutsJson, classNamingStyle, saasMetaJson, now);
 
     await stmt.run();
 
-    let payload: any = {};
-    try {
-      const existing = await env.DB.prepare("SELECT payload_json FROM school_sync_data WHERE school_id = ?").bind(cleanId).first();
-      if (existing && existing.payload_json) {
-        payload = JSON.parse(existing.payload_json as string);
+    // Update KV CONFIG_CACHE if namespace binding exists
+    if (env.CONFIG_CACHE) {
+      try {
+        const configToCache = {
+          branding: school.branding || { schoolName: name },
+          gradeScales: school.gradeScales || [],
+          reportCardStructures: school.reportCardStructures || [],
+          layouts: school.layouts || school.reportCardStructures || {},
+          classNamingStyle,
+          saasMeta: school,
+          schoolName: name,
+          updatedAt: now
+        };
+        await env.CONFIG_CACHE.put(`school_config_${cleanId}`, JSON.stringify(configToCache), { expirationTtl: 86400 });
+      } catch (kvErr: any) {
+        console.warn("[CONFIG_CACHE KV Write Note]:", kvErr.message);
       }
-    } catch {}
+    }
 
-    payload.saasMeta = { ...(payload.saasMeta || {}), ...school };
-    payload.schoolName = name;
-    payload.portalCode = school.portalCode || payload.portalCode || '';
-
-    await env.DB.prepare(`
-      INSERT INTO school_sync_data (school_id, payload_json, updated_at)
-      VALUES (?, ?, ?)
-      ON CONFLICT(school_id) DO UPDATE SET
-        payload_json = excluded.payload_json,
-        updated_at = excluded.updated_at
-    `).bind(cleanId, JSON.stringify(payload), now).run();
-
-    // 3. Upsert into D1 users table
+    // Upsert into D1 users table
     const userEmail = school.email || `${cleanId}@school.com`;
     const userFullName = school.contactPerson || name;
     try {

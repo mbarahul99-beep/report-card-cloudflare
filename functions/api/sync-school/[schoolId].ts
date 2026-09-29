@@ -1,27 +1,192 @@
-// GET /api/sync-school/:schoolId — Get full school payload
+// GET /api/sync-school/:schoolId — Assemble full report card payload on-demand from structured tables
 export async function onRequestGet(context: any) {
   const { env, params } = context;
   try {
     const cleanId = params.schoolId.replace(/[^a-zA-Z0-9_-]/g, '_');
-    const row = await env.DB.prepare(
-      "SELECT payload_json FROM school_sync_data WHERE school_id = ?"
-    ).bind(cleanId).first();
-
-    if (!row || !row.payload_json) {
-      return new Response(JSON.stringify({ success: false, message: 'School sync payload not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    
+    // 1. Check KV Cache (CONFIG_CACHE) for fast reads of school config
+    let cachedConfig: any = null;
+    if (env.CONFIG_CACHE) {
+      try {
+        const rawKV = await env.CONFIG_CACHE.get(`school_config_${cleanId}`, 'json');
+        if (rawKV) cachedConfig = rawKV;
+      } catch (kvErr: any) {
+        console.warn(`[CONFIG_CACHE KV Read Note]:`, kvErr.message);
+      }
     }
 
-    const parsed = JSON.parse(row.payload_json as string);
-    return Response.json({ success: true, source: 'cloudflare_d1', data: parsed });
+    let schoolRow: any = null;
+    let schoolConfig: any = cachedConfig || {};
+
+    if (!cachedConfig) {
+      // 2. Fetch school config from schools table in Cloudflare D1
+      schoolRow = await env.DB.prepare(`
+        SELECT school_id, name, subdomain, branding_json, grade_scales_json,
+               report_structures_json, layouts_json, score_columns_json, subjects_json,
+               classes_json, class_naming_style, saas_meta_json, updated_at
+        FROM schools WHERE school_id = ?
+      `).bind(cleanId).first();
+
+      if (!schoolRow) {
+        return new Response(JSON.stringify({ success: false, message: `School '${cleanId}' not found` }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      let branding = {};
+      let gradeScales = [];
+      let reportCardStructures = [];
+      let layouts = {};
+      let scoreColumns = [];
+      let subjects = [];
+      let classes = [];
+      let saasMeta = {};
+
+      try { if (schoolRow.branding_json) branding = JSON.parse(schoolRow.branding_json); } catch {}
+      try { if (schoolRow.grade_scales_json) gradeScales = JSON.parse(schoolRow.grade_scales_json); } catch {}
+      try { if (schoolRow.report_structures_json) reportCardStructures = JSON.parse(schoolRow.report_structures_json); } catch {}
+      try { if (schoolRow.layouts_json) layouts = JSON.parse(schoolRow.layouts_json); } catch {}
+      try { if (schoolRow.score_columns_json) scoreColumns = JSON.parse(schoolRow.score_columns_json); } catch {}
+      try { if (schoolRow.subjects_json) subjects = JSON.parse(schoolRow.subjects_json); } catch {}
+      try { if (schoolRow.classes_json) classes = JSON.parse(schoolRow.classes_json); } catch {}
+      try { if (schoolRow.saas_meta_json) saasMeta = JSON.parse(schoolRow.saas_meta_json); } catch {}
+
+      schoolConfig = {
+        branding,
+        gradeScales,
+        reportCardStructures,
+        layouts: (layouts && Object.keys(layouts).length > 0) ? layouts : reportCardStructures,
+        scoreColumns,
+        subjects,
+        classes,
+        classNamingStyle: schoolRow.class_naming_style || 'roman',
+        saasMeta,
+        schoolName: schoolRow.name || (branding as any).schoolName || cleanId,
+        updatedAt: schoolRow.updated_at
+      };
+
+      // Populate KV cache for future fast reads
+      if (env.CONFIG_CACHE) {
+        try {
+          await env.CONFIG_CACHE.put(`school_config_${cleanId}`, JSON.stringify(schoolConfig), { expirationTtl: 86400 });
+        } catch {}
+      }
+    }
+
+    // 3. Query students table for this school
+    const studentRows = await env.DB.prepare(`
+      SELECT student_id, school_id, roll_number, full_name, father_name, mother_name,
+             class_name, section, dob, gender, phone_number, photo_url, extra_details_json
+      FROM students WHERE school_id = ?
+      ORDER BY roll_number ASC, full_name ASC
+    `).bind(cleanId).all();
+
+    const students = (studentRows.results || []).map((s: any) => {
+      let extra = {};
+      try { if (s.extra_details_json) extra = JSON.parse(s.extra_details_json); } catch {}
+      return {
+        id: s.student_id,
+        rollNo: s.roll_number || '',
+        name: s.full_name || '',
+        fatherName: s.father_name || '',
+        motherName: s.mother_name || '',
+        className: s.class_name || '',
+        section: s.section || '',
+        dob: s.dob || '',
+        gender: s.gender || '',
+        mobileNumber: s.phone_number || '',
+        photoUrl: s.photo_url || '',
+        ...extra
+      };
+    });
+
+    // 4. Query student_grades table for this school
+    const gradeRows = await env.DB.prepare(`
+      SELECT id, school_id, student_id, class_name, academic_year, term_name,
+             marks_data_json, teacher_remarks, ai_remarks, attendance_present, attendance_total
+      FROM student_grades WHERE school_id = ?
+    `).bind(cleanId).all();
+
+    const studentGrades = (gradeRows.results || []).map((g: any) => {
+      let scholastic = {};
+      try { if (g.marks_data_json) scholastic = JSON.parse(g.marks_data_json); } catch {}
+      let attendance: any = {};
+      if (g.attendance_present || g.attendance_total) {
+        attendance = { term1: `${g.attendance_present}/${g.attendance_total}` };
+      }
+
+      return {
+        id: g.id,
+        studentId: g.student_id,
+        className: g.class_name || '',
+        academicYear: g.academic_year || '2025-2026',
+        termName: g.term_name || 'Term 1',
+        scholastic,
+        teacherRemarks: g.teacher_remarks || '',
+        aiRemarks: g.ai_remarks || '',
+        attendancePresent: g.attendance_present || 0,
+        attendanceTotal: g.attendance_total || 0,
+        attendance
+      };
+    });
+
+    // 5. Assemble full payload dynamically
+    const assembledData = {
+      branding: schoolConfig.branding || {},
+      scoreColumns: schoolConfig.scoreColumns || [],
+      subjects: schoolConfig.subjects || [],
+      gradeScales: schoolConfig.gradeScales || [],
+      reportCardStructures: schoolConfig.reportCardStructures || [],
+      layouts: schoolConfig.layouts || schoolConfig.reportCardStructures || {},
+      students,
+      studentGrades,
+      classes: schoolConfig.classes || [],
+      classNamingStyle: schoolConfig.classNamingStyle || 'roman',
+      saasMeta: schoolConfig.saasMeta || {},
+      schoolName: schoolConfig.schoolName || cleanId,
+      updatedAt: schoolConfig.updatedAt || new Date().toISOString()
+    };
+
+    return Response.json({ success: true, source: 'cloudflare_d1_assembled', data: assembledData });
   } catch (err: any) {
     return Response.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
-// POST /api/sync-school/:schoolId — Save full school payload and synchronize across D1 tables
+/**
+ * Helper to upload base64 images directly to R2 bucket report-card-assets
+ */
+async function ensureR2AssetUrl(env: any, fileData: string, category: string): Promise<string> {
+  if (!fileData || typeof fileData !== 'string' || !fileData.startsWith('data:')) {
+    return fileData || '';
+  }
+  const bucket = env.REPORT_CARD_ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
+  if (!bucket) return fileData;
+
+  try {
+    const matches = fileData.match(/^data:([^;]+);base64,(.+)$/);
+    if (!matches) return fileData;
+
+    const mimeType = matches[1];
+    const base64Str = matches[2];
+    const binaryStr = atob(base64Str);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+
+    const ext = mimeType.split('/')[1] || 'png';
+    const key = `${category}/${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+    await bucket.put(key, bytes.buffer, { httpMetadata: { contentType: mimeType } });
+    return `/api/assets/${key}`;
+  } catch (err: any) {
+    console.warn(`[ensureR2AssetUrl] Upload warning for ${category}:`, err.message);
+    return fileData;
+  }
+}
+
+// POST /api/sync-school/:schoolId — Save normalized structured data to schools, students, and student_grades tables
 export async function onRequestPost(context: any) {
   const { env, params, request } = context;
   try {
@@ -29,72 +194,82 @@ export async function onRequestPost(context: any) {
     const payload: any = await request.json();
     const now = new Date().toISOString();
 
-    let existingSaasMeta = {};
-    try {
-      const existing = await env.DB.prepare("SELECT payload_json FROM school_sync_data WHERE school_id = ?").bind(cleanId).first();
-      if (existing && existing.payload_json) {
-        const parsed = JSON.parse(existing.payload_json as string);
-        existingSaasMeta = parsed.saasMeta || {};
-      }
-    } catch {}
-
-    const saasMeta = { ...existingSaasMeta, ...(payload.saasMeta || {}) };
-    const dataWithTimestamp = {
-      ...payload,
-      saasMeta,
-      updatedAt: payload.updatedAt || now,
-      serverSavedAt: now,
-    };
-
-    const payloadStr = JSON.stringify(dataWithTimestamp);
     const schoolName = payload.schoolName || payload.branding?.schoolName || cleanId;
 
-    // 1. Save to school_sync_data table
-    await env.DB.prepare(`
-      INSERT INTO school_sync_data (school_id, payload_json, updated_at)
-      VALUES (?, ?, ?)
-      ON CONFLICT(school_id) DO UPDATE SET
-        payload_json = excluded.payload_json,
-        updated_at = excluded.updated_at
-    `).bind(cleanId, payloadStr, now).run();
+    // 1. Convert base64 branding images (logo, watermark) to R2 URLs
+    if (payload.branding) {
+      if (payload.branding.logoUrl) {
+        payload.branding.logoUrl = await ensureR2AssetUrl(env, payload.branding.logoUrl, 'logos');
+      }
+      if (payload.branding.watermarkUrl) {
+        payload.branding.watermarkUrl = await ensureR2AssetUrl(env, payload.branding.watermarkUrl, 'watermarks');
+      }
+    }
 
-    // 2. Save metadata to schools table including grade scales & report structures
-    const gradeScalesStr = JSON.stringify(payload.gradeScales || []);
-    const structuresStr = JSON.stringify(payload.reportCardStructures || []);
+    const brandingJson = JSON.stringify(payload.branding || {});
+    const gradeScalesJson = JSON.stringify(payload.gradeScales || []);
+    const structuresJson = JSON.stringify(payload.reportCardStructures || []);
+    const layoutsJson = JSON.stringify(payload.layouts || payload.reportCardStructures || {});
+    const scoreColumnsJson = JSON.stringify(payload.scoreColumns || []);
+    const subjectsJson = JSON.stringify(payload.subjects || []);
+    const classesJson = JSON.stringify(payload.classes || []);
+    const saasMetaJson = JSON.stringify(payload.saasMeta || {});
+    const classNamingStyle = payload.classNamingStyle || 'roman';
+
+    // 2. Save school metadata & branding config into schools table
     await env.DB.prepare(`
-      INSERT INTO schools (school_id, name, branding_json, grade_scales_json, report_structures_json, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO schools (
+        school_id, name, subdomain, branding_json, grade_scales_json,
+        report_structures_json, layouts_json, score_columns_json, subjects_json,
+        classes_json, class_naming_style, saas_meta_json, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_id) DO UPDATE SET
         name = excluded.name,
         branding_json = excluded.branding_json,
         grade_scales_json = excluded.grade_scales_json,
         report_structures_json = excluded.report_structures_json,
+        layouts_json = excluded.layouts_json,
+        score_columns_json = excluded.score_columns_json,
+        subjects_json = excluded.subjects_json,
+        classes_json = excluded.classes_json,
+        class_naming_style = excluded.class_naming_style,
+        saas_meta_json = excluded.saas_meta_json,
         updated_at = excluded.updated_at
-    `).bind(cleanId, schoolName, JSON.stringify(payload.branding || {}), gradeScalesStr, structuresStr, now).run();
+    `).bind(
+      cleanId, schoolName, cleanId, brandingJson, gradeScalesJson,
+      structuresJson, layoutsJson, scoreColumnsJson, subjectsJson,
+      classesJson, classNamingStyle, saasMetaJson, now
+    ).run();
 
-    // 2b. Upsert into users table
-    const userEmail = saasMeta.email || payload.branding?.email || `${cleanId}@school.com`;
-    const userFullName = saasMeta.contactPerson || payload.branding?.contactPerson || schoolName;
-    try {
-      await env.DB.prepare(`
-        INSERT INTO users (user_id, school_id, email, role, full_name, created_at)
-        VALUES (?, ?, ?, 'admin', ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(user_id) DO UPDATE SET
-          school_id = excluded.school_id,
-          email = excluded.email,
-          full_name = excluded.full_name
-      `).bind(cleanId, cleanId, userEmail, userFullName).run();
-    } catch (uErr: any) {
-      console.warn(`[sync-school] users table insert error for ${cleanId}:`, uErr.message);
+    // Update KV CONFIG_CACHE for fast reads
+    if (env.CONFIG_CACHE) {
+      try {
+        const configToCache = {
+          branding: payload.branding || {},
+          gradeScales: payload.gradeScales || [],
+          reportCardStructures: payload.reportCardStructures || [],
+          layouts: payload.layouts || payload.reportCardStructures || {},
+          scoreColumns: payload.scoreColumns || [],
+          subjects: payload.subjects || [],
+          classes: payload.classes || [],
+          classNamingStyle,
+          saasMeta: payload.saasMeta || {},
+          schoolName,
+          updatedAt: now
+        };
+        await env.CONFIG_CACHE.put(`school_config_${cleanId}`, JSON.stringify(configToCache), { expirationTtl: 86400 });
+      } catch (kvErr: any) {
+        console.warn(`[CONFIG_CACHE KV Write Note]:`, kvErr.message);
+      }
     }
 
-    // 3. Sync students to students table
+    // 3. Upsert students into students table
     const studentMap = new Map<string, any>();
     if (Array.isArray(payload.students)) {
       for (const s of payload.students) {
         if (!s || !s.id) continue;
         studentMap.set(s.id, s);
-        
+
         const extra = { ...s };
         delete extra.id;
         delete extra.name;
@@ -111,8 +286,11 @@ export async function onRequestPost(context: any) {
         delete extra.photoUrl;
         delete extra.photo_url;
 
+        let photoUrl = s.photoUrl || s.photo_url || s.photo || '';
+        if (photoUrl) {
+          photoUrl = await ensureR2AssetUrl(env, photoUrl, 'photos');
+        }
         const phoneNo = s.mobileNumber || s.mobile || s.phone_number || s.phone || '';
-        const photoUrl = s.photoUrl || s.photo_url || s.photo || '';
 
         await env.DB.prepare(`
           INSERT INTO students (
@@ -141,7 +319,7 @@ export async function onRequestPost(context: any) {
       }
     }
 
-    // 4. Sync grades to student_grades table
+    // 4. Upsert grades into student_grades table
     if (Array.isArray(payload.studentGrades)) {
       for (const g of payload.studentGrades) {
         if (!g || !g.studentId) continue;
@@ -150,12 +328,10 @@ export async function onRequestPost(context: any) {
         const className = g.className || g.class_name || studentObj.className || '';
         const remarks = g.teacherRemarks || g.teacher_remarks || studentObj.remarks || '';
         const aiRemarks = g.aiRemarks || g.ai_remarks || '';
-        
-        // Extract marks data (handles g.scholastic, g.subjects, or g.marks_data_json)
+
         const marksDataObj = g.scholastic || g.subjects || g.marks_data_json || {};
         const marksDataStr = typeof marksDataObj === 'object' ? JSON.stringify(marksDataObj) : String(marksDataObj);
 
-        // Parse attendance string like "99/105" or attendance object
         let attendancePresent = g.attendancePresent || g.attendance_present || 0;
         let attendanceTotal = g.attendanceTotal || g.attendance_total || 0;
         if (!attendancePresent && g.attendance) {
@@ -188,21 +364,42 @@ export async function onRequestPost(context: any) {
       }
     }
 
-    return Response.json({ success: true, schoolId: cleanId, source: 'cloudflare_d1', savedAt: now });
+    // 5. Upsert into users table for school admin
+    const userEmail = payload.saasMeta?.email || payload.branding?.email || `${cleanId}@school.com`;
+    const userFullName = payload.saasMeta?.contactPerson || payload.branding?.contactPerson || schoolName;
+    try {
+      await env.DB.prepare(`
+        INSERT INTO users (user_id, school_id, email, role, full_name, created_at)
+        VALUES (?, ?, ?, 'admin', ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(user_id) DO UPDATE SET
+          school_id = excluded.school_id,
+          email = excluded.email,
+          full_name = excluded.full_name
+      `).bind(cleanId, cleanId, userEmail, userFullName).run();
+    } catch (uErr: any) {
+      console.warn(`[sync-school] users insert notice for ${cleanId}:`, uErr.message);
+    }
+
+    return Response.json({ success: true, schoolId: cleanId, source: 'cloudflare_d1_structured', savedAt: now });
   } catch (err: any) {
     return Response.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
-// DELETE /api/sync-school/:schoolId — Delete full school data
+// DELETE /api/sync-school/:schoolId — Delete school data from all structured tables
 export async function onRequestDelete(context: any) {
   const { env, params } = context;
   try {
     const cleanId = params.schoolId.replace(/[^a-zA-Z0-9_-]/g, '_');
     await env.DB.prepare("DELETE FROM student_grades WHERE school_id = ?").bind(cleanId).run();
     await env.DB.prepare("DELETE FROM students WHERE school_id = ?").bind(cleanId).run();
-    await env.DB.prepare("DELETE FROM school_sync_data WHERE school_id = ?").bind(cleanId).run();
     await env.DB.prepare("DELETE FROM schools WHERE school_id = ?").bind(cleanId).run();
+
+    if (env.CONFIG_CACHE) {
+      try {
+        await env.CONFIG_CACHE.delete(`school_config_${cleanId}`);
+      } catch {}
+    }
 
     return Response.json({ success: true, schoolId: cleanId });
   } catch (err: any) {

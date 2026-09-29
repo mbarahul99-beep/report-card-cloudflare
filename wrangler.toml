@@ -7,3 +7,11 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "report-card-d1"
 database_id = "5384ec04-0241-4fcf-8d04-cd205491ac70"
+
+[[kv_namespaces]]
+binding = "CONFIG_CACHE"
+id = "CONFIG_CACHE"
+
+[[r2_buckets]]
+binding = "REPORT_CARD_ASSETS"
+bucket_name = "report-card-assets"

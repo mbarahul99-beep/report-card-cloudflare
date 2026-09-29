@@ -122,3 +122,35 @@ export function compressAndResizeWatermark(
   };
   reader.readAsDataURL(file);
 }
+
+/**
+ * Uploads a base64 or file asset to Cloudflare R2 bucket via /api/upload
+ * and returns the R2 URL to store in D1.
+ */
+export async function uploadAssetToR2(
+  fileDataOrBase64: string,
+  category: 'logos' | 'watermarks' | 'photos' | 'assets' = 'assets',
+  fileName: string = 'asset.png'
+): Promise<string> {
+  if (!fileDataOrBase64 || !fileDataOrBase64.startsWith('data:')) {
+    return fileDataOrBase64; // Already an R2 or external URL
+  }
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileData: fileDataOrBase64, category, fileName })
+    });
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success && result.url) {
+        return result.url;
+      }
+    }
+  } catch (err) {
+    console.warn('[uploadAssetToR2] Failed to upload asset to R2, keeping URL:', err);
+  }
+  return fileDataOrBase64;
+}
+
