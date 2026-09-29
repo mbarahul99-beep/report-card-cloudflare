@@ -61,23 +61,7 @@ const googleProvider = {};
 
 const signInWithPopup = async (..._args: any[]): Promise<{ user: FirebaseUser }> => {
   return new Promise<{ user: FirebaseUser }>((resolve, reject) => {
-    const popupWidth = 500;
-    const popupHeight = 600;
-    const left = window.screenX + (window.outerWidth - popupWidth) / 2;
-    const top = window.screenY + (window.outerHeight - popupHeight) / 2;
-
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=108394829102-reportcard.apps.googleusercontent.com` +
-      `&redirect_uri=${encodeURIComponent(window.location.origin)}` +
-      `&response_type=token%20id_token` +
-      `&scope=${encodeURIComponent('openid email profile')}` +
-      `&prompt=select_account`;
-
-    const popup = window.open(
-      googleAuthUrl,
-      'Google_Sign_In',
-      `width=${popupWidth},height=${popupHeight},top=${top},left=${left},scrollbars=yes,status=yes`
-    );
+    const customClientId = (import.meta.env as any)?.VITE_GOOGLE_CLIENT_ID || (window as any)?.VITE_GOOGLE_CLIENT_ID;
 
     const promptForEmail = () => {
       const email = window.prompt("Sign In with Google:\n\nPlease enter your Google Account email address (e.g. mbarahul99@gmail.com or your registered school email):", "mbarahul99@gmail.com");
@@ -97,29 +81,51 @@ const signInWithPopup = async (..._args: any[]): Promise<{ user: FirebaseUser }>
       }
     };
 
-    if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-      promptForEmail();
-      return;
-    }
+    if (customClientId && customClientId.trim() && !customClientId.includes('reportcard.apps.googleusercontent.com')) {
+      const popupWidth = 500;
+      const popupHeight = 600;
+      const left = window.screenX + (window.outerWidth - popupWidth) / 2;
+      const top = window.screenY + (window.outerHeight - popupHeight) / 2;
 
-    let handled = false;
-    const checkInterval = setInterval(() => {
-      try {
-        if (!popup || popup.closed) {
+      const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${encodeURIComponent(customClientId.trim())}` +
+        `&redirect_uri=${encodeURIComponent(window.location.origin)}` +
+        `&response_type=token%20id_token` +
+        `&scope=${encodeURIComponent('openid email profile')}` +
+        `&prompt=select_account`;
+
+      const popup = window.open(
+        googleAuthUrl,
+        'Google_Sign_In',
+        `width=${popupWidth},height=${popupHeight},top=${top},left=${left},scrollbars=yes,status=yes`
+      );
+
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        promptForEmail();
+        return;
+      }
+
+      let handled = false;
+      const checkInterval = setInterval(() => {
+        try {
+          if (!popup || popup.closed) {
+            clearInterval(checkInterval);
+            if (!handled) {
+              handled = true;
+              promptForEmail();
+            }
+          }
+        } catch (e) {
           clearInterval(checkInterval);
           if (!handled) {
             handled = true;
             promptForEmail();
           }
         }
-      } catch (e) {
-        clearInterval(checkInterval);
-        if (!handled) {
-          handled = true;
-          promptForEmail();
-        }
-      }
-    }, 1000);
+      }, 1000);
+    } else {
+      promptForEmail();
+    }
   });
 };
 
