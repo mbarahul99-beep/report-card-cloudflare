@@ -2235,8 +2235,42 @@ export default function App() {
               localStorage.setItem(`class_on_student_grades_${currentSchoolId}`, JSON.stringify(finalLoadedGrades));
             } catch {}
 
-            const finalLoadedStructures = (cloudData.reportCardStructures && cloudData.reportCardStructures.length > 0) ? cloudData.reportCardStructures : defaultReportCardStructures;
+            let finalLoadedStructures: ReportCardStructure[] = [];
+            if (Array.isArray(cloudData.reportCardStructures) && cloudData.reportCardStructures.length > 0) {
+              finalLoadedStructures = cloudData.reportCardStructures;
+            } else if (cloudData.layouts) {
+              if (Array.isArray(cloudData.layouts) && cloudData.layouts.length > 0) {
+                finalLoadedStructures = cloudData.layouts as ReportCardStructure[];
+              } else if (typeof cloudData.layouts === 'object') {
+                const layoutValues = Object.values(cloudData.layouts).filter(Boolean);
+                if (layoutValues.length > 0) {
+                  finalLoadedStructures = layoutValues as any;
+                }
+              }
+            }
+
+            if (finalLoadedStructures.length === 0) {
+              try {
+                const cachedStructs = localStorage.getItem(`class_on_structures_${currentSchoolId}`) ||
+                                      localStorage.getItem(`class_on_structures_${fetchId}`) ||
+                                      localStorage.getItem(`class_on_report_card_structures_${currentSchoolId}`);
+                if (cachedStructs) {
+                  const parsed = JSON.parse(cachedStructs);
+                  if (Array.isArray(parsed) && parsed.length > 0) {
+                    finalLoadedStructures = parsed;
+                  }
+                }
+              } catch {}
+            }
+
+            if (finalLoadedStructures.length === 0) {
+              finalLoadedStructures = defaultReportCardStructures;
+            }
+
             setReportCardStructures(finalLoadedStructures);
+            try {
+              localStorage.setItem(`class_on_structures_${currentSchoolId}`, JSON.stringify(finalLoadedStructures));
+            } catch {}
             setRecycleBin(cloudData.recycleBin || []);
 
             let finalLoadedClasses = (cloudData.classes && cloudData.classes.length > 0) ? cloudData.classes : [];
