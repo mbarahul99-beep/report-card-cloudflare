@@ -105,7 +105,7 @@ export default function ReportCardPreview({
   const showMinMarksColumn = propShowMinMarksColumn ?? branding.showMinMarksColumn ?? false;
   const showMaxMarksColumn = propShowMaxMarksColumn ?? branding.showMaxMarksColumn ?? false;
   const showObtainedMarksColumn = propShowObtainedMarksColumn ?? branding.showObtainedMarksColumn ?? true;
-  const landscapeMarksHeaders = propLandscapeMarksHeaders ?? branding.landscapeMarksHeaders ?? true;
+  const landscapeMarksHeaders = propLandscapeMarksHeaders ?? branding.landscapeMarksHeaders ?? false;
   const minMarksHeaderLabel = propMinMarksHeaderLabel || branding.minMarksHeaderLabel || "Min Marks";
   const maxMarksHeaderLabel = propMaxMarksHeaderLabel || branding.maxMarksHeaderLabel || "Max Marks";
   const obtainedMarksHeaderLabel = propObtainedMarksHeaderLabel || branding.obtainedMarksHeaderLabel || "Marks Obtained";
@@ -479,7 +479,7 @@ export default function ReportCardPreview({
   };
 
   const renderSubHeader = (label: string) => {
-    const isVertical = landscapeMarksHeaders ? false : verticalExamHeaders;
+    const isVertical = verticalExamHeaders && !landscapeMarksHeaders;
     if (isVertical) {
       return (
         <div 
@@ -490,6 +490,18 @@ export default function ReportCardPreview({
         </div>
       );
     } else {
+      const words = label.trim().split(/\s+/);
+      if (words.length > 1) {
+        return (
+          <div className="flex flex-col items-center justify-center text-center leading-tight px-0.5 py-0.5 font-black text-black w-full overflow-hidden">
+            {words.map((w, idx) => (
+              <span key={idx} className="block whitespace-nowrap text-[8.5px] sm:text-[9px] tracking-tight font-black leading-tight">
+                {w}
+              </span>
+            ))}
+          </div>
+        );
+      }
       return (
         <div className="flex flex-col items-center justify-center text-center leading-tight px-0.5 py-0.5 font-black text-black w-full overflow-visible">
           <span className="block whitespace-nowrap text-[8.5px] sm:text-[9px] tracking-tight font-black">{label}</span>

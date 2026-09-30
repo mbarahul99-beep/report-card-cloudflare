@@ -216,7 +216,7 @@ export default function ReportCardStructureSettings({
   const [showMinMarksColumn, setShowMinMarksColumn] = useState(false);
   const [showMaxMarksColumn, setShowMaxMarksColumn] = useState(false);
   const [showObtainedMarksColumn, setShowObtainedMarksColumn] = useState(true);
-  const [landscapeMarksHeaders, setLandscapeMarksHeaders] = useState(true);
+  const [landscapeMarksHeaders, setLandscapeMarksHeaders] = useState(false);
   const [minMarksHeaderLabel, setMinMarksHeaderLabel] = useState('Min Marks');
   const [maxMarksHeaderLabel, setMaxMarksHeaderLabel] = useState('Max Marks');
   const [obtainedMarksHeaderLabel, setObtainedMarksHeaderLabel] = useState('Marks Obtained');
@@ -387,7 +387,7 @@ export default function ReportCardStructureSettings({
     setShowMinMarksColumn(branding.showMinMarksColumn ?? false);
     setShowMaxMarksColumn(branding.showMaxMarksColumn ?? false);
     setShowObtainedMarksColumn(branding.showObtainedMarksColumn ?? true);
-    setLandscapeMarksHeaders(branding.landscapeMarksHeaders ?? true);
+    setLandscapeMarksHeaders(branding.landscapeMarksHeaders ?? false);
     setMinMarksHeaderLabel(branding.minMarksHeaderLabel || 'Min Marks');
     setMaxMarksHeaderLabel(branding.maxMarksHeaderLabel || 'Max Marks');
     setObtainedMarksHeaderLabel(branding.obtainedMarksHeaderLabel || 'Marks Obtained');
@@ -526,7 +526,7 @@ export default function ReportCardStructureSettings({
     setShowMinMarksColumn(struct.showMinMarksColumn ?? struct.branding?.showMinMarksColumn ?? false);
     setShowMaxMarksColumn(struct.showMaxMarksColumn ?? struct.branding?.showMaxMarksColumn ?? false);
     setShowObtainedMarksColumn(struct.showObtainedMarksColumn ?? struct.branding?.showObtainedMarksColumn ?? true);
-    setLandscapeMarksHeaders(struct.landscapeMarksHeaders ?? struct.branding?.landscapeMarksHeaders ?? true);
+    setLandscapeMarksHeaders(struct.landscapeMarksHeaders ?? struct.branding?.landscapeMarksHeaders ?? false);
     setMinMarksHeaderLabel(struct.minMarksHeaderLabel || struct.branding?.minMarksHeaderLabel || 'Min Marks');
     setMaxMarksHeaderLabel(struct.maxMarksHeaderLabel || struct.branding?.maxMarksHeaderLabel || 'Max Marks');
     setObtainedMarksHeaderLabel(struct.obtainedMarksHeaderLabel || struct.branding?.obtainedMarksHeaderLabel || 'Marks Obtained');
