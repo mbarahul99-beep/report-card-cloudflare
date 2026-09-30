@@ -327,33 +327,19 @@ export default function ReportCardPreview({
   let singleColWidth = 10;
 
   const getSubColWidths = (parentWidthPct: number) => {
-    let minPct = 0;
-    let maxPct = 0;
-    let obtPct = 0;
-
-    if (showMinMarksColumn && showMaxMarksColumn && showObtainedMarksColumn) {
-      minPct = parentWidthPct * 0.26;
-      maxPct = parentWidthPct * 0.26;
-      obtPct = parentWidthPct * 0.48;
-    } else if (showMaxMarksColumn && showObtainedMarksColumn) {
-      maxPct = parentWidthPct * 0.36;
-      obtPct = parentWidthPct * 0.64;
-    } else if (showMinMarksColumn && showObtainedMarksColumn) {
-      minPct = parentWidthPct * 0.36;
-      obtPct = parentWidthPct * 0.64;
-    } else if (showMinMarksColumn && showMaxMarksColumn) {
-      minPct = parentWidthPct * 0.48;
-      maxPct = parentWidthPct * 0.52;
-    } else {
-      const activeCount = Math.max(1, (showMinMarksColumn ? 1 : 0) + (showMaxMarksColumn ? 1 : 0) + (showObtainedMarksColumn ? 1 : 0));
-      const equalPct = parentWidthPct / activeCount;
-      minPct = equalPct;
-      maxPct = equalPct;
-      obtPct = equalPct;
-    }
-
-    return { minPct, maxPct, obtPct };
+    const activeCount = Math.max(1, (showMinMarksColumn ? 1 : 0) + (showMaxMarksColumn ? 1 : 0) + (showObtainedMarksColumn ? 1 : 0));
+    const equalPct = parentWidthPct / activeCount;
+    return {
+      minPct: showMinMarksColumn ? equalPct : 0,
+      maxPct: showMaxMarksColumn ? equalPct : 0,
+      obtPct: showObtainedMarksColumn ? equalPct : 0
+    };
   };
+
+  const omitExamHeaderRow = subColCount > 1 && 
+    (!scholT1Enabled || t1Columns.length <= 1) && 
+    (!scholT2Enabled || t2Columns.length <= 1) && 
+    (!scholT3Enabled || t3Columns.length <= 1);
 
   if (pureGradeBased) {
     const singleGradeWidth = Math.max(7.5, Math.min(14, Math.floor(45 / cRem)));
@@ -501,17 +487,9 @@ export default function ReportCardPreview({
         </div>
       );
     } else {
-      const parts = label.trim().split(/\s+/);
       return (
-        <div className="flex flex-col items-center justify-center text-center leading-[1.05] px-0.5 py-0.5 font-black uppercase text-black w-full min-w-[54px]">
-          {parts.map((w, idx) => (
-            <span 
-              key={idx} 
-              className="block whitespace-nowrap text-[8.5px] sm:text-[9px] tracking-tight font-black"
-            >
-              {w}
-            </span>
-          ))}
+        <div className="flex flex-col items-center justify-center text-center leading-tight px-1 py-0.5 font-black uppercase text-black w-full overflow-visible">
+          <span className="block whitespace-nowrap text-[8.5px] sm:text-[9px] tracking-tight font-black">{label}</span>
         </div>
       );
     }
@@ -897,7 +875,7 @@ export default function ReportCardPreview({
             </tr>
             <tr className="bg-gray-50/50 border-b border-gray-900">
               <th 
-                rowSpan={subColCount > 1 ? 3 : 2} 
+                rowSpan={omitExamHeaderRow ? 2 : (subColCount > 1 ? 3 : 2)} 
                 className={`border border-gray-950 ${subjectCellPaddingClass} text-left font-bold text-gray-800 ${subjectNameFontSizeClass} break-words leading-tight`}
               >
                 Subjects
@@ -923,104 +901,106 @@ export default function ReportCardPreview({
                 </th>
               )}
             </tr>
-            <tr className="bg-gray-100/20 border-b border-gray-900">
-              {/* Term 1 sub-columns */}
-              {scholT1Enabled && (
-                <>
-                  {t1Columns.map(col => {
-                    const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
-                    const colName = isMidTerm ? 'Annual' : col.name;
-                    const text = (col.id === 'hy') ? term1ExamLabel : colName;
-                    const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
-                    return (
-                      <th key={`add_t1_h_${col.id}`} colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
-                        {renderExamHeader(text, subtext)}
+            {!omitExamHeaderRow && (
+              <tr className="bg-gray-100/20 border-b border-gray-900">
+                {/* Term 1 sub-columns */}
+                {scholT1Enabled && (
+                  <>
+                    {t1Columns.map(col => {
+                      const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
+                      const colName = isMidTerm ? 'Annual' : col.name;
+                      const text = (col.id === 'hy') ? term1ExamLabel : colName;
+                      const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                      return (
+                        <th key={`add_t1_h_${col.id}`} colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                          {renderExamHeader(text, subtext)}
+                        </th>
+                      );
+                    })}
+                    {showT1Total && (
+                      <th colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader(term1TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT1ColumnMaxMarks})` : undefined)}
                       </th>
-                    );
-                  })}
-                  {showT1Total && (
-                    <th colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                      {renderExamHeader(term1TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT1ColumnMaxMarks})` : undefined)}
-                    </th>
-                  )}
-                  {showT1Grade && (
-                    <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                      {renderExamHeader("Grade")}
-                    </th>
-                  )}
-                </>
-              )}
-
-              {/* Term 2 sub-columns */}
-              {scholT2Enabled && (
-                <>
-                  {t2Columns.map(col => {
-                    const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
-                    const colName = isMidTerm ? 'Annual' : col.name;
-                    const text = (col.id === 'hy') ? term2ExamLabel : colName;
-                    const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
-                    return (
-                      <th key={`add_t2_h_${col.id}`} colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
-                        {renderExamHeader(text, subtext)}
+                    )}
+                    {showT1Grade && (
+                      <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader("Grade")}
                       </th>
-                    );
-                  })}
-                  {showT2Total && (
-                    <th colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                      {renderExamHeader(term2TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT2ColumnMaxMarks})` : undefined)}
-                    </th>
-                  )}
-                  {showT2Grade && (
-                    <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                      {renderExamHeader("Grade")}
-                    </th>
-                  )}
-                </>
-              )}
+                    )}
+                  </>
+                )}
 
-              {/* Term 3 sub-columns */}
-              {scholT3Enabled && (
-                <>
-                  {t3Columns.map(col => {
-                    const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
-                    const colName = isMidTerm ? 'Annual' : col.name;
-                    const text = (col.id === 'hy') ? term3ExamLabel : colName;
-                    const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
-                    return (
-                      <th key={`add_t3_h_${col.id}`} colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
-                        {renderExamHeader(text, subtext)}
+                {/* Term 2 sub-columns */}
+                {scholT2Enabled && (
+                  <>
+                    {t2Columns.map(col => {
+                      const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
+                      const colName = isMidTerm ? 'Annual' : col.name;
+                      const text = (col.id === 'hy') ? term2ExamLabel : colName;
+                      const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                      return (
+                        <th key={`add_t2_h_${col.id}`} colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                          {renderExamHeader(text, subtext)}
+                        </th>
+                      );
+                    })}
+                    {showT2Total && (
+                      <th colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader(term2TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT2ColumnMaxMarks})` : undefined)}
                       </th>
-                    );
-                  })}
-                  {showT3Total && (
-                    <th colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                      {renderExamHeader(term3TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT3ColumnMaxMarks})` : undefined)}
-                    </th>
-                  )}
-                  {showT3Grade && (
-                    <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                      {renderExamHeader("Grade")}
-                    </th>
-                  )}
-                </>
-              )}
+                    )}
+                    {showT2Grade && (
+                      <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader("Grade")}
+                      </th>
+                    )}
+                  </>
+                )}
 
-              {/* Overall totals */}
-              {showOverall && overallExtraCols > 0 && (
-                <>
-                  {showOverallTotal && (
-                    <th colSpan={subColCount} className="border border-gray-955 p-1 bg-sky-50/50 text-[10px] font-black text-black align-middle text-center">
-                      {renderExamHeader(totalMarksHeaderLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${singleSubjectMaxOverall})` : undefined)}
-                    </th>
-                  )}
-                  {showOverallGrade && (
-                    <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-rose-50/50 text-[10px] font-black text-black align-middle text-center">
-                      {renderExamHeader(gradeHeaderLabel)}
-                    </th>
-                  )}
-                </>
-              )}
-            </tr>
+                {/* Term 3 sub-columns */}
+                {scholT3Enabled && (
+                  <>
+                    {t3Columns.map(col => {
+                      const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
+                      const colName = isMidTerm ? 'Annual' : col.name;
+                      const text = (col.id === 'hy') ? term3ExamLabel : colName;
+                      const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                      return (
+                        <th key={`add_t3_h_${col.id}`} colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                          {renderExamHeader(text, subtext)}
+                        </th>
+                      );
+                    })}
+                    {showT3Total && (
+                      <th colSpan={subColCount} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader(term3TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT3ColumnMaxMarks})` : undefined)}
+                      </th>
+                    )}
+                    {showT3Grade && (
+                      <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader("Grade")}
+                      </th>
+                    )}
+                  </>
+                )}
+
+                {/* Overall totals */}
+                {showOverall && overallExtraCols > 0 && (
+                  <>
+                    {showOverallTotal && (
+                      <th colSpan={subColCount} className="border border-gray-955 p-1 bg-sky-50/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader(totalMarksHeaderLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${singleSubjectMaxOverall})` : undefined)}
+                      </th>
+                    )}
+                    {showOverallGrade && (
+                      <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-rose-50/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader(gradeHeaderLabel)}
+                      </th>
+                    )}
+                  </>
+                )}
+              </tr>
+            )}
 
             {/* Sub-column headers row when subColCount > 1 */}
             {subColCount > 1 && (
@@ -1041,6 +1021,11 @@ export default function ReportCardPreview({
                         {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     )}
+                    {showT1Grade && omitExamHeaderRow && (
+                      <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader("Grade")}
+                      </th>
+                    )}
                   </>
                 )}
                 {scholT2Enabled && (
@@ -1058,6 +1043,11 @@ export default function ReportCardPreview({
                         {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-200/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
                         {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
+                    )}
+                    {showT2Grade && omitExamHeaderRow && (
+                      <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader("Grade")}
+                      </th>
                     )}
                   </>
                 )}
@@ -1077,6 +1067,11 @@ export default function ReportCardPreview({
                         {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     )}
+                    {showT3Grade && omitExamHeaderRow && (
+                      <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader("Grade")}
+                      </th>
+                    )}
                   </>
                 )}
                 {showOverall && overallExtraCols > 0 && (
@@ -1087,6 +1082,11 @@ export default function ReportCardPreview({
                         {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-sky-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
                         {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-sky-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
+                    )}
+                    {showOverallGrade && omitExamHeaderRow && (
+                      <th className="border border-gray-955 p-1 bg-rose-50/50 text-[10px] font-black text-black align-middle text-center">
+                        {renderExamHeader(gradeHeaderLabel)}
+                      </th>
                     )}
                   </>
                 )}
@@ -2852,7 +2852,7 @@ export default function ReportCardPreview({
                         </tr>
                         <tr className="bg-gray-50/50 border-b border-gray-900">
                           <th 
-                            rowSpan={subColCount > 1 ? 3 : 2} 
+                            rowSpan={omitExamHeaderRow ? 2 : (subColCount > 1 ? 3 : 2)} 
                             className={`border border-gray-950 ${subjectCellPaddingClass} text-center font-bold text-gray-900 break-words leading-tight align-middle`}
                           >
                             {(() => {
@@ -2902,102 +2902,104 @@ export default function ReportCardPreview({
                             <th colSpan={(showOverallTotal ? subColCount : 0) + (showOverallGrade ? 1 : 0)} className={`border border-gray-950 ${cellPaddingClass} font-black text-black uppercase tracking-wide bg-gray-100/10 text-[9px] sm:text-[10px]`}>{overallResultsHeaderLabel}</th>
                           )}
                         </tr>
-                        <tr className="bg-gray-50/50">
-                          {/* Term 1 columns */}
-                          {scholT1Enabled && (
-                            <>
-                              {t1Columns.map(col => {
-                                const text = (col.id === 'hy') ? term1ExamLabel : col.name;
-                                const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
-                                return (
-                                  <th key={`t1_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
-                                    {renderExamHeader(text, subtext)}
+                        {!omitExamHeaderRow && (
+                          <tr className="bg-gray-50/50">
+                            {/* Term 1 columns */}
+                            {scholT1Enabled && (
+                              <>
+                                {t1Columns.map(col => {
+                                  const text = (col.id === 'hy') ? term1ExamLabel : col.name;
+                                  const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                                  return (
+                                    <th key={`t1_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                                      {renderExamHeader(text, subtext)}
+                                    </th>
+                                  );
+                                })}
+                                {showT1Total && (
+                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader(term1TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT1ColumnMaxMarks})` : undefined)}
                                   </th>
-                                );
-                              })}
-                              {showT1Total && (
-                                <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                                  {renderExamHeader(term1TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT1ColumnMaxMarks})` : undefined)}
-                                </th>
-                              )}
-                              {showT1Grade && (
-                                <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                                  {renderExamHeader("Grade")}
-                                </th>
-                              )}
-                            </>
-                          )}
-
-                          {/* Term 2 columns */}
-                          {scholT2Enabled && (
-                            <>
-                              {t2Columns.map(col => {
-                                const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
-                                const colName = isMidTerm ? 'Annual' : col.name;
-                                const text = (col.id === 'hy') ? term2ExamLabel : colName;
-                                const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
-                                return (
-                                  <th key={`t2_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
-                                    {renderExamHeader(text, subtext)}
+                                )}
+                                {showT1Grade && (
+                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader("Grade")}
                                   </th>
-                                );
-                              })}
-                              {showT2Total && (
-                                <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                                  {renderExamHeader(term2TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT2ColumnMaxMarks})` : undefined)}
-                                </th>
-                              )}
-                              {showT2Grade && (
-                                <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                                  {renderExamHeader("Grade")}
-                                </th>
-                              )}
-                            </>
-                          )}
+                                )}
+                              </>
+                            )}
 
-                          {/* Term 3 columns */}
-                          {scholT3Enabled && (
-                            <>
-                              {t3Columns.map(col => {
-                                const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
-                                const colName = isMidTerm ? 'Annual' : col.name;
-                                const text = (col.id === 'hy') ? term3ExamLabel : colName;
-                                const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
-                                return (
-                                  <th key={`t3_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
-                                    {renderExamHeader(text, subtext)}
+                            {/* Term 2 columns */}
+                            {scholT2Enabled && (
+                              <>
+                                {t2Columns.map(col => {
+                                  const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
+                                  const colName = isMidTerm ? 'Annual' : col.name;
+                                  const text = (col.id === 'hy') ? term2ExamLabel : colName;
+                                  const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                                  return (
+                                    <th key={`t2_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                                      {renderExamHeader(text, subtext)}
+                                    </th>
+                                  );
+                                })}
+                                {showT2Total && (
+                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader(term2TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT2ColumnMaxMarks})` : undefined)}
                                   </th>
-                                );
-                              })}
-                              {showT3Total && (
-                                <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                                  {renderExamHeader(term3TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT3ColumnMaxMarks})` : undefined)}
-                                </th>
-                              )}
-                              {showT3Grade && (
-                                <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
-                                  {renderExamHeader("Grade")}
-                                </th>
-                              )}
-                            </>
-                          )}
+                                )}
+                                {showT2Grade && (
+                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader("Grade")}
+                                  </th>
+                                )}
+                              </>
+                            )}
 
-                          {/* Overall totals */}
-                          {showOverall && overallExtraCols > 0 && (
-                            <>
-                              {showOverallTotal && (
-                                <th colSpan={subColCount} className="border border-gray-950 p-1 bg-sky-50/50 text-[10px] font-black text-black align-middle text-center">
-                                  {renderExamHeader(totalMarksHeaderLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${singleSubjectMaxOverall})` : undefined)}
-                                </th>
-                              )}
-                              {showOverallGrade && (
-                                <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-rose-50/50 text-[10px] font-black text-black align-middle text-center">
-                                  {renderExamHeader(gradeHeaderLabel)}
-                                </th>
-                              )}
-                            </>
-                          )}
-                        </tr>
+                            {/* Term 3 columns */}
+                            {scholT3Enabled && (
+                              <>
+                                {t3Columns.map(col => {
+                                  const isMidTerm = col.id === 'mid_term' || col.id === 'mid-term' || col.name.toLowerCase().includes('mid-term') || col.name.toLowerCase().includes('mid term');
+                                  const colName = isMidTerm ? 'Annual' : col.name;
+                                  const text = (col.id === 'hy') ? term3ExamLabel : colName;
+                                  const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                                  return (
+                                    <th key={`t3_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                                      {renderExamHeader(text, subtext)}
+                                    </th>
+                                  );
+                                })}
+                                {showT3Total && (
+                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader(term3TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT3ColumnMaxMarks})` : undefined)}
+                                  </th>
+                                )}
+                                {showT3Grade && (
+                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader("Grade")}
+                                  </th>
+                                )}
+                              </>
+                            )}
+
+                            {/* Overall totals */}
+                            {showOverall && overallExtraCols > 0 && (
+                              <>
+                                {showOverallTotal && (
+                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-sky-50/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader(totalMarksHeaderLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${singleSubjectMaxOverall})` : undefined)}
+                                  </th>
+                                )}
+                                {showOverallGrade && (
+                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-rose-50/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader(gradeHeaderLabel)}
+                                  </th>
+                                )}
+                              </>
+                            )}
+                          </tr>
+                        )}
                         {subColCount > 1 && (
                           <tr className="bg-gray-100/60 border-b border-gray-900 text-[8.5px] font-bold text-gray-800">
                             {scholT1Enabled && (
@@ -3015,6 +3017,11 @@ export default function ReportCardPreview({
                                     {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel)}</th>}
                                     {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
                                   </React.Fragment>
+                                )}
+                                {showT1Grade && omitExamHeaderRow && (
+                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader("Grade")}
+                                  </th>
                                 )}
                               </>
                             )}
@@ -3034,6 +3041,11 @@ export default function ReportCardPreview({
                                     {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
                                   </React.Fragment>
                                 )}
+                                {showT2Grade && omitExamHeaderRow && (
+                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader("Grade")}
+                                  </th>
+                                )}
                               </>
                             )}
                             {scholT3Enabled && (
@@ -3047,10 +3059,15 @@ export default function ReportCardPreview({
                                 ))}
                                 {showT3Total && (
                                   <React.Fragment key="t3_tot_subh">
-                                    {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel)}</th>}
-                                    {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel)}</th>}
-                                    {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
+                                    {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel)}</th>}
+                                    {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel)}</th>}
+                                    {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
                                   </React.Fragment>
+                                )}
+                                {showT3Grade && omitExamHeaderRow && (
+                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                    {renderExamHeader("Grade")}
+                                  </th>
                                 )}
                               </>
                             )}
