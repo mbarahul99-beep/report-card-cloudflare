@@ -161,7 +161,7 @@ async function ensureR2AssetUrl(env: any, fileData: string, category: string): P
   if (!fileData || typeof fileData !== 'string' || !fileData.startsWith('data:')) {
     return fileData || '';
   }
-  const bucket = env.REPORT_CARD_ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
+  const bucket = env.ASSETS || env.REPORT_CARD_ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
   if (!bucket) return fileData;
 
   try {

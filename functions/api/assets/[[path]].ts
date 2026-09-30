@@ -2,7 +2,7 @@
 export async function onRequestGet(context: any) {
   const { env, params } = context;
   try {
-    const bucket = env.REPORT_CARD_ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
+    const bucket = env.ASSETS || env.REPORT_CARD_ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
     if (!bucket) {
       return new Response('R2 Bucket binding REPORT_CARD_ASSETS not configured', { status: 500 });
     }
