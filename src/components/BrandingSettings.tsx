@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SchoolBranding } from '../types';
 import { Palette, School, MapPin, Phone, Globe, Calendar, Mail, Award, Save, CheckCircle2, CloudUpload, RefreshCw, Sparkles, Upload, Trash2, Link2, Stamp } from 'lucide-react';
 import { normalizeExternalImageUrl, isGoogleDriveUrl, compressAndResizeWatermark } from '../utils/imageUrlHelper';
+import { uploadImageToR2 } from '../utils/r2Uploader';
 
 function compressAndResizeImage(file: File, maxDimension: number, quality: number, callback: (base64: string) => void) {
   const reader = new FileReader();
@@ -190,8 +191,9 @@ export default function BrandingSettings({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        compressAndResizeImage(file, 200, 0.9, (compressedBase64) => {
-                          onUpdate({ ...branding, logoUrl: compressedBase64 });
+                        compressAndResizeImage(file, 200, 0.9, async (compressedBase64) => {
+                          const r2Url = await uploadImageToR2(compressedBase64, 'logos');
+                          onUpdate({ ...branding, logoUrl: r2Url });
                         });
                       }
                     }}
@@ -293,8 +295,9 @@ export default function BrandingSettings({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        compressAndResizeImage(file, 200, 0.9, (compressedBase64) => {
-                          onUpdate({ ...branding, rightLogoUrl: compressedBase64 });
+                        compressAndResizeImage(file, 200, 0.9, async (compressedBase64) => {
+                          const r2Url = await uploadImageToR2(compressedBase64, 'logos');
+                          onUpdate({ ...branding, rightLogoUrl: r2Url });
                         });
                       }
                     }}
@@ -374,8 +377,9 @@ export default function BrandingSettings({
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      compressAndResizeImage(file, 800, 0.95, (compressedBase64) => {
-                        onUpdate({ ...branding, nameBannerUrl: compressedBase64 });
+                      compressAndResizeImage(file, 800, 0.95, async (compressedBase64) => {
+                        const r2Url = await uploadImageToR2(compressedBase64, 'logos', `banner_${Date.now()}`);
+                        onUpdate({ ...branding, nameBannerUrl: r2Url });
                       });
                     }
                   }}
@@ -619,8 +623,9 @@ export default function BrandingSettings({
                         onChange={(e) => {
                           const f = e.target.files?.[0];
                           if (f) {
-                            compressAndResizeWatermark(f, (b64) => {
-                              onUpdate({ ...branding, watermarkLogoUrl: b64 });
+                            compressAndResizeWatermark(f, async (b64) => {
+                              const r2Url = await uploadImageToR2(b64, 'watermarks', `wm_${Date.now()}`);
+                              onUpdate({ ...branding, watermarkLogoUrl: r2Url });
                             });
                           }
                           e.target.value = '';

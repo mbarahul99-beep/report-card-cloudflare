@@ -24,6 +24,7 @@ import {
   formatWeight, 
   formatStudentForDisplay 
 } from '../lib/studentFormatters';
+import { uploadImageToR2 } from '../utils/r2Uploader';
 import { 
   deleteIndividualStudentFromCloud, 
   saveIndividualStudentToCloud, 
@@ -71,7 +72,10 @@ export function compressAndResizeStudentPhoto(file: File): Promise<string> {
           }
           
           ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
-          resolve(canvas.toDataURL('image/jpeg', 0.8));
+          const compressedB64 = canvas.toDataURL('image/jpeg', 0.8);
+          uploadImageToR2(compressedB64, 'photos', file.name || `photo_${Date.now()}`)
+            .then(resolve)
+            .catch(() => resolve(compressedB64));
         } else {
           reject(new Error("Canvas context is null"));
         }

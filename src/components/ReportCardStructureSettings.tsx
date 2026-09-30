@@ -11,6 +11,7 @@ import ReportCardPreview from './ReportCardPreview';
 import SubjectSettings from './SubjectSettings';
 import { formatFatherName, formatMotherName, formatHeight, formatWeight } from '../lib/studentFormatters';
 import { normalizeExternalImageUrl, isGoogleDriveUrl, compressAndResizeWatermark } from '../utils/imageUrlHelper';
+import { uploadImageToR2 } from '../utils/r2Uploader';
 
 // Helper image compressor & resizer
 function compressAndResizeImage(file: File, maxWidth: number, quality: number, callback: (resizedBase64: string) => void) {
@@ -1328,7 +1329,10 @@ export default function ReportCardStructureSettings({
                                   Upload file
                                   <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                                     const f = e.target.files?.[0];
-                                    if (f) compressAndResizeImage(f, 200, 0.9, (b64) => handleBrandingFieldChange('logoUrl', b64));
+                                    if (f) compressAndResizeImage(f, 200, 0.9, async (b64) => {
+                                      const r2Url = await uploadImageToR2(b64, 'logos', `struct_logo_${Date.now()}`);
+                                      handleBrandingFieldChange('logoUrl', r2Url);
+                                    });
                                   }} />
                                 </label>
                               </div>
@@ -1397,7 +1401,10 @@ export default function ReportCardStructureSettings({
                                   Upload file
                                   <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                                     const f = e.target.files?.[0];
-                                    if (f) compressAndResizeImage(f, 200, 0.9, (b64) => handleBrandingFieldChange('rightLogoUrl', b64));
+                                    if (f) compressAndResizeImage(f, 200, 0.9, async (b64) => {
+                                      const r2Url = await uploadImageToR2(b64, 'logos', `struct_right_logo_${Date.now()}`);
+                                      handleBrandingFieldChange('rightLogoUrl', r2Url);
+                                    });
                                   }} />
                                 </label>
                               </div>
@@ -1444,7 +1451,10 @@ export default function ReportCardStructureSettings({
                                 Upload banner
                                 <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                                   const f = e.target.files?.[0];
-                                  if (f) compressAndResizeImage(f, 800, 0.95, (b64) => handleBrandingFieldChange('nameBannerUrl', b64));
+                                  if (f) compressAndResizeImage(f, 800, 0.95, async (b64) => {
+                                    const r2Url = await uploadImageToR2(b64, 'logos', `struct_banner_${Date.now()}`);
+                                    handleBrandingFieldChange('nameBannerUrl', r2Url);
+                                  });
                                 }} />
                               </label>
                             </div>
@@ -1785,8 +1795,9 @@ export default function ReportCardStructureSettings({
                                     onChange={(e) => {
                                       const f = e.target.files?.[0];
                                       if (f) {
-                                        compressAndResizeWatermark(f, (b64) => {
-                                          handleBrandingFieldChange('watermarkLogoUrl', b64);
+                                        compressAndResizeWatermark(f, async (b64) => {
+                                          const r2Url = await uploadImageToR2(b64, 'watermarks', `struct_wm_${Date.now()}`);
+                                          handleBrandingFieldChange('watermarkLogoUrl', r2Url);
                                         });
                                       }
                                       e.target.value = '';

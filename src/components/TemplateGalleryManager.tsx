@@ -14,6 +14,7 @@ import {
 } from '../types';
 import { classesMatch, getStandardClassPresets, parseClassAndSection, formatClassSectionTarget } from '../utils/classNormalizer';
 import { normalizeExternalImageUrl, isGoogleDriveUrl, compressAndResizeWatermark } from '../utils/imageUrlHelper';
+import { uploadImageToR2 } from '../utils/r2Uploader';
 import ReportCardPreview from './ReportCardPreview';
 import { 
   loadAllTemplatesFromCloud, saveTemplateToCloud, deleteTemplateFromCloud, subscribeTemplates,
@@ -2022,7 +2023,10 @@ export default function TemplateGalleryManager({
                                 className="hidden"
                                 onChange={(e) => {
                                   const f = e.target.files?.[0];
-                                  if (f) compressAndResizeImage(f, 200, 0.9, (b64) => handleBrandingFieldChange('logoUrl', b64));
+                                  if (f) compressAndResizeImage(f, 200, 0.9, async (b64) => {
+                                    const r2Url = await uploadImageToR2(b64, 'logos', `tpl_logo_${Date.now()}`);
+                                    handleBrandingFieldChange('logoUrl', r2Url);
+                                  });
                                 }}
                               />
                             </label>
@@ -2108,7 +2112,10 @@ export default function TemplateGalleryManager({
                                 className="hidden"
                                 onChange={(e) => {
                                   const f = e.target.files?.[0];
-                                  if (f) compressAndResizeImage(f, 200, 0.9, (b64) => handleBrandingFieldChange('rightLogoUrl', b64));
+                                  if (f) compressAndResizeImage(f, 200, 0.9, async (b64) => {
+                                    const r2Url = await uploadImageToR2(b64, 'logos', `tpl_right_logo_${Date.now()}`);
+                                    handleBrandingFieldChange('rightLogoUrl', r2Url);
+                                  });
                                 }}
                               />
                             </label>
@@ -2170,7 +2177,10 @@ export default function TemplateGalleryManager({
                                 className="hidden"
                                 onChange={(e) => {
                                   const f = e.target.files?.[0];
-                                  if (f) compressAndResizeImage(f, 800, 0.95, (b64) => handleBrandingFieldChange('nameBannerUrl', b64));
+                                  if (f) compressAndResizeImage(f, 800, 0.95, async (b64) => {
+                                    const r2Url = await uploadImageToR2(b64, 'logos', `tpl_banner_${Date.now()}`);
+                                    handleBrandingFieldChange('nameBannerUrl', r2Url);
+                                  });
                                 }}
                               />
                             </label>
@@ -2326,8 +2336,9 @@ export default function TemplateGalleryManager({
                                     onChange={(e) => {
                                       const f = e.target.files?.[0];
                                       if (f) {
-                                        compressAndResizeWatermark(f, (b64) => {
-                                          handleBrandingFieldChange('watermarkLogoUrl', b64);
+                                        compressAndResizeWatermark(f, async (b64) => {
+                                          const r2Url = await uploadImageToR2(b64, 'watermarks', `tpl_wm_${Date.now()}`);
+                                          handleBrandingFieldChange('watermarkLogoUrl', r2Url);
                                         });
                                       }
                                       e.target.value = '';
