@@ -216,6 +216,7 @@ export default function ReportCardStructureSettings({
   const [showMinMarksColumn, setShowMinMarksColumn] = useState(false);
   const [showMaxMarksColumn, setShowMaxMarksColumn] = useState(false);
   const [showObtainedMarksColumn, setShowObtainedMarksColumn] = useState(true);
+  const [landscapeMarksHeaders, setLandscapeMarksHeaders] = useState(true);
   const [minMarksHeaderLabel, setMinMarksHeaderLabel] = useState('Min Marks');
   const [maxMarksHeaderLabel, setMaxMarksHeaderLabel] = useState('Max Marks');
   const [obtainedMarksHeaderLabel, setObtainedMarksHeaderLabel] = useState('Marks Obtained');
@@ -386,6 +387,7 @@ export default function ReportCardStructureSettings({
     setShowMinMarksColumn(branding.showMinMarksColumn ?? false);
     setShowMaxMarksColumn(branding.showMaxMarksColumn ?? false);
     setShowObtainedMarksColumn(branding.showObtainedMarksColumn ?? true);
+    setLandscapeMarksHeaders(branding.landscapeMarksHeaders ?? true);
     setMinMarksHeaderLabel(branding.minMarksHeaderLabel || 'Min Marks');
     setMaxMarksHeaderLabel(branding.maxMarksHeaderLabel || 'Max Marks');
     setObtainedMarksHeaderLabel(branding.obtainedMarksHeaderLabel || 'Marks Obtained');
@@ -524,6 +526,7 @@ export default function ReportCardStructureSettings({
     setShowMinMarksColumn(struct.showMinMarksColumn ?? struct.branding?.showMinMarksColumn ?? false);
     setShowMaxMarksColumn(struct.showMaxMarksColumn ?? struct.branding?.showMaxMarksColumn ?? false);
     setShowObtainedMarksColumn(struct.showObtainedMarksColumn ?? struct.branding?.showObtainedMarksColumn ?? true);
+    setLandscapeMarksHeaders(struct.landscapeMarksHeaders ?? struct.branding?.landscapeMarksHeaders ?? true);
     setMinMarksHeaderLabel(struct.minMarksHeaderLabel || struct.branding?.minMarksHeaderLabel || 'Min Marks');
     setMaxMarksHeaderLabel(struct.maxMarksHeaderLabel || struct.branding?.maxMarksHeaderLabel || 'Max Marks');
     setObtainedMarksHeaderLabel(struct.obtainedMarksHeaderLabel || struct.branding?.obtainedMarksHeaderLabel || 'Marks Obtained');
@@ -943,6 +946,7 @@ export default function ReportCardStructureSettings({
       showMinMarksColumn,
       showMaxMarksColumn,
       showObtainedMarksColumn,
+      landscapeMarksHeaders,
       minMarksHeaderLabel,
       maxMarksHeaderLabel,
       obtainedMarksHeaderLabel
@@ -1004,6 +1008,7 @@ export default function ReportCardStructureSettings({
       showMinMarksColumn,
       showMaxMarksColumn,
       showObtainedMarksColumn,
+      landscapeMarksHeaders,
       minMarksHeaderLabel,
       maxMarksHeaderLabel,
       obtainedMarksHeaderLabel,
@@ -2650,6 +2655,26 @@ export default function ReportCardStructureSettings({
                           />
                         </div>
                       </div>
+                    </div>
+
+                    {/* Landscape Mode for Marks Headings Toggle */}
+                    <div className="p-3 bg-white border border-indigo-200/60 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 mt-2">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-extrabold text-slate-800 block font-sans">Orientation for Marks Headings</span>
+                        <p className="text-[10.5px] text-slate-400 font-sans">If enabled, Min Marks, Max Marks, and Marks Obtained headings render in landscape (horizontal) orientation for maximum clarity. Preserves exact capital and small letter casing as typed.</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
+                        <input 
+                          type="checkbox" 
+                          checked={landscapeMarksHeaders} 
+                          onChange={(e) => setLandscapeMarksHeaders(e.target.checked)} 
+                          className="sr-only peer" 
+                        />
+                        <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <span className="ml-3 text-xs font-bold text-slate-700 font-mono">
+                          {landscapeMarksHeaders ? 'Landscape Mode' : 'Vertical Mode'}
+                        </span>
+                      </label>
                     </div>
                   </div>
 

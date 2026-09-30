@@ -47,6 +47,7 @@ interface PreviewProps {
   showMinMarksColumn?: boolean;
   showMaxMarksColumn?: boolean;
   showObtainedMarksColumn?: boolean;
+  landscapeMarksHeaders?: boolean;
   minMarksHeaderLabel?: string;
   maxMarksHeaderLabel?: string;
   obtainedMarksHeaderLabel?: string;
@@ -92,6 +93,7 @@ export default function ReportCardPreview({
   showMinMarksColumn: propShowMinMarksColumn,
   showMaxMarksColumn: propShowMaxMarksColumn,
   showObtainedMarksColumn: propShowObtainedMarksColumn,
+  landscapeMarksHeaders: propLandscapeMarksHeaders,
   minMarksHeaderLabel: propMinMarksHeaderLabel,
   maxMarksHeaderLabel: propMaxMarksHeaderLabel,
   obtainedMarksHeaderLabel: propObtainedMarksHeaderLabel,
@@ -103,6 +105,7 @@ export default function ReportCardPreview({
   const showMinMarksColumn = propShowMinMarksColumn ?? branding.showMinMarksColumn ?? false;
   const showMaxMarksColumn = propShowMaxMarksColumn ?? branding.showMaxMarksColumn ?? false;
   const showObtainedMarksColumn = propShowObtainedMarksColumn ?? branding.showObtainedMarksColumn ?? true;
+  const landscapeMarksHeaders = propLandscapeMarksHeaders ?? branding.landscapeMarksHeaders ?? true;
   const minMarksHeaderLabel = propMinMarksHeaderLabel || branding.minMarksHeaderLabel || "Min Marks";
   const maxMarksHeaderLabel = propMaxMarksHeaderLabel || branding.maxMarksHeaderLabel || "Max Marks";
   const obtainedMarksHeaderLabel = propObtainedMarksHeaderLabel || branding.obtainedMarksHeaderLabel || "Marks Obtained";
@@ -476,7 +479,7 @@ export default function ReportCardPreview({
   };
 
   const renderSubHeader = (label: string) => {
-    const isVertical = verticalExamHeaders;
+    const isVertical = landscapeMarksHeaders ? false : verticalExamHeaders;
     if (isVertical) {
       return (
         <div 
@@ -488,7 +491,7 @@ export default function ReportCardPreview({
       );
     } else {
       return (
-        <div className="flex flex-col items-center justify-center text-center leading-tight px-1 py-0.5 font-black uppercase text-black w-full overflow-visible">
+        <div className="flex flex-col items-center justify-center text-center leading-tight px-0.5 py-0.5 font-black text-black w-full overflow-visible">
           <span className="block whitespace-nowrap text-[8.5px] sm:text-[9px] tracking-tight font-black">{label}</span>
         </div>
       );
@@ -1009,16 +1012,16 @@ export default function ReportCardPreview({
                   <>
                     {t1Columns.map(col => (
                       <React.Fragment key={`add_t1_subhdr_${col.id}`}>
-                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
-                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
-                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
+                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
+                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
+                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     ))}
                     {showT1Total && (
                       <React.Fragment key="add_t1_tot_subhdr">
-                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-200/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
-                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-200/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
-                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
+                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-200/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
+                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-200/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
+                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     )}
                     {showT1Grade && omitExamHeaderRow && (
@@ -1032,16 +1035,16 @@ export default function ReportCardPreview({
                   <>
                     {t2Columns.map(col => (
                       <React.Fragment key={`add_t2_subhdr_${col.id}`}>
-                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
-                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
-                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
+                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
+                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
+                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     ))}
                     {showT2Total && (
                       <React.Fragment key="add_t2_tot_subhdr">
-                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-200/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
-                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-200/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
-                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
+                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-200/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
+                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-200/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
+                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     )}
                     {showT2Grade && omitExamHeaderRow && (
@@ -1055,16 +1058,16 @@ export default function ReportCardPreview({
                   <>
                     {t3Columns.map(col => (
                       <React.Fragment key={`add_t3_subhdr_${col.id}`}>
-                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
-                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
-                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
+                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
+                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
+                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     ))}
                     {showT3Total && (
                       <React.Fragment key="add_t3_tot_subhdr">
-                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-200/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
-                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-gray-200/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
-                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
+                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-200/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
+                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-gray-200/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
+                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 bg-gray-200/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     )}
                     {showT3Grade && omitExamHeaderRow && (
@@ -1078,9 +1081,9 @@ export default function ReportCardPreview({
                   <>
                     {showOverallTotal && (
                       <React.Fragment key="add_ov_tot_subhdr">
-                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-sky-100/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
-                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 uppercase bg-sky-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
-                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 uppercase bg-sky-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
+                        {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-sky-100/80">{renderSubHeader(minMarksHeaderLabel || "Min")}</th>}
+                        {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-700 bg-sky-100/80">{renderSubHeader(maxMarksHeaderLabel || "Max")}</th>}
+                        {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center font-black text-gray-900 bg-sky-100/80">{renderSubHeader(obtainedMarksHeaderLabel || "Obt")}</th>}
                       </React.Fragment>
                     )}
                     {showOverallGrade && omitExamHeaderRow && (

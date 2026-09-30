@@ -62,6 +62,7 @@ export interface SchoolBranding {
   showMinMarksColumn?: boolean;
   showMaxMarksColumn?: boolean;
   showObtainedMarksColumn?: boolean;
+  landscapeMarksHeaders?: boolean;
   minMarksHeaderLabel?: string;
   maxMarksHeaderLabel?: string;
   obtainedMarksHeaderLabel?: string;
@@ -350,6 +351,7 @@ export interface ReportCardStructure {
   showMinMarksColumn?: boolean;
   showMaxMarksColumn?: boolean;
   showObtainedMarksColumn?: boolean;
+  landscapeMarksHeaders?: boolean;
   minMarksHeaderLabel?: string;
   maxMarksHeaderLabel?: string;
   obtainedMarksHeaderLabel?: string;

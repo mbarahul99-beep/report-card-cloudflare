@@ -2916,6 +2916,7 @@ export default function App() {
         resolvedShowMinMarksColumn: matchedStruct.showMinMarksColumn ?? structB.showMinMarksColumn ?? activeSessionBranding.showMinMarksColumn ?? false,
         resolvedShowMaxMarksColumn: matchedStruct.showMaxMarksColumn ?? structB.showMaxMarksColumn ?? activeSessionBranding.showMaxMarksColumn ?? false,
         resolvedShowObtainedMarksColumn: matchedStruct.showObtainedMarksColumn ?? structB.showObtainedMarksColumn ?? activeSessionBranding.showObtainedMarksColumn ?? true,
+        resolvedLandscapeMarksHeaders: matchedStruct.landscapeMarksHeaders ?? structB.landscapeMarksHeaders ?? activeSessionBranding.landscapeMarksHeaders ?? true,
         resolvedMinMarksHeaderLabel: matchedStruct.minMarksHeaderLabel || structB.minMarksHeaderLabel || activeSessionBranding.minMarksHeaderLabel || "Min Marks",
         resolvedMaxMarksHeaderLabel: matchedStruct.maxMarksHeaderLabel || structB.maxMarksHeaderLabel || activeSessionBranding.maxMarksHeaderLabel || "Max Marks",
         resolvedObtainedMarksHeaderLabel: matchedStruct.obtainedMarksHeaderLabel || structB.obtainedMarksHeaderLabel || activeSessionBranding.obtainedMarksHeaderLabel || "Marks Obtained",
@@ -2967,6 +2968,7 @@ export default function App() {
       resolvedShowMinMarksColumn: activeSessionBranding.showMinMarksColumn ?? false,
       resolvedShowMaxMarksColumn: activeSessionBranding.showMaxMarksColumn ?? false,
       resolvedShowObtainedMarksColumn: activeSessionBranding.showObtainedMarksColumn ?? true,
+      resolvedLandscapeMarksHeaders: activeSessionBranding.landscapeMarksHeaders ?? true,
       resolvedMinMarksHeaderLabel: activeSessionBranding.minMarksHeaderLabel || "Min Marks",
       resolvedMaxMarksHeaderLabel: activeSessionBranding.maxMarksHeaderLabel || "Max Marks",
       resolvedObtainedMarksHeaderLabel: activeSessionBranding.obtainedMarksHeaderLabel || "Marks Obtained",
@@ -5894,6 +5896,7 @@ export default function App() {
                             gradingScaleAfterSignatures={resolvedGradingScaleAfterSignatures}
                             gradingScaleLayout={resolvedGradingScaleLayout}
                             verticalExamHeaders={resolvedVerticalExamHeaders}
+                            landscapeMarksHeaders={resolvedLandscapeMarksHeaders}
                             verticalSubjectsHeader={resolvedVerticalSubjectsHeader}
                             subjectSpecificMaxMarksEnabled={resolvedSubjectSpecificMaxMarksEnabled}
                             enableSubjectGrouping={resolvedEnableSubjectGrouping}
@@ -7395,7 +7398,7 @@ export default function App() {
                           {/* Adaptive responsive wrapper containing ReportCardPreview */}
                           <div className="w-full border border-gray-150 rounded-xl p-1 sm:p-4 bg-white shadow-xs print:overflow-visible print:border-none print:shadow-none print:p-0">
                                                 {(() => {
-                                  const { resolvedBranding, resolvedSubjects, resolvedScoreColumns, resolvedGradeScales, resolvedScholasticTerm1Disabled, resolvedScholasticTerm2Disabled, resolvedScholasticTerm3Disabled, resolvedCoScholasticOneColumn, resolvedCoScholasticSections, resolvedCoGradeScales, resolvedSignatures, resolvedHideGradingScale, resolvedHideAttendance, resolvedPureGradeBased, resolvedGradingScaleAfterSignatures, resolvedGradingScaleLayout, resolvedVerticalExamHeaders, resolvedVerticalSubjectsHeader, resolvedSubjectSpecificMaxMarksEnabled, resolvedEnableSubjectGrouping, resolvedCustomSubjectGroups, resolvedHideTerm1Total, resolvedHideTerm1Grade, resolvedHideTerm2Total, resolvedHideTerm2Grade, resolvedHideTerm3Total, resolvedHideTerm3Grade, resolvedHideOverallTotal, resolvedHideOverallGrade, resolvedTermSpecificScoreColumnsEnabled, resolvedTerm1ScoreColumns, resolvedTerm2ScoreColumns, resolvedTerm3ScoreColumns } = resolveStudentStructure(std);
+                                  const { resolvedBranding, resolvedSubjects, resolvedScoreColumns, resolvedGradeScales, resolvedScholasticTerm1Disabled, resolvedScholasticTerm2Disabled, resolvedScholasticTerm3Disabled, resolvedCoScholasticOneColumn, resolvedCoScholasticSections, resolvedCoGradeScales, resolvedSignatures, resolvedHideGradingScale, resolvedHideAttendance, resolvedPureGradeBased, resolvedGradingScaleAfterSignatures, resolvedGradingScaleLayout, resolvedVerticalExamHeaders, resolvedLandscapeMarksHeaders, resolvedVerticalSubjectsHeader, resolvedSubjectSpecificMaxMarksEnabled, resolvedEnableSubjectGrouping, resolvedCustomSubjectGroups, resolvedHideTerm1Total, resolvedHideTerm1Grade, resolvedHideTerm2Total, resolvedHideTerm2Grade, resolvedHideTerm3Total, resolvedHideTerm3Grade, resolvedHideOverallTotal, resolvedHideOverallGrade, resolvedTermSpecificScoreColumnsEnabled, resolvedTerm1ScoreColumns, resolvedTerm2ScoreColumns, resolvedTerm3ScoreColumns } = resolveStudentStructure(std);
                                   return (
                                     <ReportCardPreview
                                       branding={resolvedBranding}
@@ -7417,6 +7420,7 @@ export default function App() {
                                       gradingScaleAfterSignatures={resolvedGradingScaleAfterSignatures}
                                       gradingScaleLayout={resolvedGradingScaleLayout}
                                       verticalExamHeaders={resolvedVerticalExamHeaders}
+                                      landscapeMarksHeaders={resolvedLandscapeMarksHeaders}
                                       verticalSubjectsHeader={resolvedVerticalSubjectsHeader}
                                       subjectSpecificMaxMarksEnabled={resolvedSubjectSpecificMaxMarksEnabled}
                                       enableSubjectGrouping={resolvedEnableSubjectGrouping}
@@ -7460,7 +7464,7 @@ export default function App() {
                       <div className="w-full max-w-full p-0 sm:p-1 print:min-w-0 print:p-0">
                         <div className="bg-white print:bg-transparent w-full">
                           {(() => {
-                            const { resolvedBranding, resolvedSubjects, resolvedScoreColumns, resolvedGradeScales, resolvedScholasticTerm1Disabled, resolvedScholasticTerm2Disabled, resolvedScholasticTerm3Disabled, resolvedCoScholasticOneColumn, resolvedCoScholasticSections, resolvedCoGradeScales, resolvedSignatures, resolvedHideGradingScale, resolvedHideAttendance, resolvedPureGradeBased, resolvedGradingScaleAfterSignatures, resolvedGradingScaleLayout, resolvedVerticalExamHeaders, resolvedVerticalSubjectsHeader, resolvedSubjectSpecificMaxMarksEnabled, resolvedEnableSubjectGrouping, resolvedCustomSubjectGroups, resolvedHideTerm1Total, resolvedHideTerm1Grade, resolvedHideTerm2Total, resolvedHideTerm2Grade, resolvedHideTerm3Total, resolvedHideTerm3Grade, resolvedHideOverallTotal, resolvedHideOverallGrade, resolvedTermSpecificScoreColumnsEnabled, resolvedTerm1ScoreColumns, resolvedTerm2ScoreColumns, resolvedTerm3ScoreColumns } = resolveStudentStructure(currentStudent);
+                            const { resolvedBranding, resolvedSubjects, resolvedScoreColumns, resolvedGradeScales, resolvedScholasticTerm1Disabled, resolvedScholasticTerm2Disabled, resolvedScholasticTerm3Disabled, resolvedCoScholasticOneColumn, resolvedCoScholasticSections, resolvedCoGradeScales, resolvedSignatures, resolvedHideGradingScale, resolvedHideAttendance, resolvedPureGradeBased, resolvedGradingScaleAfterSignatures, resolvedGradingScaleLayout, resolvedVerticalExamHeaders, resolvedLandscapeMarksHeaders, resolvedVerticalSubjectsHeader, resolvedSubjectSpecificMaxMarksEnabled, resolvedEnableSubjectGrouping, resolvedCustomSubjectGroups, resolvedHideTerm1Total, resolvedHideTerm1Grade, resolvedHideTerm2Total, resolvedHideTerm2Grade, resolvedHideTerm3Total, resolvedHideTerm3Grade, resolvedHideOverallTotal, resolvedHideOverallGrade, resolvedTermSpecificScoreColumnsEnabled, resolvedTerm1ScoreColumns, resolvedTerm2ScoreColumns, resolvedTerm3ScoreColumns } = resolveStudentStructure(currentStudent);
                             return (
                               <ReportCardPreview
                                 branding={resolvedBranding}
@@ -7483,6 +7487,7 @@ export default function App() {
                                 gradingScaleAfterSignatures={resolvedGradingScaleAfterSignatures}
                                 gradingScaleLayout={resolvedGradingScaleLayout}
                                 verticalExamHeaders={resolvedVerticalExamHeaders}
+                                landscapeMarksHeaders={resolvedLandscapeMarksHeaders}
                                 subjectSpecificMaxMarksEnabled={resolvedSubjectSpecificMaxMarksEnabled}
                                 enableSubjectGrouping={resolvedEnableSubjectGrouping}
                                 customSubjectGroups={resolvedCustomSubjectGroups}
