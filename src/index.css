@@ -60,17 +60,17 @@
   }
 
   @page {
-    margin: 8mm 8mm !important;
+    margin: 5mm 5mm !important;
   }
 
   @page portrait_layout {
     size: A4 portrait;
-    margin: 8mm 8mm !important;
+    margin: 5mm 5mm !important;
   }
 
   @page landscape_layout {
     size: A4 landscape;
-    margin: 8mm 8mm !important;
+    margin: 5mm 5mm !important;
   }
   
   /* Resiliently hide all elements that are NOT print containers, NOT their ancestors, and NOT their descendants */
@@ -139,7 +139,7 @@
     position: relative !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 2mm !important;
+    padding: 0 !important;
     margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;

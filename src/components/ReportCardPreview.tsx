@@ -2516,8 +2516,9 @@ export default function ReportCardPreview({
             const logoCircular = branding.logoCircular !== false;
             return (
               <div 
-                className="relative z-10 flex flex-col items-center justify-center text-center border-b-2 pb-3 sm:pb-4 border-black pl-4 pr-4 min-h-[85px] print:pb-2 transition-all"
+                className="relative z-10 flex flex-col items-center justify-center text-center border-b-2 pb-3 sm:pb-4 border-black pl-4 pr-4 transition-all"
                 style={{
+                  minHeight: `calc(var(--print-logo-size, ${padSize}px) + 20px)`,
                   paddingLeft: `calc(var(--print-logo-size, ${padSize}px) + 20px)`,
                   paddingRight: `calc(var(--print-logo-size, ${padSize}px) + 20px)`
                 }}
@@ -2531,8 +2532,8 @@ export default function ReportCardPreview({
                         : 'border-0 bg-transparent p-0'
                     }`}
                     style={{ 
-                      width: `${logoSize}px`, 
-                      height: `${logoSize}px`,
+                      width: `var(--print-logo-size, ${logoSize}px)`, 
+                      height: `var(--print-logo-size, ${logoSize}px)`,
                       borderColor: branding.logoBorder !== false ? 'var(--theme-brand)' : 'transparent', 
                       color: 'var(--theme-brand)' 
                     }}
@@ -2563,8 +2564,8 @@ export default function ReportCardPreview({
                           : 'border-0 bg-transparent p-0'
                       }`}
                       style={{ 
-                        width: `${rightLogoSize}px`, 
-                        height: `${rightLogoSize}px`,
+                        width: `var(--print-logo-size, ${rightLogoSize}px)`, 
+                        height: `var(--print-logo-size, ${rightLogoSize}px)`,
                         borderColor: branding.logoBorder !== false ? 'var(--theme-brand)' : 'transparent', 
                         color: 'var(--theme-brand)' 
                       }}
