@@ -474,10 +474,28 @@ export default function ReportCardPreview({
     } else {
       const parts = label.trim().split(/\s+/);
       return (
-        <div className="flex flex-col items-center justify-center text-center leading-[1.05] px-0.5 py-0.5 text-[8px] sm:text-[8.5px] font-black uppercase text-black break-words overflow-hidden">
-          {parts.map((w, idx) => (
-            <span key={idx} className="block whitespace-nowrap">{w}</span>
-          ))}
+        <div className="flex flex-col items-center justify-center text-center leading-[1.0] px-[1px] py-0.5 font-black uppercase text-black max-w-full">
+          {parts.map((w, idx) => {
+            const len = w.length;
+            let sizeClass = "text-[8px] sm:text-[8.5px]";
+            let styleObj: React.CSSProperties = {};
+            if (len >= 8) {
+              sizeClass = "text-[6.5px] sm:text-[7px]";
+              styleObj = { letterSpacing: '-0.04em' };
+            } else if (len >= 7) {
+              sizeClass = "text-[7px] sm:text-[7.5px]";
+              styleObj = { letterSpacing: '-0.03em' };
+            }
+            return (
+              <span 
+                key={idx} 
+                className={`block whitespace-nowrap ${sizeClass}`}
+                style={styleObj}
+              >
+                {w}
+              </span>
+            );
+          })}
         </div>
       );
     }
