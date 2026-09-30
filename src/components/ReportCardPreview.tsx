@@ -326,6 +326,35 @@ export default function ReportCardPreview({
   let overallGradeColWidth = 10;
   let singleColWidth = 10;
 
+  const getSubColWidths = (parentWidthPct: number) => {
+    let minPct = 0;
+    let maxPct = 0;
+    let obtPct = 0;
+
+    if (showMinMarksColumn && showMaxMarksColumn && showObtainedMarksColumn) {
+      minPct = parentWidthPct * 0.26;
+      maxPct = parentWidthPct * 0.26;
+      obtPct = parentWidthPct * 0.48;
+    } else if (showMaxMarksColumn && showObtainedMarksColumn) {
+      maxPct = parentWidthPct * 0.36;
+      obtPct = parentWidthPct * 0.64;
+    } else if (showMinMarksColumn && showObtainedMarksColumn) {
+      minPct = parentWidthPct * 0.36;
+      obtPct = parentWidthPct * 0.64;
+    } else if (showMinMarksColumn && showMaxMarksColumn) {
+      minPct = parentWidthPct * 0.48;
+      maxPct = parentWidthPct * 0.52;
+    } else {
+      const activeCount = Math.max(1, (showMinMarksColumn ? 1 : 0) + (showMaxMarksColumn ? 1 : 0) + (showObtainedMarksColumn ? 1 : 0));
+      const equalPct = parentWidthPct / activeCount;
+      minPct = equalPct;
+      maxPct = equalPct;
+      obtPct = equalPct;
+    }
+
+    return { minPct, maxPct, obtPct };
+  };
+
   if (pureGradeBased) {
     const singleGradeWidth = Math.max(7.5, Math.min(14, Math.floor(45 / cRem)));
     subjWidth = Math.max(25, 100 - (singleGradeWidth * cRem));
@@ -338,8 +367,8 @@ export default function ReportCardPreview({
     overallGradeColWidth = uniformColWidth;
     singleColWidth = uniformColWidth;
   } else if (cRem <= 8) {
-    // TIER 1: Low Density (<= 8 columns) - Standard balanced layout with equal columns
-    subjWidth = Math.max(36, Math.min(46, 100 - (cRem * 7.5)));
+    // TIER 1: Low Density (<= 8 columns) - Standard balanced layout with weighted columns
+    subjWidth = Math.max(30, Math.min(40, 100 - (cRem * 7.5)));
     const remainingWidth = 100 - subjWidth;
     const uniformColWidth = cRem > 0 ? (remainingWidth / cRem) : 10;
     testColWidth = uniformColWidth;
@@ -2709,98 +2738,105 @@ export default function ReportCardPreview({
                         <col style={{ width: `${subjWidth}%` }} />
                         {scholT1Enabled && (
                           <>
-                            {t1Columns.map(col => (
-                              subColCount > 1 ? (
+                            {t1Columns.map(col => {
+                              const { minPct, maxPct, obtPct } = getSubColWidths(testColWidth);
+                              return subColCount > 1 ? (
                                 <React.Fragment key={`col_t1_grp_${col.id}`}>
-                                  {showMinMarksColumn && <col key={`col_t1_min_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
-                                  {showMaxMarksColumn && <col key={`col_t1_max_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
-                                  {showObtainedMarksColumn && <col key={`col_t1_obt_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
+                                  {showMinMarksColumn && <col key={`col_t1_min_${col.id}`} style={{ width: `${minPct}%` }} />}
+                                  {showMaxMarksColumn && <col key={`col_t1_max_${col.id}`} style={{ width: `${maxPct}%` }} />}
+                                  {showObtainedMarksColumn && <col key={`col_t1_obt_${col.id}`} style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
                                 <col key={`col_t1_${col.id}`} style={{ width: `${testColWidth}%` }} />
-                              )
-                            ))}
-                            {showT1Total && (
-                              subColCount > 1 ? (
+                              );
+                            })}
+                            {showT1Total && (() => {
+                              const { minPct, maxPct, obtPct } = getSubColWidths(termTotalColWidth);
+                              return subColCount > 1 ? (
                                 <React.Fragment key="col_t1_tot_grp">
-                                  {showMinMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
-                                  {showMaxMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
-                                  {showObtainedMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
+                                  {showMinMarksColumn && <col style={{ width: `${minPct}%` }} />}
+                                  {showMaxMarksColumn && <col style={{ width: `${maxPct}%` }} />}
+                                  {showObtainedMarksColumn && <col style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
                                 <col style={{ width: `${termTotalColWidth}%` }} />
-                              )
-                            )}
+                              );
+                            })()}
                             {showT1Grade && <col style={{ width: `${termGradeColWidth}%` }} />}
                           </>
                         )}
                         {scholT2Enabled && (
                           <>
-                            {t2Columns.map(col => (
-                              subColCount > 1 ? (
+                            {t2Columns.map(col => {
+                              const { minPct, maxPct, obtPct } = getSubColWidths(testColWidth);
+                              return subColCount > 1 ? (
                                 <React.Fragment key={`col_t2_grp_${col.id}`}>
-                                  {showMinMarksColumn && <col key={`col_t2_min_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
-                                  {showMaxMarksColumn && <col key={`col_t2_max_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
-                                  {showObtainedMarksColumn && <col key={`col_t2_obt_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
+                                  {showMinMarksColumn && <col key={`col_t2_min_${col.id}`} style={{ width: `${minPct}%` }} />}
+                                  {showMaxMarksColumn && <col key={`col_t2_max_${col.id}`} style={{ width: `${maxPct}%` }} />}
+                                  {showObtainedMarksColumn && <col key={`col_t2_obt_${col.id}`} style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
                                 <col key={`col_t2_${col.id}`} style={{ width: `${testColWidth}%` }} />
-                              )
-                            ))}
-                            {showT2Total && (
-                              subColCount > 1 ? (
+                              );
+                            })}
+                            {showT2Total && (() => {
+                              const { minPct, maxPct, obtPct } = getSubColWidths(termTotalColWidth);
+                              return subColCount > 1 ? (
                                 <React.Fragment key="col_t2_tot_grp">
-                                  {showMinMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
-                                  {showMaxMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
-                                  {showObtainedMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
+                                  {showMinMarksColumn && <col style={{ width: `${minPct}%` }} />}
+                                  {showMaxMarksColumn && <col style={{ width: `${maxPct}%` }} />}
+                                  {showObtainedMarksColumn && <col style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
                                 <col style={{ width: `${termTotalColWidth}%` }} />
-                              )
-                            )}
+                              );
+                            })()}
                             {showT2Grade && <col style={{ width: `${termGradeColWidth}%` }} />}
                           </>
                         )}
                         {scholT3Enabled && (
                           <>
-                            {t3Columns.map(col => (
-                              subColCount > 1 ? (
+                            {t3Columns.map(col => {
+                              const { minPct, maxPct, obtPct } = getSubColWidths(testColWidth);
+                              return subColCount > 1 ? (
                                 <React.Fragment key={`col_t3_grp_${col.id}`}>
-                                  {showMinMarksColumn && <col key={`col_t3_min_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
-                                  {showMaxMarksColumn && <col key={`col_t3_max_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
-                                  {showObtainedMarksColumn && <col key={`col_t3_obt_${col.id}`} style={{ width: `${testColWidth / subColCount}%` }} />}
+                                  {showMinMarksColumn && <col key={`col_t3_min_${col.id}`} style={{ width: `${minPct}%` }} />}
+                                  {showMaxMarksColumn && <col key={`col_t3_max_${col.id}`} style={{ width: `${maxPct}%` }} />}
+                                  {showObtainedMarksColumn && <col key={`col_t3_obt_${col.id}`} style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
                                 <col key={`col_t3_${col.id}`} style={{ width: `${testColWidth}%` }} />
-                              )
-                            ))}
-                            {showT3Total && (
-                              subColCount > 1 ? (
+                              );
+                            })}
+                            {showT3Total && (() => {
+                              const { minPct, maxPct, obtPct } = getSubColWidths(termTotalColWidth);
+                              return subColCount > 1 ? (
                                 <React.Fragment key="col_t3_tot_grp">
-                                  {showMinMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
-                                  {showMaxMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
-                                  {showObtainedMarksColumn && <col style={{ width: `${termTotalColWidth / subColCount}%` }} />}
+                                  {showMinMarksColumn && <col style={{ width: `${minPct}%` }} />}
+                                  {showMaxMarksColumn && <col style={{ width: `${maxPct}%` }} />}
+                                  {showObtainedMarksColumn && <col style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
                                 <col style={{ width: `${termTotalColWidth}%` }} />
-                              )
-                            )}
+                              );
+                            })()}
                             {showT3Grade && <col style={{ width: `${termGradeColWidth}%` }} />}
                           </>
                         )}
                         {showOverall && overallExtraCols > 0 && (
                           <>
-                            {showOverallTotal && (
-                              subColCount > 1 ? (
+                            {showOverallTotal && (() => {
+                              const { minPct, maxPct, obtPct } = getSubColWidths(overallTotalColWidth);
+                              return subColCount > 1 ? (
                                 <React.Fragment key="col_ov_tot_grp">
-                                  {showMinMarksColumn && <col style={{ width: `${overallTotalColWidth / subColCount}%` }} />}
-                                  {showMaxMarksColumn && <col style={{ width: `${overallTotalColWidth / subColCount}%` }} />}
-                                  {showObtainedMarksColumn && <col style={{ width: `${overallTotalColWidth / subColCount}%` }} />}
+                                  {showMinMarksColumn && <col style={{ width: `${minPct}%` }} />}
+                                  {showMaxMarksColumn && <col style={{ width: `${maxPct}%` }} />}
+                                  {showObtainedMarksColumn && <col style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
                                 <col style={{ width: `${overallTotalColWidth}%` }} />
-                              )
-                            )}
+                              );
+                            })()}
                             {showOverallGrade && <col style={{ width: `${overallGradeColWidth}%` }} />}
                           </>
                         )}
