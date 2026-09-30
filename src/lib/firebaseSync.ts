@@ -124,8 +124,10 @@ export async function loadSchoolFromCloud(schoolId: string): Promise<FullSchoolD
 
 export async function saveSchoolToCloud(schoolId: string, data: FullSchoolData, schoolName?: string, portalCode?: string): Promise<void> {
   const cleanId = normalizeCloudSchoolId(schoolId);
+  const existingLocal = getLocalSchoolData(cleanId);
   const payload: FullSchoolData = {
     ...data,
+    saasMeta: data.saasMeta || (existingLocal as any)?.saasMeta,
     schoolName: schoolName || data.schoolName || data.branding?.schoolName,
     portalCode: portalCode || data.portalCode,
     updatedAt: new Date().toISOString()
@@ -176,7 +178,9 @@ export async function saveSaaSSchoolToCloud(school: SaasSchool, _ownerId?: strin
     gradeScales: existingLocalData?.gradeScales || defaultGradeScales,
     students: existingLocalData?.students || (school.id === 'demo' || school.id === 'sc_demo' ? defaultStudents : []),
     studentGrades: existingLocalData?.studentGrades || (school.id === 'demo' || school.id === 'sc_demo' ? defaultStudentGrades : []),
-    reportCardStructures: existingLocalData?.reportCardStructures || [],
+    reportCardStructures: (existingLocalData?.reportCardStructures && existingLocalData.reportCardStructures.length > 0)
+      ? existingLocalData.reportCardStructures
+      : [],
     schoolName: school.name,
     portalCode: school.portalCode,
     saasMeta: school,

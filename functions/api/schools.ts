@@ -63,13 +63,13 @@ export async function onRequestPost(context: any) {
         report_structures_json, layouts_json, class_naming_style, saas_meta_json, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_id) DO UPDATE SET
-        name = excluded.name,
-        branding_json = excluded.branding_json,
-        grade_scales_json = excluded.grade_scales_json,
-        report_structures_json = excluded.report_structures_json,
-        layouts_json = excluded.layouts_json,
+        name = CASE WHEN excluded.name IS NOT NULL AND excluded.name != '' THEN excluded.name ELSE schools.name END,
+        branding_json = CASE WHEN excluded.branding_json IS NOT NULL AND excluded.branding_json != '{}' THEN excluded.branding_json ELSE schools.branding_json END,
+        grade_scales_json = CASE WHEN excluded.grade_scales_json IS NOT NULL AND excluded.grade_scales_json != '[]' THEN excluded.grade_scales_json ELSE schools.grade_scales_json END,
+        report_structures_json = CASE WHEN excluded.report_structures_json IS NOT NULL AND excluded.report_structures_json != '[]' THEN excluded.report_structures_json ELSE schools.report_structures_json END,
+        layouts_json = CASE WHEN excluded.layouts_json IS NOT NULL AND excluded.layouts_json != '[]' AND excluded.layouts_json != '{}' THEN excluded.layouts_json ELSE schools.layouts_json END,
         class_naming_style = excluded.class_naming_style,
-        saas_meta_json = excluded.saas_meta_json,
+        saas_meta_json = CASE WHEN excluded.saas_meta_json IS NOT NULL AND excluded.saas_meta_json != '{}' THEN excluded.saas_meta_json ELSE schools.saas_meta_json END,
         updated_at = excluded.updated_at
     `).bind(cleanId, name, school.subdomain || cleanId, brandingJson, gradeScalesJson, reportStructuresJson, layoutsJson, classNamingStyle, saasMetaJson, now);
 

@@ -224,16 +224,16 @@ export async function onRequestPost(context: any) {
         classes_json, class_naming_style, saas_meta_json, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(school_id) DO UPDATE SET
-        name = excluded.name,
-        branding_json = excluded.branding_json,
-        grade_scales_json = excluded.grade_scales_json,
-        report_structures_json = excluded.report_structures_json,
-        layouts_json = excluded.layouts_json,
-        score_columns_json = excluded.score_columns_json,
-        subjects_json = excluded.subjects_json,
-        classes_json = excluded.classes_json,
+        name = CASE WHEN excluded.name IS NOT NULL AND excluded.name != '' THEN excluded.name ELSE schools.name END,
+        branding_json = CASE WHEN excluded.branding_json IS NOT NULL AND excluded.branding_json != '{}' AND excluded.branding_json != '{"schoolName":""}' THEN excluded.branding_json ELSE schools.branding_json END,
+        grade_scales_json = CASE WHEN excluded.grade_scales_json IS NOT NULL AND excluded.grade_scales_json != '[]' THEN excluded.grade_scales_json ELSE schools.grade_scales_json END,
+        report_structures_json = CASE WHEN excluded.report_structures_json IS NOT NULL AND excluded.report_structures_json != '[]' THEN excluded.report_structures_json ELSE schools.report_structures_json END,
+        layouts_json = CASE WHEN excluded.layouts_json IS NOT NULL AND excluded.layouts_json != '[]' AND excluded.layouts_json != '{}' THEN excluded.layouts_json ELSE schools.layouts_json END,
+        score_columns_json = CASE WHEN excluded.score_columns_json IS NOT NULL AND excluded.score_columns_json != '[]' THEN excluded.score_columns_json ELSE schools.score_columns_json END,
+        subjects_json = CASE WHEN excluded.subjects_json IS NOT NULL AND excluded.subjects_json != '[]' THEN excluded.subjects_json ELSE schools.subjects_json END,
+        classes_json = CASE WHEN excluded.classes_json IS NOT NULL AND excluded.classes_json != '[]' THEN excluded.classes_json ELSE schools.classes_json END,
         class_naming_style = excluded.class_naming_style,
-        saas_meta_json = excluded.saas_meta_json,
+        saas_meta_json = CASE WHEN excluded.saas_meta_json IS NOT NULL AND excluded.saas_meta_json != '{}' THEN excluded.saas_meta_json ELSE schools.saas_meta_json END,
         updated_at = excluded.updated_at
     `).bind(
       cleanId, schoolName, cleanId, brandingJson, gradeScalesJson,
