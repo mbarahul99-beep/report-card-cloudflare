@@ -1071,24 +1071,24 @@ export default function ReportCardStructureSettings({
       ...(previewStructure.branding || {}),
       useCustomBranding: true,
       overrideIdentity: true,
-      schoolName: previewStructure.branding?.schoolName !== undefined ? previewStructure.branding.schoolName : (branding.schoolName || "My School"),
+      schoolName: (previewStructure.branding?.schoolName && previewStructure.branding.schoolName.trim() !== "") ? previewStructure.branding.schoolName : (branding.schoolName || "My School"),
       schoolNameFontSize: previewStructure.branding?.schoolNameFontSize ?? branding.schoolNameFontSize ?? 32,
       schoolNameFontFamily: previewStructure.branding?.schoolNameFontFamily || branding.schoolNameFontFamily || "Georgia, serif",
       headerDetailsFontSize: previewStructure.branding?.headerDetailsFontSize ?? branding.headerDetailsFontSize ?? 10.5,
       headerDetailsFontFamily: previewStructure.branding?.headerDetailsFontFamily || branding.headerDetailsFontFamily || "sans-serif",
       reportCardTitleFontSize: previewStructure.branding?.reportCardTitleFontSize ?? branding.reportCardTitleFontSize,
-      tagline: previewStructure.branding?.tagline !== undefined ? previewStructure.branding.tagline : "",
-      address: previewStructure.branding?.address !== undefined ? previewStructure.branding.address : "",
-      helpline: previewStructure.branding?.helpline !== undefined ? previewStructure.branding.helpline : "",
-      email: previewStructure.branding?.email !== undefined ? previewStructure.branding.email : "",
-      website: previewStructure.branding?.website !== undefined ? previewStructure.branding.website : "",
-      logoUrl: previewStructure.branding?.logoUrl !== undefined ? previewStructure.branding.logoUrl : "",
+      tagline: (previewStructure.branding?.tagline !== undefined && previewStructure.branding.tagline.trim() !== "") ? previewStructure.branding.tagline : (branding.tagline || ""),
+      address: (previewStructure.branding?.address !== undefined && previewStructure.branding.address.trim() !== "") ? previewStructure.branding.address : (branding.address || ""),
+      helpline: (previewStructure.branding?.helpline !== undefined && previewStructure.branding.helpline.trim() !== "") ? previewStructure.branding.helpline : (branding.helpline || ""),
+      email: (previewStructure.branding?.email !== undefined && previewStructure.branding.email.trim() !== "") ? previewStructure.branding.email : (branding.email || ""),
+      website: (previewStructure.branding?.website !== undefined && previewStructure.branding.website.trim() !== "") ? previewStructure.branding.website : (branding.website || ""),
+      logoUrl: (previewStructure.branding?.logoUrl !== undefined && previewStructure.branding.logoUrl.trim() !== "") ? previewStructure.branding.logoUrl : (branding.logoUrl || ""),
       logoSize: previewStructure.branding?.logoSize !== undefined ? previewStructure.branding.logoSize : (branding.logoSize ?? 92),
       logoCircular: previewStructure.branding?.logoCircular !== undefined ? previewStructure.branding.logoCircular : (branding.logoCircular ?? true),
       logoBorder: previewStructure.branding?.logoBorder !== undefined ? previewStructure.branding.logoBorder : (branding.logoBorder ?? true),
-      rightLogoUrl: previewStructure.branding?.rightLogoUrl !== undefined ? previewStructure.branding.rightLogoUrl : "",
+      rightLogoUrl: (previewStructure.branding?.rightLogoUrl !== undefined && previewStructure.branding.rightLogoUrl.trim() !== "") ? previewStructure.branding.rightLogoUrl : (branding.rightLogoUrl || ""),
       rightLogoSize: previewStructure.branding?.rightLogoSize !== undefined ? previewStructure.branding.rightLogoSize : (branding.rightLogoSize ?? 92),
-      nameBannerUrl: previewStructure.branding?.nameBannerUrl !== undefined ? previewStructure.branding.nameBannerUrl : "",
+      nameBannerUrl: previewStructure.branding?.nameBannerUrl || branding.nameBannerUrl || "",
       hideSchoolDetails: previewStructure.branding?.hideSchoolDetails !== undefined ? previewStructure.branding.hideSchoolDetails : false,
       themeColor: previewStructure.branding?.themeColor || branding.themeColor || "#DE2F2F",
       borderColor: previewStructure.branding?.borderColor || branding.borderColor || "#C22121",
@@ -1491,6 +1491,222 @@ export default function ReportCardStructureSettings({
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Font & Header Typography Section */}
+                  <div className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wide">
+                        <Palette className="w-4 h-4 text-indigo-600" />
+                        Header Elements Font &amp; Size Customization
+                      </h3>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Increase or decrease font-sizes, select custom typography, and see real-time preview updates for report card headers.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                      {/* School Name Customization */}
+                      <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 flex flex-col justify-between">
+                        <div>
+                          <span className="text-xs font-bold text-indigo-700 block mb-2">School Name Typography</span>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="font-semibold text-slate-600">Font Size:</span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleBrandingFieldChange('schoolNameFontSize', Math.max(12, ((structureBranding.schoolNameFontSize || branding.schoolNameFontSize || 26) - 1)))}
+                                  className="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 font-black hover:bg-slate-100 flex items-center justify-center text-xs"
+                                  title="Decrease font size"
+                                >
+                                  -
+                                </button>
+                                <input
+                                  type="number"
+                                  min="12"
+                                  max="64"
+                                  value={structureBranding.schoolNameFontSize || branding.schoolNameFontSize || 26}
+                                  onChange={(e) => handleBrandingFieldChange('schoolNameFontSize', parseInt(e.target.value) || 26)}
+                                  className="w-12 text-center px-1 py-0.5 border rounded text-xs font-mono font-bold bg-white text-indigo-600"
+                                />
+                                <span className="text-[10px] text-slate-500 font-medium">px</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleBrandingFieldChange('schoolNameFontSize', Math.min(64, ((structureBranding.schoolNameFontSize || branding.schoolNameFontSize || 26) + 1)))}
+                                  className="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 font-black hover:bg-slate-100 flex items-center justify-center text-xs"
+                                  title="Increase font size"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                            <input
+                              type="range"
+                              min="12"
+                              max="64"
+                              step="1"
+                              value={structureBranding.schoolNameFontSize || branding.schoolNameFontSize || 26}
+                              onChange={(e) => handleBrandingFieldChange('schoolNameFontSize', parseInt(e.target.value))}
+                              className="w-full accent-indigo-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 pt-1">
+                          <label className="text-xs font-semibold text-slate-600 block">Font Family:</label>
+                          <select
+                            value={structureBranding.schoolNameFontFamily || branding.schoolNameFontFamily || "Georgia, serif"}
+                            onChange={(e) => handleBrandingFieldChange('schoolNameFontFamily', e.target.value)}
+                            className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white font-medium focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value="Georgia, serif">Georgia (Classic Serif)</option>
+                            <option value="'Inter', sans-serif">Inter (Clean Modern Sans)</option>
+                            <option value="'JetBrains Mono', monospace">JetBrains Mono (Tech Mono)</option>
+                            <option value="'Times New Roman', Times, serif">Times New Roman (Elegant Roman)</option>
+                            <option value="Arial, Helvetica, sans-serif">Arial / Helvetica (Standard Sans)</option>
+                            <option value="'Trebuchet MS', sans-serif">Trebuchet MS (Soft Stylish Sans)</option>
+                            <option value="'Courier New', Courier, monospace">Courier New (Classic Custom Typewriter)</option>
+                            <option value="'Brush Script MT', cursive">Brush Script MT (Dynamic Script)</option>
+                            <option value="'Impact', Charcoal, sans-serif">Impact (Bold Block Grotesk)</option>
+                            <option value="'Garamond', serif">Garamond (Exquisite Vintage Serif)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Tagline, Address & Info Customization */}
+                      <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 flex flex-col justify-between">
+                        <div>
+                          <span className="text-xs font-bold text-indigo-700 block mb-2">Tagline, Address &amp; Info</span>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="font-semibold text-slate-600">Font Size:</span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleBrandingFieldChange('headerDetailsFontSize', Math.max(8, parseFloat(((structureBranding.headerDetailsFontSize || branding.headerDetailsFontSize || 10.5) - 0.5).toFixed(1))))}
+                                  className="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 font-black hover:bg-slate-100 flex items-center justify-center text-xs"
+                                  title="Decrease font size"
+                                >
+                                  -
+                                </button>
+                                <input
+                                  type="number"
+                                  min="8"
+                                  max="24"
+                                  step="0.5"
+                                  value={structureBranding.headerDetailsFontSize || branding.headerDetailsFontSize || 10.5}
+                                  onChange={(e) => handleBrandingFieldChange('headerDetailsFontSize', parseFloat(e.target.value) || 10.5)}
+                                  className="w-12 text-center px-1 py-0.5 border rounded text-xs font-mono font-bold bg-white text-indigo-600"
+                                />
+                                <span className="text-[10px] text-slate-500 font-medium">px</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleBrandingFieldChange('headerDetailsFontSize', Math.min(24, parseFloat(((structureBranding.headerDetailsFontSize || branding.headerDetailsFontSize || 10.5) + 0.5).toFixed(1))))}
+                                  className="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 font-black hover:bg-slate-100 flex items-center justify-center text-xs"
+                                  title="Increase font size"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                            <input
+                              type="range"
+                              min="8"
+                              max="24"
+                              step="0.5"
+                              value={structureBranding.headerDetailsFontSize || branding.headerDetailsFontSize || 10.5}
+                              onChange={(e) => handleBrandingFieldChange('headerDetailsFontSize', parseFloat(e.target.value))}
+                              className="w-full accent-indigo-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 pt-1">
+                          <label className="text-xs font-semibold text-slate-600 block">Font Family:</label>
+                          <select
+                            value={structureBranding.headerDetailsFontFamily || branding.headerDetailsFontFamily || "sans-serif"}
+                            onChange={(e) => handleBrandingFieldChange('headerDetailsFontFamily', e.target.value)}
+                            className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white font-medium focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value="sans-serif">Default System Sans</option>
+                            <option value="'Inter', sans-serif">Inter (Clean Modern Sans)</option>
+                            <option value="Georgia, serif">Georgia (Classic Serif)</option>
+                            <option value="'Times New Roman', Times, serif">Times New Roman (Elegant Roman)</option>
+                            <option value="Arial, Helvetica, sans-serif">Arial / Helvetica (Standard Sans)</option>
+                            <option value="'JetBrains Mono', monospace">JetBrains Mono (Tech Mono)</option>
+                            <option value="'Trebuchet MS', sans-serif">Trebuchet MS (Soft Stylish Sans)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Report Card Title Typography */}
+                      <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 flex flex-col justify-between">
+                        <div>
+                          <span className="text-xs font-bold text-indigo-700 block mb-2">Report Card Title Typography</span>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="font-semibold text-slate-600">Title Size:</span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleBrandingFieldChange('reportCardTitleFontSize', Math.max(10, ((structureBranding.reportCardTitleFontSize || branding.reportCardTitleFontSize || 14) - 1)))}
+                                  className="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 font-black hover:bg-slate-100 flex items-center justify-center text-xs"
+                                  title="Decrease title size"
+                                >
+                                  -
+                                </button>
+                                <input
+                                  type="number"
+                                  min="10"
+                                  max="32"
+                                  value={structureBranding.reportCardTitleFontSize || branding.reportCardTitleFontSize || 14}
+                                  onChange={(e) => handleBrandingFieldChange('reportCardTitleFontSize', parseInt(e.target.value) || 14)}
+                                  className="w-12 text-center px-1 py-0.5 border rounded text-xs font-mono font-bold bg-white text-indigo-600"
+                                />
+                                <span className="text-[10px] text-slate-500 font-medium">px</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleBrandingFieldChange('reportCardTitleFontSize', Math.min(32, ((structureBranding.reportCardTitleFontSize || branding.reportCardTitleFontSize || 14) + 1)))}
+                                  className="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 font-black hover:bg-slate-100 flex items-center justify-center text-xs"
+                                  title="Increase title size"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                            <input
+                              type="range"
+                              min="10"
+                              max="32"
+                              step="1"
+                              value={structureBranding.reportCardTitleFontSize || branding.reportCardTitleFontSize || 14}
+                              onChange={(e) => handleBrandingFieldChange('reportCardTitleFontSize', parseInt(e.target.value))}
+                              className="w-full accent-indigo-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Title Live Badge Preview */}
+                        <div className="p-2 bg-white border border-slate-200 rounded-lg text-center space-y-1">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Title Preview</span>
+                          <div 
+                            style={{ backgroundColor: structureBranding.themeColor || branding.themeColor || '#DE2F2F' }}
+                            className="py-1 px-2 rounded shadow-2xs inline-block max-w-full"
+                          >
+                            <span 
+                              className="font-black uppercase text-white tracking-wider block text-center"
+                              style={{ fontSize: `${structureBranding.reportCardTitleFontSize || branding.reportCardTitleFontSize || 14}px` }}
+                            >
+                              {structureBranding.reportCardTitle || branding.reportCardTitle || "Annual Examination Report Card"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Stamp watermark nesting */}
