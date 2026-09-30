@@ -2,7 +2,7 @@
 export async function onRequestPost(context: any) {
   const { env, request } = context;
   try {
-    const bucket = env.REPORT_CARD_ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
+    const bucket = env.ASSETS || env.REPORT_CARD_ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
     const contentType = request.headers.get('content-type') || '';
     let category = 'assets';
     let fileName = `file_${Date.now()}`;
