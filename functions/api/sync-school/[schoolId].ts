@@ -87,9 +87,10 @@ export async function onRequestGet(context: any) {
         brandingUpdated = true;
       }
 
-      // Auto-restore R2 logo if branding.logoUrl is empty
+      // Auto-restore R2 logo and watermark if empty
       const bucket = env.REPORT_CARD_ASSETS || env.ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
       let latestR2LogoUrl = '';
+      let latestR2WatermarkUrl = '';
       if (bucket) {
         try {
           const listRes = await bucket.list({ prefix: 'logos/' });
@@ -102,7 +103,21 @@ export async function onRequestGet(context: any) {
             }
           }
         } catch (r2Err: any) {
-          console.warn("[R2 Auto-Restore Note]:", r2Err.message);
+          console.warn("[R2 Auto-Restore Logo Note]:", r2Err.message);
+        }
+
+        try {
+          const wmListRes = await bucket.list({ prefix: 'watermarks/' });
+          if (wmListRes && wmListRes.objects && wmListRes.objects.length > 0) {
+            const wmSorted = wmListRes.objects.sort((a: any, b: any) => 
+              (new Date(b.uploaded || 0).getTime() || 0) - (new Date(a.uploaded || 0).getTime() || 0)
+            );
+            if (wmSorted[0] && wmSorted[0].key) {
+              latestR2WatermarkUrl = `/api/assets/${wmSorted[0].key}`;
+            }
+          }
+        } catch (r2WmErr: any) {
+          console.warn("[R2 Auto-Restore Watermark Note]:", r2WmErr.message);
         }
       }
 
@@ -112,7 +127,16 @@ export async function onRequestGet(context: any) {
         console.log(`[R2 Auto-Restore] Linked main R2 logo ${latestR2LogoUrl} to school branding for ${cleanId}`);
       }
 
-      // Auto-migrate base64 and auto-restore logos for custom reportCardStructures
+      if (latestR2WatermarkUrl && !bObj.watermarkLogoUrl) {
+        bObj.watermarkLogoUrl = latestR2WatermarkUrl;
+        brandingUpdated = true;
+        console.log(`[R2 Auto-Restore] Linked main R2 watermark ${latestR2WatermarkUrl} to school branding for ${cleanId}`);
+      } else if (!bObj.watermarkLogoUrl && bObj.logoUrl) {
+        bObj.watermarkLogoUrl = bObj.logoUrl;
+        brandingUpdated = true;
+      }
+
+      // Auto-migrate base64 and auto-restore logos/watermarks for custom reportCardStructures
       let structuresUpdated = false;
       if (Array.isArray(reportCardStructures)) {
         for (const struct of reportCardStructures) {
@@ -147,9 +171,9 @@ export async function onRequestGet(context: any) {
               }
             }
 
-            // Restore empty watermarkLogoUrl with main watermark logo or main logo
+            // Restore empty watermarkLogoUrl with latest R2 watermark, main watermark, or logo
             if (!struct.branding.watermarkLogoUrl) {
-              const targetWatermark = bObj.watermarkLogoUrl || struct.branding.logoUrl || bObj.logoUrl || latestR2LogoUrl;
+              const targetWatermark = bObj.watermarkLogoUrl || latestR2WatermarkUrl || struct.branding.logoUrl || bObj.logoUrl || latestR2LogoUrl;
               if (targetWatermark) {
                 struct.branding.watermarkLogoUrl = targetWatermark;
                 structuresUpdated = true;

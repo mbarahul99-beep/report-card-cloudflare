@@ -64,9 +64,29 @@ export async function onRequestPost(context: any) {
       schoolName: school.name || (school.branding?.schoolName) || (existingBranding?.schoolName) || name
     };
 
+    // Auto-migrate base64 images in branding to R2
+    if (mergedBranding.logoUrl) mergedBranding.logoUrl = await ensureR2AssetUrl(env, mergedBranding.logoUrl, 'logos');
+    if (mergedBranding.rightLogoUrl) mergedBranding.rightLogoUrl = await ensureR2AssetUrl(env, mergedBranding.rightLogoUrl, 'logos');
+    if (mergedBranding.watermarkLogoUrl) mergedBranding.watermarkLogoUrl = await ensureR2AssetUrl(env, mergedBranding.watermarkLogoUrl, 'watermarks');
+    if (mergedBranding.watermarkUrl) mergedBranding.watermarkUrl = await ensureR2AssetUrl(env, mergedBranding.watermarkUrl, 'watermarks');
+    if (mergedBranding.nameBannerUrl) mergedBranding.nameBannerUrl = await ensureR2AssetUrl(env, mergedBranding.nameBannerUrl, 'banners');
+
+    const reportCardStructures = school.reportCardStructures || [];
+    if (Array.isArray(reportCardStructures)) {
+      for (const struct of reportCardStructures) {
+        if (struct && struct.branding) {
+          if (struct.branding.logoUrl) struct.branding.logoUrl = await ensureR2AssetUrl(env, struct.branding.logoUrl, 'logos');
+          if (struct.branding.rightLogoUrl) struct.branding.rightLogoUrl = await ensureR2AssetUrl(env, struct.branding.rightLogoUrl, 'logos');
+          if (struct.branding.watermarkLogoUrl) struct.branding.watermarkLogoUrl = await ensureR2AssetUrl(env, struct.branding.watermarkLogoUrl, 'watermarks');
+          if (struct.branding.watermarkUrl) struct.branding.watermarkUrl = await ensureR2AssetUrl(env, struct.branding.watermarkUrl, 'watermarks');
+          if (struct.branding.nameBannerUrl) struct.branding.nameBannerUrl = await ensureR2AssetUrl(env, struct.branding.nameBannerUrl, 'banners');
+        }
+      }
+    }
+
     const brandingJson = JSON.stringify(mergedBranding);
     const gradeScalesJson = JSON.stringify(school.gradeScales || []);
-    const reportStructuresJson = JSON.stringify(school.reportCardStructures || []);
+    const reportStructuresJson = JSON.stringify(reportCardStructures);
     const layoutsJson = JSON.stringify(school.layouts || school.reportCardStructures || {});
     const saasMetaJson = JSON.stringify(school);
     const classNamingStyle = school.classNamingStyle || 'roman';
@@ -127,5 +147,37 @@ export async function onRequestPost(context: any) {
     return Response.json({ success: true, schoolId: cleanId });
   } catch (err: any) {
     return Response.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+/**
+ * Helper to upload base64 images directly to R2 bucket report-card-assets
+ */
+async function ensureR2AssetUrl(env: any, fileData: string, category: string): Promise<string> {
+  if (!fileData || typeof fileData !== 'string' || !fileData.startsWith('data:')) {
+    return fileData || '';
+  }
+  const bucket = env.REPORT_CARD_ASSETS || env.ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
+  if (!bucket) return fileData;
+
+  try {
+    const matches = fileData.match(/^data:([^;]+);base64,(.+)$/);
+    if (!matches) return fileData;
+
+    const mimeType = matches[1];
+    const base64Str = matches[2];
+    const binaryStr = atob(base64Str);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+
+    const ext = mimeType.split('/')[1] || 'png';
+    const key = `${category}/${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+    await bucket.put(key, bytes.buffer, { httpMetadata: { contentType: mimeType } });
+    return `/api/assets/${key}`;
+  } catch (err: any) {
+    console.warn(`[ensureR2AssetUrl] Upload warning for ${category}:`, err.message);
+    return fileData;
   }
 }
