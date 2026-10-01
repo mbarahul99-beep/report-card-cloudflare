@@ -1869,7 +1869,7 @@ export default function ReportCardStructureSettings({
                                 </div>
                                 <input
                                   type="text"
-                                  value={structureBranding.watermarkLogoUrl || ''}
+                                  value={structureBranding.watermarkLogoUrl?.startsWith('data:') ? '' : (structureBranding.watermarkLogoUrl || '')}
                                   onChange={(e) => {
                                     const val = e.target.value;
                                     const normalized = normalizeExternalImageUrl(val);

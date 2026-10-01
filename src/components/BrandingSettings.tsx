@@ -681,7 +681,7 @@ export default function BrandingSettings({
                     </div>
                     <input
                       type="text"
-                      value={branding.watermarkLogoUrl || ''}
+                      value={branding.watermarkLogoUrl?.startsWith('data:') ? '' : (branding.watermarkLogoUrl || '')}
                       onChange={(e) => {
                         const val = e.target.value;
                         const normalized = normalizeExternalImageUrl(val);

@@ -4,13 +4,21 @@ export async function onRequestGet(context: any) {
   try {
     const cleanId = params.schoolId.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // 1. Check KV Cache (CONFIG_CACHE) ONLY if complete, otherwise force D1 query
+    // 1. Check KV Cache (CONFIG_CACHE) ONLY if complete & free of legacy base64 strings, otherwise force D1 query
     let cachedConfig: any = null;
     if (env.CONFIG_CACHE) {
       try {
         const rawKV = await env.CONFIG_CACHE.get(`school_config_${cleanId}`, 'json');
-        // Only use KV cache if it has complete branding AND reportCardStructures
-        if (rawKV && rawKV.branding && rawKV.branding.schoolName && (rawKV.reportCardStructures?.length > 0 || rawKV.branding.logoUrl)) {
+        const rawKVStr = JSON.stringify(rawKV || {});
+        const hasBase64Images = rawKVStr.includes('data:image/');
+        const hasEmptyStructureLogo = Array.isArray(rawKV?.reportCardStructures) && rawKV.reportCardStructures.some((st: any) => 
+          st?.branding && (!st.branding.logoUrl || !st.branding.watermarkLogoUrl)
+        );
+
+        // Only use KV cache if it has complete branding, reportCardStructures, no base64 strings, and complete structure logos
+        if (rawKV && rawKV.branding && rawKV.branding.schoolName && 
+            (rawKV.reportCardStructures?.length > 0 || rawKV.branding.logoUrl) &&
+            !hasBase64Images && !hasEmptyStructureLogo) {
           cachedConfig = rawKV;
         }
       } catch (kvErr: any) {
