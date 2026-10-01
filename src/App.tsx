@@ -6706,7 +6706,7 @@ export default function App() {
                 <>
                   <span className="font-sans font-semibold text-teal-600 text-[11px] flex items-center gap-1">
                     <Cloud className="w-3.5 h-3.5 text-teal-500 animate-pulse" />
-                    Cloudflare D1 Synced
+                    Cloud Synced
                   </span>
                   {firebaseUser?.email && (
                     <span className="font-mono text-slate-400 text-[9px] max-w-[150px] truncate" title={firebaseUser.email}>
