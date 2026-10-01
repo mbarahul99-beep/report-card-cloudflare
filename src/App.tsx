@@ -2208,6 +2208,18 @@ export default function App() {
                 mergedCloudBranding.schoolName = targetSchoolName;
               }
             }
+
+            // Safeguard: Preserve existing local logo/watermark if cloud branding returned blank logo keys
+            try {
+              const storedLocalBranding = localStorage.getItem(`class_on_branding_${currentSchoolId}`);
+              if (storedLocalBranding) {
+                const localParsed = JSON.parse(storedLocalBranding);
+                if (!mergedCloudBranding.logoUrl && localParsed.logoUrl) mergedCloudBranding.logoUrl = localParsed.logoUrl;
+                if (!mergedCloudBranding.rightLogoUrl && localParsed.rightLogoUrl) mergedCloudBranding.rightLogoUrl = localParsed.rightLogoUrl;
+                if (!mergedCloudBranding.watermarkLogoUrl && localParsed.watermarkLogoUrl) mergedCloudBranding.watermarkLogoUrl = localParsed.watermarkLogoUrl;
+              }
+            } catch {}
+
             setBranding(mergedCloudBranding);
             try {
               localStorage.setItem(`class_on_branding_${currentSchoolId}`, JSON.stringify(mergedCloudBranding));

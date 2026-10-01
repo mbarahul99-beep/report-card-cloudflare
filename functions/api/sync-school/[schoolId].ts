@@ -52,8 +52,38 @@ export async function onRequestGet(context: any) {
       try { if (schoolRow.classes_json) classes = JSON.parse(schoolRow.classes_json); } catch {}
       try { if (schoolRow.saas_meta_json) saasMeta = JSON.parse(schoolRow.saas_meta_json); } catch {}
 
+      // Auto-migrate any legacy base64 images in branding to R2 on GET
+      let brandingUpdated = false;
+      const bObj: any = branding || {};
+      if (bObj.logoUrl && typeof bObj.logoUrl === 'string' && bObj.logoUrl.startsWith('data:')) {
+        bObj.logoUrl = await ensureR2AssetUrl(env, bObj.logoUrl, 'logos');
+        brandingUpdated = true;
+      }
+      if (bObj.rightLogoUrl && typeof bObj.rightLogoUrl === 'string' && bObj.rightLogoUrl.startsWith('data:')) {
+        bObj.rightLogoUrl = await ensureR2AssetUrl(env, bObj.rightLogoUrl, 'logos');
+        brandingUpdated = true;
+      }
+      if (bObj.watermarkLogoUrl && typeof bObj.watermarkLogoUrl === 'string' && bObj.watermarkLogoUrl.startsWith('data:')) {
+        bObj.watermarkLogoUrl = await ensureR2AssetUrl(env, bObj.watermarkLogoUrl, 'watermarks');
+        brandingUpdated = true;
+      }
+      if (bObj.watermarkUrl && typeof bObj.watermarkUrl === 'string' && bObj.watermarkUrl.startsWith('data:')) {
+        bObj.watermarkUrl = await ensureR2AssetUrl(env, bObj.watermarkUrl, 'watermarks');
+        brandingUpdated = true;
+      }
+      if (bObj.nameBannerUrl && typeof bObj.nameBannerUrl === 'string' && bObj.nameBannerUrl.startsWith('data:')) {
+        bObj.nameBannerUrl = await ensureR2AssetUrl(env, bObj.nameBannerUrl, 'banners');
+        brandingUpdated = true;
+      }
+
+      if (brandingUpdated) {
+        try {
+          await env.DB.prepare(`UPDATE schools SET branding_json = ? WHERE school_id = ?`).bind(JSON.stringify(bObj), cleanId).run();
+        } catch {}
+      }
+
       schoolConfig = {
-        branding,
+        branding: bObj,
         gradeScales,
         reportCardStructures,
         layouts: (layouts && Object.keys(layouts).length > 0) ? layouts : reportCardStructures,
@@ -62,7 +92,7 @@ export async function onRequestGet(context: any) {
         classes,
         classNamingStyle: schoolRow.class_naming_style || 'roman',
         saasMeta,
-        schoolName: schoolRow.name || (branding as any).schoolName || cleanId,
+        schoolName: schoolRow.name || (bObj as any).schoolName || cleanId,
         updatedAt: schoolRow.updated_at
       };
 
@@ -195,6 +225,24 @@ export async function onRequestPost(context: any) {
     const now = new Date().toISOString();
 
     const schoolName = payload.schoolName || payload.branding?.schoolName || cleanId;
+
+    // Merge with existing D1 branding to ensure saved R2 logo/watermark URLs are never accidentally wiped
+    try {
+      const existingRow = await env.DB.prepare(`SELECT branding_json FROM schools WHERE school_id = ?`).bind(cleanId).first();
+      if (existingRow && existingRow.branding_json) {
+        let existingBranding: any = {};
+        try { existingBranding = JSON.parse(existingRow.branding_json); } catch {}
+        if (payload.branding) {
+          if (!payload.branding.logoUrl && existingBranding.logoUrl) payload.branding.logoUrl = existingBranding.logoUrl;
+          if (!payload.branding.rightLogoUrl && existingBranding.rightLogoUrl) payload.branding.rightLogoUrl = existingBranding.rightLogoUrl;
+          if (!payload.branding.watermarkLogoUrl && existingBranding.watermarkLogoUrl) payload.branding.watermarkLogoUrl = existingBranding.watermarkLogoUrl;
+          if (!payload.branding.watermarkUrl && existingBranding.watermarkUrl) payload.branding.watermarkUrl = existingBranding.watermarkUrl;
+          if (!payload.branding.nameBannerUrl && existingBranding.nameBannerUrl) payload.branding.nameBannerUrl = existingBranding.nameBannerUrl;
+        }
+      }
+    } catch (e: any) {
+      console.warn("[sync-school POST] Existing branding check note:", e.message);
+    }
 
     // 1. Convert base64 branding images (logo, watermark, banner) to R2 URLs
     if (payload.branding) {

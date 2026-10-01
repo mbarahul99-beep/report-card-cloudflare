@@ -48,7 +48,23 @@ export async function onRequestPost(context: any) {
     const now = new Date().toISOString();
 
     const name = school.name || cleanId;
-    const brandingJson = JSON.stringify(school.branding || { schoolName: name });
+    
+    // Fetch existing D1 branding to avoid overwriting logos/watermarks when updating SaaS school metadata
+    let existingBranding: any = null;
+    try {
+      const existingRow = await env.DB.prepare(`SELECT branding_json FROM schools WHERE school_id = ?`).bind(cleanId).first();
+      if (existingRow && existingRow.branding_json) {
+        try { existingBranding = JSON.parse(existingRow.branding_json); } catch {}
+      }
+    } catch {}
+
+    const mergedBranding = {
+      ...(existingBranding || {}),
+      ...(school.branding || {}),
+      schoolName: school.name || (school.branding?.schoolName) || (existingBranding?.schoolName) || name
+    };
+
+    const brandingJson = JSON.stringify(mergedBranding);
     const gradeScalesJson = JSON.stringify(school.gradeScales || []);
     const reportStructuresJson = JSON.stringify(school.reportCardStructures || []);
     const layoutsJson = JSON.stringify(school.layouts || school.reportCardStructures || {});
