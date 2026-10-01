@@ -6,7 +6,7 @@ import {
 } from 'firebase/auth';
 
 const apiKey = (import.meta.env as any)?.VITE_FIREBASE_API_KEY || "AIzaSyDyrUk7c7Yh6LfdJFzUwoeC8wqwYCRXmwc";
-const authDomain = (import.meta.env as any)?.VITE_FIREBASE_AUTH_DOMAIN || "saas-report-card.firebaseapp.com";
+const authDomain = (import.meta.env as any)?.VITE_FIREBASE_AUTH_DOMAIN || "auth.jids.in";
 const projectId = (import.meta.env as any)?.VITE_FIREBASE_PROJECT_ID || "saas-report-card";
 const storageBucket = (import.meta.env as any)?.VITE_FIREBASE_STORAGE_BUCKET || "saas-report-card.firebasestorage.app";
 const messagingSenderId = (import.meta.env as any)?.VITE_FIREBASE_MESSAGING_SENDER_ID || "470872022573";
