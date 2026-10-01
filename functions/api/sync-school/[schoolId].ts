@@ -4,12 +4,15 @@ export async function onRequestGet(context: any) {
   try {
     const cleanId = params.schoolId.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // 1. Check KV Cache (CONFIG_CACHE) for fast reads of school config
+    // 1. Check KV Cache (CONFIG_CACHE) ONLY if complete, otherwise force D1 query
     let cachedConfig: any = null;
     if (env.CONFIG_CACHE) {
       try {
         const rawKV = await env.CONFIG_CACHE.get(`school_config_${cleanId}`, 'json');
-        if (rawKV) cachedConfig = rawKV;
+        // Only use KV cache if it has complete branding AND reportCardStructures
+        if (rawKV && rawKV.branding && rawKV.branding.schoolName && (rawKV.reportCardStructures?.length > 0 || rawKV.branding.logoUrl)) {
+          cachedConfig = rawKV;
+        }
       } catch (kvErr: any) {
         console.warn(`[CONFIG_CACHE KV Read Note]:`, kvErr.message);
       }
@@ -76,9 +79,87 @@ export async function onRequestGet(context: any) {
         brandingUpdated = true;
       }
 
+      // Auto-restore R2 logo if branding.logoUrl is empty
+      const bucket = env.REPORT_CARD_ASSETS || env.ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
+      let latestR2LogoUrl = '';
+      if (bucket) {
+        try {
+          const listRes = await bucket.list({ prefix: 'logos/' });
+          if (listRes && listRes.objects && listRes.objects.length > 0) {
+            const sorted = listRes.objects.sort((a: any, b: any) => 
+              (new Date(b.uploaded || 0).getTime() || 0) - (new Date(a.uploaded || 0).getTime() || 0)
+            );
+            if (sorted[0] && sorted[0].key) {
+              latestR2LogoUrl = `/api/assets/${sorted[0].key}`;
+            }
+          }
+        } catch (r2Err: any) {
+          console.warn("[R2 Auto-Restore Note]:", r2Err.message);
+        }
+      }
+
+      if (latestR2LogoUrl && !bObj.logoUrl) {
+        bObj.logoUrl = latestR2LogoUrl;
+        brandingUpdated = true;
+        console.log(`[R2 Auto-Restore] Linked main R2 logo ${latestR2LogoUrl} to school branding for ${cleanId}`);
+      }
+
+      // Auto-migrate base64 and auto-restore logos for custom reportCardStructures
+      let structuresUpdated = false;
+      if (Array.isArray(reportCardStructures)) {
+        for (const struct of reportCardStructures) {
+          if (struct && struct.branding) {
+            if (struct.branding.logoUrl && typeof struct.branding.logoUrl === 'string' && struct.branding.logoUrl.startsWith('data:')) {
+              struct.branding.logoUrl = await ensureR2AssetUrl(env, struct.branding.logoUrl, 'logos');
+              structuresUpdated = true;
+            }
+            if (struct.branding.rightLogoUrl && typeof struct.branding.rightLogoUrl === 'string' && struct.branding.rightLogoUrl.startsWith('data:')) {
+              struct.branding.rightLogoUrl = await ensureR2AssetUrl(env, struct.branding.rightLogoUrl, 'logos');
+              structuresUpdated = true;
+            }
+            if (struct.branding.watermarkLogoUrl && typeof struct.branding.watermarkLogoUrl === 'string' && struct.branding.watermarkLogoUrl.startsWith('data:')) {
+              struct.branding.watermarkLogoUrl = await ensureR2AssetUrl(env, struct.branding.watermarkLogoUrl, 'watermarks');
+              structuresUpdated = true;
+            }
+            if (struct.branding.watermarkUrl && typeof struct.branding.watermarkUrl === 'string' && struct.branding.watermarkUrl.startsWith('data:')) {
+              struct.branding.watermarkUrl = await ensureR2AssetUrl(env, struct.branding.watermarkUrl, 'watermarks');
+              structuresUpdated = true;
+            }
+            if (struct.branding.nameBannerUrl && typeof struct.branding.nameBannerUrl === 'string' && struct.branding.nameBannerUrl.startsWith('data:')) {
+              struct.branding.nameBannerUrl = await ensureR2AssetUrl(env, struct.branding.nameBannerUrl, 'banners');
+              structuresUpdated = true;
+            }
+
+            // Restore empty structure logo with main logo or R2 logo
+            if (!struct.branding.logoUrl) {
+              const targetLogo = bObj.logoUrl || latestR2LogoUrl;
+              if (targetLogo) {
+                struct.branding.logoUrl = targetLogo;
+                structuresUpdated = true;
+              }
+            }
+
+            // Restore empty watermarkLogoUrl with main watermark logo or main logo
+            if (!struct.branding.watermarkLogoUrl) {
+              const targetWatermark = bObj.watermarkLogoUrl || struct.branding.logoUrl || bObj.logoUrl || latestR2LogoUrl;
+              if (targetWatermark) {
+                struct.branding.watermarkLogoUrl = targetWatermark;
+                structuresUpdated = true;
+              }
+            }
+          }
+        }
+      }
+
       if (brandingUpdated) {
         try {
           await env.DB.prepare(`UPDATE schools SET branding_json = ? WHERE school_id = ?`).bind(JSON.stringify(bObj), cleanId).run();
+        } catch {}
+      }
+
+      if (structuresUpdated) {
+        try {
+          await env.DB.prepare(`UPDATE schools SET report_structures_json = ? WHERE school_id = ?`).bind(JSON.stringify(reportCardStructures), cleanId).run();
         } catch {}
       }
 
@@ -112,9 +193,22 @@ export async function onRequestGet(context: any) {
       ORDER BY roll_number ASC, full_name ASC
     `).bind(cleanId).all();
 
-    const students = (studentRows.results || []).map((s: any) => {
+    const students = await Promise.all((studentRows.results || []).map(async (s: any) => {
       let extra = {};
       try { if (s.extra_details_json) extra = JSON.parse(s.extra_details_json); } catch {}
+      
+      let photoUrl = s.photo_url || '';
+      // Auto-migrate legacy base64 student photos to R2
+      if (photoUrl && typeof photoUrl === 'string' && photoUrl.startsWith('data:')) {
+        const r2PhotoUrl = await ensureR2AssetUrl(env, photoUrl, 'photos');
+        if (r2PhotoUrl && r2PhotoUrl !== photoUrl) {
+          photoUrl = r2PhotoUrl;
+          try {
+            await env.DB.prepare(`UPDATE students SET photo_url = ? WHERE student_id = ? AND school_id = ?`).bind(r2PhotoUrl, s.student_id, cleanId).run();
+          } catch {}
+        }
+      }
+
       return {
         id: s.student_id,
         rollNo: s.roll_number || '',
@@ -126,10 +220,10 @@ export async function onRequestGet(context: any) {
         dob: s.dob || '',
         gender: s.gender || '',
         mobileNumber: s.phone_number || '',
-        photoUrl: s.photo_url || '',
+        photoUrl,
         ...extra
       };
-    });
+    }));
 
     // 4. Query student_grades table for this school
     const gradeRows = await env.DB.prepare(`
