@@ -2,6 +2,7 @@
 # Usage: npx wrangler pages dev dist --d1 DB=5384ec04-0241-4fcf-8d04-cd205491ac70
 
 name = "report-card-cloudflare"
+pages_build_output_dir = "dist"
 compatibility_date = "2026-09-26"
 
 # ── D1 Database ──────────────────────────────────────────────

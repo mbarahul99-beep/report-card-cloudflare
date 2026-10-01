@@ -29,8 +29,6 @@ export async function onRequestGet(context: any) {
         createdAt: saasMeta.createdAt || r.updated_at || new Date().toISOString(),
         teachers: saasMeta.teachers || [],
         ...saasMeta,
-        username: saasMeta.username || r.school_id,
-        password: saasMeta.password || '',
       };
     });
 
