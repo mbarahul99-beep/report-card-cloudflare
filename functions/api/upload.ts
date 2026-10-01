@@ -62,13 +62,13 @@ export async function onRequestPost(context: any) {
       const url = `/api/assets/${key}`;
       return Response.json({ success: true, url, key, category: cleanCategory });
     } else {
+      console.error('[R2 Upload Error]: R2 bucket binding ASSETS is missing in Cloudflare Pages Functions environment.');
       return Response.json({ 
-        success: true, 
-        url: `/api/assets/${key}`, 
+        success: false, 
+        error: 'R2 Bucket binding ASSETS is missing. Please configure ASSETS R2 binding in Cloudflare Dashboard -> Workers & Pages -> report-card-cloudflare -> Settings -> Functions -> R2 bucket bindings.',
         key, 
-        category: cleanCategory,
-        notice: 'R2 bucket binding deferred; key generated.' 
-      });
+        category: cleanCategory
+      }, { status: 500 });
     }
   } catch (err: any) {
     return Response.json({ success: false, error: err.message }, { status: 500 });
