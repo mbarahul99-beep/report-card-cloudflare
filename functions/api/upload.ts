@@ -2,7 +2,7 @@
 export async function onRequestPost(context: any) {
   const { env, request } = context;
   try {
-    const bucket = env.ASSETS || env.REPORT_CARD_ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
+    const bucket = env.REPORT_CARD_ASSETS || env.ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
     const contentType = request.headers.get('content-type') || '';
     let category = 'assets';
     let fileName = `file_${Date.now()}`;
@@ -62,10 +62,10 @@ export async function onRequestPost(context: any) {
       const url = `/api/assets/${key}`;
       return Response.json({ success: true, url, key, category: cleanCategory });
     } else {
-      console.error('[R2 Upload Error]: R2 bucket binding ASSETS is missing in Cloudflare Pages Functions environment.');
+      console.error('[R2 Upload Error]: R2 bucket binding REPORT_CARD_ASSETS is missing in Cloudflare Pages Functions environment.');
       return Response.json({ 
         success: false, 
-        error: 'R2 Bucket binding ASSETS is missing. Please configure ASSETS R2 binding in Cloudflare Dashboard -> Workers & Pages -> report-card-cloudflare -> Settings -> Functions -> R2 bucket bindings.',
+        error: 'R2 Bucket binding REPORT_CARD_ASSETS is missing. Please configure REPORT_CARD_ASSETS R2 binding in Cloudflare Dashboard -> Workers & Pages -> report-card-cloudflare -> Settings -> Functions -> R2 bucket bindings.',
         key, 
         category: cleanCategory
       }, { status: 500 });
