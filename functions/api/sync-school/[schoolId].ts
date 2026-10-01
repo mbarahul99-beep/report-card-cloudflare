@@ -196,13 +196,44 @@ export async function onRequestPost(context: any) {
 
     const schoolName = payload.schoolName || payload.branding?.schoolName || cleanId;
 
-    // 1. Convert base64 branding images (logo, watermark) to R2 URLs
+    // 1. Convert base64 branding images (logo, watermark, banner) to R2 URLs
     if (payload.branding) {
       if (payload.branding.logoUrl) {
         payload.branding.logoUrl = await ensureR2AssetUrl(env, payload.branding.logoUrl, 'logos');
       }
+      if (payload.branding.rightLogoUrl) {
+        payload.branding.rightLogoUrl = await ensureR2AssetUrl(env, payload.branding.rightLogoUrl, 'logos');
+      }
+      if (payload.branding.watermarkLogoUrl) {
+        payload.branding.watermarkLogoUrl = await ensureR2AssetUrl(env, payload.branding.watermarkLogoUrl, 'watermarks');
+      }
       if (payload.branding.watermarkUrl) {
         payload.branding.watermarkUrl = await ensureR2AssetUrl(env, payload.branding.watermarkUrl, 'watermarks');
+      }
+      if (payload.branding.nameBannerUrl) {
+        payload.branding.nameBannerUrl = await ensureR2AssetUrl(env, payload.branding.nameBannerUrl, 'banners');
+      }
+    }
+
+    if (Array.isArray(payload.reportCardStructures)) {
+      for (const struct of payload.reportCardStructures) {
+        if (struct && struct.branding) {
+          if (struct.branding.logoUrl) {
+            struct.branding.logoUrl = await ensureR2AssetUrl(env, struct.branding.logoUrl, 'logos');
+          }
+          if (struct.branding.rightLogoUrl) {
+            struct.branding.rightLogoUrl = await ensureR2AssetUrl(env, struct.branding.rightLogoUrl, 'logos');
+          }
+          if (struct.branding.watermarkLogoUrl) {
+            struct.branding.watermarkLogoUrl = await ensureR2AssetUrl(env, struct.branding.watermarkLogoUrl, 'watermarks');
+          }
+          if (struct.branding.watermarkUrl) {
+            struct.branding.watermarkUrl = await ensureR2AssetUrl(env, struct.branding.watermarkUrl, 'watermarks');
+          }
+          if (struct.branding.nameBannerUrl) {
+            struct.branding.nameBannerUrl = await ensureR2AssetUrl(env, struct.branding.nameBannerUrl, 'banners');
+          }
+        }
       }
     }
 

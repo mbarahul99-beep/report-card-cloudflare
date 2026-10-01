@@ -432,7 +432,25 @@ export default function ReportCardStructureSettings({
     setTerm3ScoreColumns(struct.term3ScoreColumns && struct.term3ScoreColumns.length > 0 ? [...struct.term3ScoreColumns] : (struct.scoreColumns ? [...struct.scoreColumns] : []));
     setSelectedExamTermTab('term1');
 
-    const loadedBranding = { ...branding, ...struct.branding };
+    const hasOverride = (struct.useCustomBranding === true) || 
+                        (struct.overrideIdentity === true) || 
+                        (struct.branding?.useCustomBranding === true) || 
+                        (struct.branding?.overrideIdentity === true);
+    setOverrideIdentity(hasOverride);
+
+    const loadedBranding = { 
+      ...branding, 
+      ...struct.branding,
+      useCustomBranding: hasOverride,
+      overrideIdentity: hasOverride
+    };
+
+    if (!hasOverride) {
+      loadedBranding.logoUrl = branding.logoUrl || "";
+      loadedBranding.rightLogoUrl = branding.rightLogoUrl || "";
+      loadedBranding.nameBannerUrl = branding.nameBannerUrl || "";
+    }
+
     if (!loadedBranding.studentFields || loadedBranding.studentFields.length === 0) {
       loadedBranding.studentFields = [
         { id: "name", label: loadedBranding.studentNameLabel || "Student's Name" },
@@ -449,9 +467,6 @@ export default function ReportCardStructureSettings({
     }
 
     setStructureBranding(loadedBranding);
-
-    const hasOverride = struct.useCustomBranding ?? struct.overrideIdentity ?? struct.branding?.useCustomBranding ?? struct.branding?.overrideIdentity ?? !!(struct.branding?.schoolName || struct.branding?.logoUrl || struct.branding?.address || struct.branding?.helpline || struct.branding?.email || struct.branding?.website || struct.branding?.tagline || struct.branding?.watermarkText || struct.branding?.watermarkLogoUrl);
-    setOverrideIdentity(hasOverride);
 
     setStructureGradeScales(struct.gradeScales || [
       { minPercent: 91, maxPercent: 100, grade: 'A1' },
@@ -957,6 +972,7 @@ export default function ReportCardStructureSettings({
       delete brandingPayload.logoUrl;
       delete brandingPayload.rightLogoUrl;
       delete brandingPayload.rightLogoSize;
+      delete brandingPayload.nameBannerUrl;
       delete brandingPayload.address;
       delete brandingPayload.helpline;
       delete brandingPayload.email;
