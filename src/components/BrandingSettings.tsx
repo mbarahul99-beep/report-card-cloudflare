@@ -192,8 +192,13 @@ export default function BrandingSettings({
                       const file = e.target.files?.[0];
                       if (file) {
                         compressAndResizeImage(file, 200, 0.9, async (compressedBase64) => {
-                          const r2Url = await uploadImageToR2(compressedBase64, 'logos');
-                          onUpdate({ ...branding, logoUrl: r2Url });
+                          onUpdate({ ...branding, logoUrl: compressedBase64 });
+                          try {
+                            const r2Url = await uploadImageToR2(compressedBase64, 'logos', `logo_${Date.now()}`);
+                            if (r2Url) onUpdate({ ...branding, logoUrl: r2Url });
+                          } catch (err) {
+                            console.warn("R2 upload note:", err);
+                          }
                         });
                       }
                     }}
@@ -296,8 +301,13 @@ export default function BrandingSettings({
                       const file = e.target.files?.[0];
                       if (file) {
                         compressAndResizeImage(file, 200, 0.9, async (compressedBase64) => {
-                          const r2Url = await uploadImageToR2(compressedBase64, 'logos');
-                          onUpdate({ ...branding, rightLogoUrl: r2Url });
+                          onUpdate({ ...branding, rightLogoUrl: compressedBase64 });
+                          try {
+                            const r2Url = await uploadImageToR2(compressedBase64, 'logos', `right_logo_${Date.now()}`);
+                            if (r2Url) onUpdate({ ...branding, rightLogoUrl: r2Url });
+                          } catch (err) {
+                            console.warn("R2 upload note:", err);
+                          }
                         });
                       }
                     }}
@@ -378,8 +388,13 @@ export default function BrandingSettings({
                     const file = e.target.files?.[0];
                     if (file) {
                       compressAndResizeImage(file, 800, 0.95, async (compressedBase64) => {
-                        const r2Url = await uploadImageToR2(compressedBase64, 'logos', `banner_${Date.now()}`);
-                        onUpdate({ ...branding, nameBannerUrl: r2Url });
+                        onUpdate({ ...branding, nameBannerUrl: compressedBase64 });
+                        try {
+                          const r2Url = await uploadImageToR2(compressedBase64, 'logos', `banner_${Date.now()}`);
+                          if (r2Url) onUpdate({ ...branding, nameBannerUrl: r2Url });
+                        } catch (err) {
+                          console.warn("R2 upload note:", err);
+                        }
                       });
                     }
                   }}
@@ -624,8 +639,13 @@ export default function BrandingSettings({
                           const f = e.target.files?.[0];
                           if (f) {
                             compressAndResizeWatermark(f, async (b64) => {
-                              const r2Url = await uploadImageToR2(b64, 'watermarks', `wm_${Date.now()}`);
-                              onUpdate({ ...branding, watermarkLogoUrl: r2Url });
+                              onUpdate({ ...branding, watermarkLogoUrl: b64 });
+                              try {
+                                const r2Url = await uploadImageToR2(b64, 'watermarks', `wm_${Date.now()}`);
+                                if (r2Url) onUpdate({ ...branding, watermarkLogoUrl: r2Url });
+                              } catch (err) {
+                                console.warn("R2 upload note:", err);
+                              }
                             });
                           }
                           e.target.value = '';

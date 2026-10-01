@@ -1330,8 +1330,13 @@ export default function ReportCardStructureSettings({
                                   <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                                     const f = e.target.files?.[0];
                                     if (f) compressAndResizeImage(f, 200, 0.9, async (b64) => {
-                                      const r2Url = await uploadImageToR2(b64, 'logos', `struct_logo_${Date.now()}`);
-                                      handleBrandingFieldChange('logoUrl', r2Url);
+                                      handleBrandingFieldChange('logoUrl', b64);
+                                      try {
+                                        const r2Url = await uploadImageToR2(b64, 'logos', `struct_logo_${Date.now()}`);
+                                        if (r2Url) handleBrandingFieldChange('logoUrl', r2Url);
+                                      } catch (err) {
+                                        console.warn("R2 upload note:", err);
+                                      }
                                     });
                                   }} />
                                 </label>
@@ -1402,8 +1407,13 @@ export default function ReportCardStructureSettings({
                                   <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                                     const f = e.target.files?.[0];
                                     if (f) compressAndResizeImage(f, 200, 0.9, async (b64) => {
-                                      const r2Url = await uploadImageToR2(b64, 'logos', `struct_right_logo_${Date.now()}`);
-                                      handleBrandingFieldChange('rightLogoUrl', r2Url);
+                                      handleBrandingFieldChange('rightLogoUrl', b64);
+                                      try {
+                                        const r2Url = await uploadImageToR2(b64, 'logos', `struct_right_logo_${Date.now()}`);
+                                        if (r2Url) handleBrandingFieldChange('rightLogoUrl', r2Url);
+                                      } catch (err) {
+                                        console.warn("R2 upload note:", err);
+                                      }
                                     });
                                   }} />
                                 </label>
@@ -1452,8 +1462,13 @@ export default function ReportCardStructureSettings({
                                 <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                                   const f = e.target.files?.[0];
                                   if (f) compressAndResizeImage(f, 800, 0.95, async (b64) => {
-                                    const r2Url = await uploadImageToR2(b64, 'logos', `struct_banner_${Date.now()}`);
-                                    handleBrandingFieldChange('nameBannerUrl', r2Url);
+                                    handleBrandingFieldChange('nameBannerUrl', b64);
+                                    try {
+                                      const r2Url = await uploadImageToR2(b64, 'logos', `struct_banner_${Date.now()}`);
+                                      if (r2Url) handleBrandingFieldChange('nameBannerUrl', r2Url);
+                                    } catch (err) {
+                                      console.warn("R2 upload note:", err);
+                                    }
                                   });
                                 }} />
                               </label>
@@ -1796,8 +1811,13 @@ export default function ReportCardStructureSettings({
                                       const f = e.target.files?.[0];
                                       if (f) {
                                         compressAndResizeWatermark(f, async (b64) => {
-                                          const r2Url = await uploadImageToR2(b64, 'watermarks', `struct_wm_${Date.now()}`);
-                                          handleBrandingFieldChange('watermarkLogoUrl', r2Url);
+                                          handleBrandingFieldChange('watermarkLogoUrl', b64);
+                                          try {
+                                            const r2Url = await uploadImageToR2(b64, 'watermarks', `struct_wm_${Date.now()}`);
+                                            if (r2Url) handleBrandingFieldChange('watermarkLogoUrl', r2Url);
+                                          } catch (err) {
+                                            console.warn("R2 upload note:", err);
+                                          }
                                         });
                                       }
                                       e.target.value = '';
