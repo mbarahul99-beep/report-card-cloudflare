@@ -120,6 +120,16 @@ function buildStudentPrompt(student: any, body: any): string {
   const grade = student.grade || 'E';
   const tone = body.tone || 'encouraging';
   const focus = body.focusArea || 'all_round';
+  const lengthMode = (body.length || 'medium').toLowerCase();
+
+  let lengthInstruction = '';
+  if (lengthMode === 'short') {
+    lengthInstruction = 'Generate EXACTLY 1 short, concise sentence (maximum 15 words total). Do NOT write multiple sentences.';
+  } else if (lengthMode === 'detailed') {
+    lengthInstruction = 'Generate a detailed 3-4 sentence comprehensive remark (45-60 words total) providing in-depth academic & co-scholastic feedback.';
+  } else {
+    lengthInstruction = 'Generate a balanced 2 sentence remark (20-30 words total).';
+  }
 
   // Format academic performance details
   let academicStr = `Overall Percentage: ${pct}%, Grade: ${grade}.`;
@@ -152,16 +162,16 @@ function buildStudentPrompt(student: any, body: any): string {
   if (student.attendance) {
     prompt += `ATTENDANCE: ${student.attendance}\n\n`;
   }
-  prompt += `TEACHER PREFERENCES:\nTone: ${tone}, Focus Area: ${focus}.\n`;
+  prompt += `TEACHER PREFERENCES:\nTone: ${tone}, Focus Area: ${focus}, Desired Length: ${lengthMode}.\n`;
   if (body.customPrompt) {
     prompt += `Custom Teacher Instruction: ${body.customPrompt}\n`;
   }
 
   prompt += `\nCRITICAL INSTRUCTIONS:\n`;
-  prompt += `1. You MUST generate a personalized 2-3 sentence remark specifically tailored to "${name}" using their exact academic subject marks and co-scholastic grades provided above.\n`;
-  prompt += `2. NEVER use generic boilerplate or identical phrases across different students.\n`;
-  prompt += `3. Maintain a constructive, motivating, and encouraging tone suitable for an official school report card.\n`;
-  prompt += `4. Do NOT use demoralizing words. If academic performance is low, highlight their effort, growth potential, and co-scholastic strengths.\n`;
+  prompt += `1. LENGTH REQUIREMENT: ${lengthInstruction}\n`;
+  prompt += `2. You MUST generate a personalized remark specifically tailored to "${name}" using their exact academic subject marks and co-scholastic grades provided above.\n`;
+  prompt += `3. NEVER use generic boilerplate or identical phrases across different students.\n`;
+  prompt += `4. Maintain a constructive, motivating, and encouraging tone suitable for an official school report card.\n`;
   prompt += `5. Output ONLY the plain text remark string with no JSON formatting, headings, or quotes.`;
 
   return prompt;
@@ -209,6 +219,7 @@ function generateDynamicFallbackRemark(student: any, body: any): string {
   const name = student.name || 'Student';
   const pct = student.percentage ?? 0;
   const grade = student.grade || 'E';
+  const lengthMode = (body?.length || 'medium').toLowerCase();
 
   let highestSubj = '';
   let lowestSubj = '';
@@ -234,6 +245,20 @@ function generateDynamicFallbackRemark(student: any, body: any): string {
     }
   }
 
+  // SHORT MODE: 1 concise sentence
+  if (lengthMode === 'short') {
+    if (pct >= 85) {
+      return `${name} exhibits outstanding academic performance (${pct}%, Grade ${grade}) and exemplary classroom conduct.`;
+    } else if (pct >= 70) {
+      return `${name} maintains strong academic consistency (Grade ${grade}) and positive participation in school activities.`;
+    } else if (pct >= 50) {
+      return `${name} shows steady classroom learning (Grade ${grade}) and good engagement in co-scholastic domains.`;
+    } else {
+      return `${name} displays positive learning potential and continues to work towards strengthening core academics.`;
+    }
+  }
+
+  // MEDIUM & DETAILED MODE
   let s1 = '';
   if (pct >= 85) {
     s1 = `${name} has achieved outstanding academic results this session with an overall Grade ${grade} (${pct}%).`;
@@ -258,6 +283,11 @@ function generateDynamicFallbackRemark(student: any, body: any): string {
     s2 = `${name} maintains positive classroom discipline, works well with peers, and displays good civic behavior.`;
   }
 
+  if (lengthMode === 'medium') {
+    return `${s1} ${s2}`;
+  }
+
+  // DETAILED MODE: 3 sentences
   let s3 = '';
   if (lowestSubj) {
     s3 = `With regular study habits and guidance in ${lowestSubj}, ${name} can significantly boost overall academic achievement.`;
