@@ -61,19 +61,19 @@ export async function onRequestPost(context: any) {
       }, { status: 400 });
     }
 
-    const modelName = 'gemini-1.5-flash';
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
-
     // Bulk Student Generation
     if (body.isBulk && Array.isArray(body.students)) {
       const results = [];
       for (const st of body.students) {
         const prompt = buildStudentPrompt(st, body);
-        const remarkText = await callGeminiModel(geminiUrl, prompt);
+        let remarkText = await callGeminiModel(apiKey, prompt);
+        if (!remarkText || !remarkText.trim()) {
+          remarkText = generateDynamicFallbackRemark(st, body);
+        }
         results.push({
           studentId: st.id || st.studentId || '',
           studentName: st.name || '',
-          remarks: remarkText || 'An encouraging, dedicated student showing good academic progress.',
+          remarks: remarkText,
           promotionStatus: computePromotionStatus(st)
         });
       }
@@ -88,16 +88,22 @@ export async function onRequestPost(context: any) {
     // Single Student Generation
     const singleStudent = body.student || {};
     const prompt = buildStudentPrompt(singleStudent, body);
-    const remarks = await callGeminiModel(geminiUrl, prompt);
+    let remarks = await callGeminiModel(apiKey, prompt);
+    if (!remarks || !remarks.trim()) {
+      remarks = generateDynamicFallbackRemark(singleStudent, body);
+    }
+
+    const option2 = `${singleStudent.name || 'The student'} demonstrates steady engagement in classroom learning, exhibiting commendable conduct in co-scholastic activities and strong personal discipline.`;
+    const option3 = `Shows consistent effort across academic subjects, active participation in school activities, and positive growth potential.`;
 
     return Response.json({
       success: true,
       isAiPowered: true,
-      remarks: remarks || 'An encouraging, dedicated student showing consistent academic effort.',
+      remarks: remarks,
       options: [
         remarks,
-        `${singleStudent.name || 'The student'} demonstrates a strong commitment to learning and maintains excellent classroom conduct.`,
-        `Shows consistent performance across academic subjects and active participation in class activities.`
+        option2,
+        option3
       ],
       promotionStatus: computePromotionStatus(singleStudent)
     });
@@ -110,46 +116,156 @@ export async function onRequestPost(context: any) {
 
 function buildStudentPrompt(student: any, body: any): string {
   const name = student.name || 'Student';
-  const pct = student.percentage ?? 75;
-  const grade = student.grade || 'B';
+  const pct = student.percentage ?? 0;
+  const grade = student.grade || 'E';
   const tone = body.tone || 'encouraging';
   const focus = body.focusArea || 'all_round';
-  const strong = (student.strongSubjects || []).join(', ') || 'General Subjects';
-  const weak = (student.weakSubjects || []).join(', ');
 
-  let prompt = `Write a constructive, professional 2-3 sentence report card remark for a student named "${name}".\n`;
-  prompt += `Academic Percentage: ${pct}%, Overall Grade: ${grade}.\n`;
-  prompt += `Strong Area: ${strong}.\n`;
-  if (weak) prompt += `Area needing improvement: ${weak}.\n`;
-  prompt += `Tone: ${tone}, Focus Area: ${focus}.\n`;
-  prompt += `Instructions: Do NOT use negative or demoralizing words. Keep it motivating, realistic, and positive for school report cards. Return ONLY the plain text remark string with no JSON formatting or quotes.`;
+  // Format academic performance details
+  let academicStr = `Overall Percentage: ${pct}%, Grade: ${grade}.`;
+  if (Array.isArray(student.subjectsSummary) && student.subjectsSummary.length > 0) {
+    const subjList = student.subjectsSummary
+      .map((s: any) => `${s.name}: ${s.marks}/${s.maxMarks}${s.grade ? ` (Grade ${s.grade})` : ''}`)
+      .join(', ');
+    academicStr += ` Subject Breakdown: ${subjList}.`;
+  } else if (student.strongSubjects && student.strongSubjects.length > 0) {
+    academicStr += ` Strong Areas: ${student.strongSubjects.join(', ')}.`;
+  }
+  if (student.weakSubjects && student.weakSubjects.length > 0) {
+    academicStr += ` Needs attention in: ${student.weakSubjects.join(', ')}.`;
+  }
+
+  // Format co-scholastic details
+  let coScholasticStr = '';
+  if (Array.isArray(student.coScholasticSummary) && student.coScholasticSummary.length > 0) {
+    const csList = student.coScholasticSummary
+      .map((cs: any) => `${cs.name}: Grade ${cs.grade}`)
+      .join(', ');
+    coScholasticStr = `Co-Scholastic & Personal Development: ${csList}.`;
+  }
+
+  let prompt = `You are an experienced school teacher writing a personalized, positive, and constructive report card remark for a student named "${name}".\n\n`;
+  prompt += `STUDENT ACADEMIC PERFORMANCE:\n${academicStr}\n\n`;
+  if (coScholasticStr) {
+    prompt += `STUDENT CO-SCHOLASTIC PERFORMANCE:\n${coScholasticStr}\n\n`;
+  }
+  if (student.attendance) {
+    prompt += `ATTENDANCE: ${student.attendance}\n\n`;
+  }
+  prompt += `TEACHER PREFERENCES:\nTone: ${tone}, Focus Area: ${focus}.\n`;
+  if (body.customPrompt) {
+    prompt += `Custom Teacher Instruction: ${body.customPrompt}\n`;
+  }
+
+  prompt += `\nCRITICAL INSTRUCTIONS:\n`;
+  prompt += `1. You MUST generate a personalized 2-3 sentence remark specifically tailored to "${name}" using their exact academic subject marks and co-scholastic grades provided above.\n`;
+  prompt += `2. NEVER use generic boilerplate or identical phrases across different students.\n`;
+  prompt += `3. Maintain a constructive, motivating, and encouraging tone suitable for an official school report card.\n`;
+  prompt += `4. Do NOT use demoralizing words. If academic performance is low, highlight their effort, growth potential, and co-scholastic strengths.\n`;
+  prompt += `5. Output ONLY the plain text remark string with no JSON formatting, headings, or quotes.`;
+
   return prompt;
 }
 
-async function callGeminiModel(url: string, promptText: string): Promise<string> {
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 250
-        }
-      })
-    });
+async function callGeminiModel(apiKey: string, promptText: string): Promise<string> {
+  const models = [
+    'gemini-1.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-flash',
+    'gemini-1.5-pro'
+  ];
 
-    if (!res.ok) {
-      return '';
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 300
+          }
+        })
+      });
+
+      if (!res.ok) continue;
+
+      const data = await res.json().catch(() => ({}));
+      const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (candidateText && candidateText.trim()) {
+        return candidateText.trim();
+      }
+    } catch {
+      continue;
     }
-
-    const data = await res.json();
-    const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return (candidateText || '').trim();
-  } catch {
-    return '';
   }
+
+  return '';
+}
+
+function generateDynamicFallbackRemark(student: any, body: any): string {
+  const name = student.name || 'Student';
+  const pct = student.percentage ?? 0;
+  const grade = student.grade || 'E';
+
+  let highestSubj = '';
+  let lowestSubj = '';
+  if (Array.isArray(student.subjectsSummary) && student.subjectsSummary.length > 0) {
+    const sorted = [...student.subjectsSummary].sort((a: any, b: any) => {
+      const pctA = a.maxMarks ? (a.marks / a.maxMarks) : 0;
+      const pctB = b.maxMarks ? (b.marks / b.maxMarks) : 0;
+      return pctB - pctA;
+    });
+    highestSubj = sorted[0]?.name || '';
+    if (sorted.length > 1) {
+      lowestSubj = sorted[sorted.length - 1]?.name || '';
+    }
+  } else if (student.strongSubjects && student.strongSubjects.length > 0) {
+    highestSubj = student.strongSubjects[0];
+  }
+
+  let coScholasticStrength = '';
+  if (Array.isArray(student.coScholasticSummary) && student.coScholasticSummary.length > 0) {
+    const topCs = student.coScholasticSummary.find((cs: any) => cs.grade === 'A+' || cs.grade === 'A') || student.coScholasticSummary[0];
+    if (topCs) {
+      coScholasticStrength = `${topCs.name} (Grade ${topCs.grade})`;
+    }
+  }
+
+  let s1 = '';
+  if (pct >= 85) {
+    s1 = `${name} has achieved outstanding academic results this session with an overall Grade ${grade} (${pct}%).`;
+    if (highestSubj) s1 += ` Demonstrates exceptional analytical skills and mastery in ${highestSubj}.`;
+  } else if (pct >= 70) {
+    s1 = `${name} shows strong academic commitment and commendable progress, earning an overall Grade ${grade} (${pct}%).`;
+    if (highestSubj) s1 += ` Performs particularly well in ${highestSubj}.`;
+  } else if (pct >= 50) {
+    s1 = `${name} displays steady learning effort across subjects, securing an overall Grade ${grade} (${pct}%).`;
+    if (highestSubj) s1 += ` Shows good engagement in ${highestSubj}.`;
+  } else if (pct > 0) {
+    s1 = `${name} shows developing academic progress (Grade ${grade}, ${pct}%) and requires targeted support to reach full potential.`;
+    if (highestSubj) s1 += ` Shows positive interest in ${highestSubj}.`;
+  } else {
+    s1 = `${name} exhibits potential in daily classroom activities and continues to work towards strengthening foundational learning.`;
+  }
+
+  let s2 = '';
+  if (coScholasticStrength) {
+    s2 = `In co-scholastic domains, ${name} stands out in ${coScholasticStrength}, showing active participation and team spirit.`;
+  } else {
+    s2 = `${name} maintains positive classroom discipline, works well with peers, and displays good civic behavior.`;
+  }
+
+  let s3 = '';
+  if (lowestSubj) {
+    s3 = `With regular study habits and guidance in ${lowestSubj}, ${name} can significantly boost overall academic achievement.`;
+  } else {
+    s3 = `Consistent practice and active participation will help ${name} achieve greater academic heights in the coming session.`;
+  }
+
+  return `${s1} ${s2} ${s3}`;
 }
 
 function computePromotionStatus(student: any): string {
