@@ -11,14 +11,9 @@ export async function onRequestGet(context: any) {
         const rawKV = await env.CONFIG_CACHE.get(`school_config_${cleanId}`, 'json');
         const rawKVStr = JSON.stringify(rawKV || {});
         const hasBase64Images = rawKVStr.includes('data:image/');
-        const hasEmptyStructureLogo = Array.isArray(rawKV?.reportCardStructures) && rawKV.reportCardStructures.some((st: any) => 
-          st?.branding && (!st.branding.logoUrl || !st.branding.watermarkLogoUrl)
-        );
 
-        // Only use KV cache if it has complete branding, reportCardStructures, no base64 strings, and complete structure logos
-        if (rawKV && rawKV.branding && rawKV.branding.schoolName && 
-            (rawKV.reportCardStructures?.length > 0 || rawKV.branding.logoUrl) &&
-            !hasBase64Images && !hasEmptyStructureLogo) {
+        // Use KV cache if valid branding and no base64 images
+        if (rawKV && rawKV.branding && rawKV.branding.schoolName && !hasBase64Images) {
           cachedConfig = rawKV;
         }
       } catch (kvErr: any) {
@@ -87,56 +82,7 @@ export async function onRequestGet(context: any) {
         brandingUpdated = true;
       }
 
-      // Auto-restore R2 logo and watermark if empty
-      const bucket = env.REPORT_CARD_ASSETS || env.ASSETS || env.R2_BUCKET || env.ASSETS_BUCKET || env.R2;
-      let latestR2LogoUrl = '';
-      let latestR2WatermarkUrl = '';
-      if (bucket) {
-        try {
-          const listRes = await bucket.list({ prefix: 'logos/' });
-          if (listRes && listRes.objects && listRes.objects.length > 0) {
-            const sorted = listRes.objects.sort((a: any, b: any) => 
-              (new Date(b.uploaded || 0).getTime() || 0) - (new Date(a.uploaded || 0).getTime() || 0)
-            );
-            if (sorted[0] && sorted[0].key) {
-              latestR2LogoUrl = `/api/assets/${sorted[0].key}`;
-            }
-          }
-        } catch (r2Err: any) {
-          console.warn("[R2 Auto-Restore Logo Note]:", r2Err.message);
-        }
-
-        try {
-          const wmListRes = await bucket.list({ prefix: 'watermarks/' });
-          if (wmListRes && wmListRes.objects && wmListRes.objects.length > 0) {
-            const wmSorted = wmListRes.objects.sort((a: any, b: any) => 
-              (new Date(b.uploaded || 0).getTime() || 0) - (new Date(a.uploaded || 0).getTime() || 0)
-            );
-            if (wmSorted[0] && wmSorted[0].key) {
-              latestR2WatermarkUrl = `/api/assets/${wmSorted[0].key}`;
-            }
-          }
-        } catch (r2WmErr: any) {
-          console.warn("[R2 Auto-Restore Watermark Note]:", r2WmErr.message);
-        }
-      }
-
-      if (latestR2LogoUrl && !bObj.logoUrl) {
-        bObj.logoUrl = latestR2LogoUrl;
-        brandingUpdated = true;
-        console.log(`[R2 Auto-Restore] Linked main R2 logo ${latestR2LogoUrl} to school branding for ${cleanId}`);
-      }
-
-      if (latestR2WatermarkUrl && !bObj.watermarkLogoUrl) {
-        bObj.watermarkLogoUrl = latestR2WatermarkUrl;
-        brandingUpdated = true;
-        console.log(`[R2 Auto-Restore] Linked main R2 watermark ${latestR2WatermarkUrl} to school branding for ${cleanId}`);
-      } else if (!bObj.watermarkLogoUrl && bObj.logoUrl) {
-        bObj.watermarkLogoUrl = bObj.logoUrl;
-        brandingUpdated = true;
-      }
-
-      // Auto-migrate base64 and auto-restore logos/watermarks for custom reportCardStructures
+      // Auto-migrate base64 for custom reportCardStructures
       let structuresUpdated = false;
       if (Array.isArray(reportCardStructures)) {
         for (const struct of reportCardStructures) {
@@ -162,22 +108,15 @@ export async function onRequestGet(context: any) {
               structuresUpdated = true;
             }
 
-            // Restore empty structure logo with main logo or R2 logo
-            if (!struct.branding.logoUrl) {
-              const targetLogo = bObj.logoUrl || latestR2LogoUrl;
-              if (targetLogo) {
-                struct.branding.logoUrl = targetLogo;
-                structuresUpdated = true;
-              }
+            // Only inherit from this school's own logo if structure logo is not explicitly defined
+            if (!struct.branding.logoUrl && bObj.logoUrl) {
+              struct.branding.logoUrl = bObj.logoUrl;
+              structuresUpdated = true;
             }
 
-            // Restore empty watermarkLogoUrl with latest R2 watermark, main watermark, or logo
-            if (!struct.branding.watermarkLogoUrl) {
-              const targetWatermark = bObj.watermarkLogoUrl || latestR2WatermarkUrl || struct.branding.logoUrl || bObj.logoUrl || latestR2LogoUrl;
-              if (targetWatermark) {
-                struct.branding.watermarkLogoUrl = targetWatermark;
-                structuresUpdated = true;
-              }
+            if (!struct.branding.watermarkLogoUrl && (bObj.watermarkLogoUrl || bObj.logoUrl)) {
+              struct.branding.watermarkLogoUrl = bObj.watermarkLogoUrl || bObj.logoUrl;
+              structuresUpdated = true;
             }
           }
         }
@@ -359,11 +298,11 @@ export async function onRequestPost(context: any) {
         let existingBranding: any = {};
         try { existingBranding = JSON.parse(existingRow.branding_json); } catch {}
         if (payload.branding) {
-          if (!payload.branding.logoUrl && existingBranding.logoUrl) payload.branding.logoUrl = existingBranding.logoUrl;
-          if (!payload.branding.rightLogoUrl && existingBranding.rightLogoUrl) payload.branding.rightLogoUrl = existingBranding.rightLogoUrl;
-          if (!payload.branding.watermarkLogoUrl && existingBranding.watermarkLogoUrl) payload.branding.watermarkLogoUrl = existingBranding.watermarkLogoUrl;
-          if (!payload.branding.watermarkUrl && existingBranding.watermarkUrl) payload.branding.watermarkUrl = existingBranding.watermarkUrl;
-          if (!payload.branding.nameBannerUrl && existingBranding.nameBannerUrl) payload.branding.nameBannerUrl = existingBranding.nameBannerUrl;
+          if (payload.branding.logoUrl === undefined && existingBranding.logoUrl) payload.branding.logoUrl = existingBranding.logoUrl;
+          if (payload.branding.rightLogoUrl === undefined && existingBranding.rightLogoUrl) payload.branding.rightLogoUrl = existingBranding.rightLogoUrl;
+          if (payload.branding.watermarkLogoUrl === undefined && existingBranding.watermarkLogoUrl) payload.branding.watermarkLogoUrl = existingBranding.watermarkLogoUrl;
+          if (payload.branding.watermarkUrl === undefined && existingBranding.watermarkUrl) payload.branding.watermarkUrl = existingBranding.watermarkUrl;
+          if (payload.branding.nameBannerUrl === undefined && existingBranding.nameBannerUrl) payload.branding.nameBannerUrl = existingBranding.nameBannerUrl;
         }
       }
     } catch (e: any) {

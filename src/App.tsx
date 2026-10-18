@@ -951,6 +951,10 @@ export default function App() {
         branding: {
           ...initialBranding,
           schoolName: regSchoolName.trim(), // custom school name
+          logoUrl: "",
+          rightLogoUrl: "",
+          watermarkLogoUrl: "",
+          watermarkText: "",
         },
         scoreColumns: defaultScoreColumns,
         subjects: defaultSubjects,
@@ -959,6 +963,15 @@ export default function App() {
         studentGrades: newSchool.id === 'demo' ? defaultStudentGrades : [],
         reportCardStructures: defaultReportCardStructures
       };
+      try {
+        localStorage.removeItem(`class_on_branding_${newSchool.id}`);
+        localStorage.removeItem(`class_on_score_columns_${newSchool.id}`);
+        localStorage.removeItem(`class_on_subjects_${newSchool.id}`);
+        localStorage.removeItem(`class_on_grade_scales_${newSchool.id}`);
+        localStorage.removeItem(`class_on_students_${newSchool.id}`);
+        localStorage.removeItem(`class_on_student_grades_${newSchool.id}`);
+        localStorage.removeItem(`class_on_structures_${newSchool.id}`);
+      } catch {}
       await saveSchoolToCloud(newSchool.id, initialCloudData, regSchoolName.trim(), stablePortalCode);
 
       // 3. Update local state
@@ -2209,14 +2222,14 @@ export default function App() {
               }
             }
 
-            // Safeguard: Preserve existing local logo/watermark if cloud branding returned blank logo keys
+            // Safeguard: Preserve existing local logo/watermark ONLY if cloud branding returned undefined logo keys
             try {
               const storedLocalBranding = localStorage.getItem(`class_on_branding_${currentSchoolId}`);
               if (storedLocalBranding) {
                 const localParsed = JSON.parse(storedLocalBranding);
-                if (!mergedCloudBranding.logoUrl && localParsed.logoUrl) mergedCloudBranding.logoUrl = localParsed.logoUrl;
-                if (!mergedCloudBranding.rightLogoUrl && localParsed.rightLogoUrl) mergedCloudBranding.rightLogoUrl = localParsed.rightLogoUrl;
-                if (!mergedCloudBranding.watermarkLogoUrl && localParsed.watermarkLogoUrl) mergedCloudBranding.watermarkLogoUrl = localParsed.watermarkLogoUrl;
+                if (mergedCloudBranding.logoUrl === undefined && localParsed.logoUrl) mergedCloudBranding.logoUrl = localParsed.logoUrl;
+                if (mergedCloudBranding.rightLogoUrl === undefined && localParsed.rightLogoUrl) mergedCloudBranding.rightLogoUrl = localParsed.rightLogoUrl;
+                if (mergedCloudBranding.watermarkLogoUrl === undefined && localParsed.watermarkLogoUrl) mergedCloudBranding.watermarkLogoUrl = localParsed.watermarkLogoUrl;
               }
             } catch {}
 
