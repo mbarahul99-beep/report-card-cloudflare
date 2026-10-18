@@ -4068,171 +4068,199 @@ export default function App() {
 
   if (!currentRole) {
     return (
-      <div className="bg-slate-50 h-screen w-screen overflow-hidden text-slate-800 flex flex-col justify-center items-center p-2 sm:p-3 relative font-sans">
-        {/* Soft elegant pastel background decor */}
-        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-indigo-100 rounded-full blur-[120px] opacity-45 select-none pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[450px] h-[450px] bg-emerald-100 rounded-full blur-[150px] opacity-45 select-none pointer-events-none"></div>
+      <div className="min-h-screen w-screen bg-slate-100 sm:bg-slate-200/70 flex items-center justify-center sm:p-4 font-sans select-none sm:select-auto">
+        {/* Soft background ambient glow on desktop */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none select-none">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-200/40 rounded-full blur-[140px]" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-200/40 rounded-full blur-[140px]" />
+        </div>
 
-        {/* Double Border Frame for Authentic Indian School Feeling */}
-        <div className="w-full max-w-[350px] bg-white border border-slate-200 rounded-2xl p-1 shadow-lg relative z-10">
-          <div className="border-2 border-double border-slate-200 rounded-xl p-4 sm:p-5 bg-white relative space-y-3.5 overflow-hidden">
+        {/* Card Container mimicking mobile/modern app container matching user reference */}
+        <div className="w-full sm:max-w-[440px] h-screen sm:h-[92vh] sm:max-h-[900px] bg-[#007474] sm:rounded-[40px] shadow-2xl flex flex-col overflow-hidden relative z-10 sm:border border-teal-800/30">
+          
+          {/* Top Teal Header with organic abstract shapes matching reference image */}
+          <div className="h-28 sm:h-32 bg-[#007474] relative overflow-hidden shrink-0 select-none">
+            {/* Top status bar aesthetic */}
+            <div className="flex justify-between items-center px-7 pt-3 text-white/90 text-xs font-semibold">
+              <span className="tracking-tight font-medium">9:41</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] tracking-widest font-mono">●●●</span>
+                <span className="text-xs">📶</span>
+                <span className="text-xs">🔋</span>
+              </div>
+            </div>
+
+            {/* Organic mint shapes in top-left matching reference image */}
+            <svg 
+              className="absolute -top-4 -left-4 w-36 h-36 text-[#4cbfa8]/85 pointer-events-none" 
+              viewBox="0 0 100 100" 
+              fill="currentColor"
+            >
+              <path d="M15,0 C55,-5 85,25 85,60 C85,90 60,98 35,90 C12,82 -2,62 0,30 Z" />
+            </svg>
+            <svg 
+              className="absolute top-3 left-7 w-20 h-20 text-[#66d2bc]/60 pointer-events-none" 
+              viewBox="0 0 100 100" 
+              fill="currentColor"
+            >
+              <path d="M10,10 C45,0 75,20 75,50 C75,75 50,85 25,75 C5,65 0,40 10,10 Z" />
+            </svg>
+          </div>
+
+          {/* Main White Card with rounded-t-[36px] */}
+          <div className="flex-1 bg-white rounded-t-[36px] flex flex-col overflow-hidden shadow-2xl relative">
             
-            {/* Elegant high fidelity loading overlay */}
+            {/* High fidelity loading overlay */}
             {isCloudSyncing && (
-              <div className="absolute inset-0 bg-white/95 backdrop-blur-md rounded-xl flex flex-col items-center justify-center p-4 text-center space-y-4 z-[100] animate-fadeIn">
+              <div className="absolute inset-0 bg-white/95 backdrop-blur-md rounded-t-[36px] flex flex-col items-center justify-center p-6 text-center space-y-4 z-[100] animate-fadeIn">
                 <div className="relative w-12 h-12">
-                  <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
-                  <div className="absolute inset-0 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 border-4 border-teal-100 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-[#007474] border-t-transparent rounded-full animate-spin"></div>
                 </div>
-                <div className="space-y-1 max-w-[240px]">
-                  <h4 className="text-slate-900 font-black text-[11px] uppercase tracking-widest animate-pulse">Running Sandbox Sync</h4>
-                  <p className="text-[9px] text-slate-550 font-mono tracking-tight leading-normal">
+                <div className="space-y-1 max-w-[260px]">
+                  <h4 className="text-slate-900 font-black text-xs uppercase tracking-widest animate-pulse">Running Sandbox Sync</h4>
+                  <p className="text-xs text-slate-500 font-mono tracking-tight leading-normal">
                     {cloudSyncMessage || "Communicating with school cloud database..."}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Header / Brand */}
-            {isSeparateParentPortal ? (() => {
-              const matchedLoginSchool = schools.find(s => {
-                const schoolCode = (s.portalCode || '').toUpperCase().trim();
-                const inputCode = parentPortalCodeInput.toUpperCase().trim();
-                
-                if (schoolCode === inputCode) return true;
-                
-                if (s.id === 'sc_xavier') {
-                  if (inputCode === 'XAVI-9821' || inputCode.startsWith('STXA-') || inputCode.includes('STXA') || inputCode.includes('XAVI')) {
-                    return true;
-                  }
-                }
-                
-                if (s.id === 'sc_dps') {
-                  if (inputCode === 'DELH-3091' || inputCode.startsWith('DELH-') || inputCode.includes('DELH') || inputCode.includes('DPS')) {
-                    return true;
-                  }
-                }
-                
-                return false;
-              });
-              const headerTitle = matchedLoginSchool ? matchedLoginSchool.name : "Parents Report Gateway";
-              return (
-                <div className="text-center space-y-1 relative">
-                  <div className="inline-flex items-center justify-center bg-emerald-50 border border-emerald-150 w-9 h-9 rounded-lg text-emerald-600 mb-0.5">
-                    <GraduationCap className="w-4 h-4 animate-pulse" />
-                  </div>
-                  <h2 className="text-xs font-black tracking-wider text-slate-950 uppercase font-sans truncate">
-                    {headerTitle}
-                  </h2>
-                  <p className="text-[10px] text-slate-500 max-w-[280px] mx-auto leading-normal font-medium">
-                    Parents Online Report Card Hub. Log in using ward's Roll Number and Date of Birth.
-                  </p>
-                </div>
-              );
-            })() : loginTab === 'owner' ? (
-              <div className="text-center space-y-1">
-                <div className="inline-flex items-center justify-center bg-teal-50 border border-teal-150 w-9 h-9 rounded-lg text-teal-600 mb-0.5 animate-pulse">
-                  <Shield className="w-4 h-4" />
-                </div>
-                <h2 className="text-xs font-black tracking-wider text-slate-950 uppercase font-sans">
-                  Platform Owner Access Console
-                </h2>
-                <p className="text-[10px] text-slate-500 max-w-[280px] mx-auto leading-normal font-medium">
-                  Enter registered owner email and authenticate using secure Google SSO to unlock.
-                </p>
-              </div>
-            ) : (
-              <div className="text-center space-y-1">
-                <div className="inline-flex items-center justify-center bg-indigo-50 border border-indigo-150 w-9 h-9 rounded-lg text-indigo-600 mb-0.5">
-                  <Landmark className="w-4 h-4 animate-pulse" />
-                </div>
-                <h2 className="text-xs font-black tracking-wider text-slate-950 uppercase font-sans">
-                  School Report Card
-                </h2>
-              </div>
-            )}
-
-            {/* Portal Tab Switcher */}
-            {!isSeparateParentPortal && loginTab !== 'owner' ? (
-              <div className="grid grid-cols-2 bg-slate-100 p-0.5 border border-slate-200 rounded-lg text-[10px] uppercase font-bold tracking-wider relative select-none gap-0.5">
+            {/* Title & Mode Switcher */}
+            <div className="px-7 pt-6 pb-2 shrink-0">
+              {loginTab === 'owner' || loginTab === 'agent' ? (
                 <button
                   type="button"
-                  onClick={() => { setLoginTab('school'); setAuthError(''); }}
-                  className={`py-1.5 text-center rounded-md transition-all cursor-pointer ${loginTab === 'school' ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/50' : 'text-slate-500 hover:text-slate-800'}`}
-                >
-                  School Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setLoginTab('teacher'); setAuthError(''); }}
-                  className={`py-1.5 text-center rounded-md transition-all cursor-pointer ${loginTab === 'teacher' ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/50' : 'text-slate-500 hover:text-slate-800'}`}
-                >
-                  Teachers
-                </button>
-              </div>
-            ) : loginTab === 'owner' || loginTab === 'agent' ? (
-              <div className="text-center">
-                <button 
-                  type="button" 
                   onClick={() => { setLoginTab('school'); setAuthError(''); setIsAgentOnboardingForm(false); }}
-                  className="text-[9px] text-teal-650 hover:text-teal-700 hover:underline cursor-pointer font-extrabold transition-colors flex items-center justify-center gap-1 mx-auto"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#007474] hover:text-[#005555] transition-colors cursor-pointer group mb-2"
                 >
-                  &larr; Switch to Public Portals
+                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                  <span>Return to Public Portal</span>
                 </button>
-              </div>
-            ) : null}
+              ) : null}
 
-            {/* Login form */}
+              <h1 className="text-3xl font-extrabold text-[#00605c] tracking-tight">
+                {isSeparateParentPortal ? "Parent Portal" : loginTab === 'owner' ? "Owner Console" : loginTab === 'agent' ? "Partner Portal" : "Sign In"}
+              </h1>
+              <p className="text-xs text-slate-400 font-medium mt-1">
+                {isSeparateParentPortal 
+                  ? (() => {
+                      const matchedLoginSchool = schools.find(s => {
+                        const schoolCode = (s.portalCode || '').toUpperCase().trim();
+                        const inputCode = parentPortalCodeInput.toUpperCase().trim();
+                        if (schoolCode === inputCode) return true;
+                        if (s.id === 'sc_xavier' && (inputCode === 'XAVI-9821' || inputCode.startsWith('STXA-') || inputCode.includes('STXA') || inputCode.includes('XAVI'))) return true;
+                        if (s.id === 'sc_dps' && (inputCode === 'DELH-3091' || inputCode.startsWith('DELH-') || inputCode.includes('DELH') || inputCode.includes('DPS'))) return true;
+                        return false;
+                      });
+                      return matchedLoginSchool ? `${matchedLoginSchool.name} — Report Gateway` : "Online Student Report Card Gateway";
+                    })()
+                  : loginTab === 'owner' 
+                  ? "Enterprise Master Administration & Platform Security"
+                  : loginTab === 'agent'
+                  ? "Partner Onboarding & Referral Program Hub"
+                  : "School Report Card & Student Analytics Platform"}
+              </p>
+
+              {/* Portal Tab Switcher for School Admin vs Teachers */}
+              {!isSeparateParentPortal && loginTab !== 'owner' && loginTab !== 'agent' && (
+                <div className="grid grid-cols-2 bg-[#f1f5f9] p-1 rounded-full text-xs font-bold tracking-wider relative select-none gap-1 mt-3 border border-slate-200/70">
+                  <button
+                    type="button"
+                    onClick={() => { setLoginTab('school'); setAuthError(''); }}
+                    className={`py-2 text-center rounded-full transition-all cursor-pointer font-bold ${
+                      loginTab === 'school' 
+                        ? 'bg-[#007474] text-white shadow-sm' 
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    School Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setLoginTab('teacher'); setAuthError(''); }}
+                    className={`py-2 text-center rounded-full transition-all cursor-pointer font-bold ${
+                      loginTab === 'teacher' 
+                        ? 'bg-[#007474] text-white shadow-sm' 
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Teachers
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Scrollable Form Body with Sticky Bottom Action */}
             {isAgentOnboardingForm ? (
-              <form onSubmit={handleAgentOnboardingSubmit} className="space-y-3 pt-1 animate-fadeIn">
-                <div className="bg-teal-50 border border-teal-100 p-2.5 rounded-xl text-center space-y-1">
-                  <h4 className="text-[10.5px] font-extrabold text-teal-850">🌟 Partner Profile Creation</h4>
-                  <p className="text-[9.5px] text-teal-700 leading-tight">Complete your agent profile to activate your custom referral code and start earning commissions.</p>
+              <form onSubmit={handleAgentOnboardingSubmit} className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto px-7 py-3 space-y-4">
+                  <div className="bg-teal-50 border border-teal-200 p-3 rounded-2xl text-center space-y-1">
+                    <h4 className="text-xs font-extrabold text-[#00605c]">🌟 Partner Profile Creation</h4>
+                    <p className="text-[10px] text-teal-700 leading-tight">Complete your agent profile to activate your custom referral code and start earning commissions.</p>
+                  </div>
+
+                  {authError && (
+                    <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-2xl text-center animate-shake leading-relaxed">
+                      ⚠️ {authError}
+                    </p>
+                  )}
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">Your Full Name</label>
+                    <div className="relative flex items-center">
+                      <div className="absolute left-4 text-slate-400 pointer-events-none">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Rahul Sharma"
+                        value={agentRegName}
+                        onChange={(e) => setAgentRegName(e.target.value)}
+                        className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">Custom Referral Code</label>
+                    <div className="relative flex items-center">
+                      <div className="absolute left-4 text-slate-400 pointer-events-none">
+                        <Tag className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. SHARMA10"
+                        value={agentRegCode}
+                        onChange={(e) => setAgentRegCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))}
+                        className="w-full bg-[#f8fafc] border border-slate-200/90 text-teal-950 font-mono uppercase font-bold rounded-full py-3.5 pl-11 pr-5 text-sm outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      />
+                    </div>
+                    <p className="text-[9px] text-slate-400 pl-3.5">This code will form your personal school onboarding link.</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">Payout Credentials</label>
+                    <textarea
+                      required
+                      placeholder="Provide details where platform admin can transfer your commission earnings..."
+                      value={agentRegPayout}
+                      onChange={(e) => setAgentRegPayout(e.target.value)}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-2xl p-3.5 text-sm font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20 h-20 resize-none"
+                    />
+                  </div>
                 </div>
 
-                {authError && (
-                  <p className="text-[10px] font-semibold text-rose-605 bg-rose-50 border border-rose-150 p-2 rounded-lg text-center animate-shake leading-relaxed">
-                    ⚠️ {authError}
-                  </p>
-                )}
-
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Your Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Rahul Sharma"
-                    value={agentRegName}
-                    onChange={(e) => setAgentRegName(e.target.value)}
-                    className="w-full bg-white border border-slate-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Custom Referral Code</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. SHARMA10"
-                    value={agentRegCode}
-                    onChange={(e) => setAgentRegCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))}
-                    className="w-full bg-white border border-slate-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 text-teal-950 font-mono rounded-xl py-1.5 px-3 text-xs font-bold outline-none"
-                  />
-                  <p className="text-[8px] text-slate-400">This code will form your personal school onboarding link.</p>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Bank / PayPal Payout Credentials</label>
-                  <textarea
-                    required
-                    placeholder="Provide details where platform admin can transfer your commission earnings..."
-                    value={agentRegPayout}
-                    onChange={(e) => setAgentRegPayout(e.target.value)}
-                    className="w-full bg-white border border-slate-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold outline-none h-16 resize-none"
-                  />
-                </div>
-
-                <div className="pt-2 flex gap-2">
+                <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-7 py-4 border-t border-slate-100 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] shrink-0 z-20 space-y-2">
+                  <button
+                    type="submit"
+                    disabled={isCloudSyncing}
+                    className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {isCloudSyncing ? "Saving Profile..." : "Activate Partner Hub"}
+                  </button>
                   <button
                     type="button"
                     onClick={async () => {
@@ -4240,629 +4268,35 @@ export default function App() {
                       setAuthError('');
                       await fbSignOut(auth);
                     }}
-                    className="w-1/3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs py-2 px-3 rounded-xl transition-all cursor-pointer text-center"
+                    className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-4 rounded-full transition-all cursor-pointer text-center"
                   >
                     Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCloudSyncing}
-                    className="w-2/3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs py-2 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    {isCloudSyncing ? "Saving Profile..." : "Activate Partner Hub"}
                   </button>
                 </div>
               </form>
             ) : loginTab === 'agent' ? (
-              // General Agent login tab instructions
-              <div className="space-y-3.5 pt-1 animate-fadeIn">
-                {authError && (
-                  <p className="text-[10px] font-semibold text-rose-605 bg-rose-50 border border-rose-150 p-2 rounded-lg text-center animate-shake leading-relaxed">
-                    ⚠️ {authError}
-                  </p>
-                )}
-
-                <div className="text-center py-2.5">
-                  <p className="text-[10px] text-slate-500 font-semibold mb-2">Authenticated with secure Google Sign-In:</p>
-                  {isCloudSyncing ? (
-                    <div className="flex items-center justify-center gap-2 text-xs font-mono text-teal-700 bg-teal-50 border border-teal-150 p-2 rounded-lg">
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-600" />
-                      <span>{cloudSyncMessage || "Syncing partner credentials..."}</span>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setAuthError('');
-                        setIsCloudSyncing(true);
-                        setCloudSyncMessage("Opening Google Login for Partners...");
-                        try {
-                          await signInWithPopup(auth, googleProvider);
-                        } catch (err: any) {
-                          console.warn("Google Auth info:", err);
-                          const isCancelled = err?.code === 'auth/popup-closed-by-user' || 
-                                              err?.code === 'auth/cancelled-popup-request' ||
-                                              err?.message?.includes('aborted') ||
-                                              err?.message?.includes('AbortError') ||
-                                              err?.message?.includes('closed') ||
-                                              err?.message?.includes('cancelled');
-                          setAuthError(isCancelled ? "Google Sign-In was closed or cancelled. Please try again." : (err?.message || "Sign-In cancelled."));
-                        } finally {
-                          setIsCloudSyncing(false);
-                        }
-                      }}
-                      className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs py-2 px-3 rounded-xl shadow-lg shadow-teal-600/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                        <path
-                          fill="currentColor"
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                          fill="currentColor"
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                          fill="currentColor"
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                        />
-                        <path
-                          fill="currentColor"
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                        />
-                      </svg>
-                      Partner Login/Sign Up
-                    </button>
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto px-7 py-3 space-y-4">
+                  {authError && (
+                    <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-2xl text-center animate-shake leading-relaxed">
+                      ⚠️ {authError}
+                    </p>
                   )}
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleLogin} className="space-y-2.5 pt-0.5">
-              
-              {/* Conditional School ID column */}
-              {(loginTab === 'school' || loginTab === 'teacher') && (
-                <div className="space-y-1 animate-fadeIn">
-                  <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                    School Login ID
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="e.g. xavier101, dps2026..."
-                      value={schoolInput}
-                      onChange={(e) => {
-                        setSchoolInput(e.target.value.toLowerCase().replace(/\s+/g, ''));
-                        if (authError) setAuthError('');
-                      }}
-                      required
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10"
-                      autoFocus
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-[9px] font-bold bg-slate-50 border border-slate-150 px-1.5 py-0.5 rounded">
-                      ID
-                    </div>
+                  <div className="bg-teal-50 border border-teal-200 p-4 rounded-2xl text-center space-y-2">
+                    <h4 className="text-sm font-extrabold text-[#00605c]">Partner &amp; Agent Onboarding</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Sign in with your verified Google account to access your referral dashboard, track referred schools, and manage payout rewards.
+                    </p>
                   </div>
                 </div>
-              )}
 
-              {/* Conditional Teacher username column */}
-              {loginTab === 'teacher' && (
-                <div className="space-y-1 animate-fadeIn">
-                  <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                    Teacher Login ID
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="e.g. sharmateach..."
-                      value={teacherInput}
-                      onChange={(e) => {
-                        setTeacherInput(e.target.value.toLowerCase().replace(/\s+/g, ''));
-                        if (authError) setAuthError('');
-                      }}
-                      required
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10"
-                    />
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                      <User className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Conditional Parents Portal Login Fields */}
-              {loginTab === 'parent' && (() => {
-                // Resolve school and its branding to know enabled options
-                const cleanPortalCode = parentPortalCodeInput.trim().toUpperCase();
-                const matchedSchool = schools.find(s => {
-                  const sCode = (s.portalCode || '').toUpperCase().trim();
-                  if (sCode === cleanPortalCode) return true;
-                  if (s.id === 'sc_xavier' && (cleanPortalCode === 'XAVI-9821' || cleanPortalCode.startsWith('STXA-') || cleanPortalCode.includes('XAVI'))) return true;
-                  if (s.id === 'sc_dps' && (cleanPortalCode === 'DELH-3091' || cleanPortalCode.startsWith('DELH-') || cleanPortalCode.includes('DPS') || cleanPortalCode.includes('DELH'))) return true;
-                  return false;
-                }) || schools[0];
-
-                const currentSchoolBranding = matchedSchool?.branding || (currentSchoolId === matchedSchool?.id ? branding : initialBranding);
-                const currentSchoolStructures = (currentSchoolId === matchedSchool?.id ? reportCardStructures : []);
-                const resolvedConfig = getParentPortalLoginConfig(currentSchoolBranding, currentSchoolStructures);
-                const availableMethods = resolvedConfig.availableMethods;
-                const activeMethod = availableMethods.includes(parentLoginMethod) ? parentLoginMethod : resolvedConfig.defaultLoginMode;
-
-                return (
-                  <div className="space-y-2.5 animate-fadeIn">
-                    {/* Portal Access Code (Locked) */}
-                    <div className="space-y-1">
-                      <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                        Parents Portal Code
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="e.g. XAVI-9821..."
-                          value={parentPortalCodeInput}
-                          readOnly
-                          required
-                          className="w-full bg-slate-50 border border-slate-200 text-slate-400 cursor-not-allowed select-none rounded-lg py-1.5 px-3 text-xs font-semibold outline-none transition-all pr-20"
-                        />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-rose-600 font-mono text-[8px] font-bold flex items-center gap-0.5 bg-rose-50 border border-rose-150 px-1 py-0.5 rounded shadow-xs">
-                          <Lock className="w-2 h-2" /> LOCKED
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Dynamic Method Switcher tabs if school enabled multiple methods */}
-                    {availableMethods.length > 1 && (
-                      <div className="space-y-1 pt-0.5">
-                        <label className="text-[8.5px] uppercase font-extrabold text-indigo-700 tracking-wider flex items-center justify-between">
-                          <span>Authentication Option</span>
-                          <span className="text-[8px] text-slate-400 font-normal">Choose method</span>
-                        </label>
-                        <div className={`grid ${availableMethods.length === 2 ? 'grid-cols-2' : availableMethods.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-1 bg-slate-100/90 p-1 rounded-lg border border-slate-200/80`}>
-                          {availableMethods.map(m => (
-                            <button
-                              key={m}
-                              type="button"
-                              onClick={() => {
-                                setParentLoginMethod(m);
-                                if (authError) setAuthError('');
-                              }}
-                              className={`py-1.5 px-1.5 rounded-md text-[9.5px] font-bold tracking-tight transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                                activeMethod === m
-                                  ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-extrabold'
-                                  : 'text-slate-500 hover:text-slate-800'
-                              }`}
-                            >
-                              {m === 'roll_dob' && <><Hash className="w-3 h-3 text-indigo-600 shrink-0" /> <span className="truncate">Roll + DOB</span></>}
-                              {m === 'adm_dob' && <><KeyRound className="w-3 h-3 text-indigo-600 shrink-0" /> <span className="truncate">Adm + DOB</span></>}
-                              {m === 'mob_roll' && <><Smartphone className="w-3 h-3 text-emerald-600 shrink-0" /> <span className="truncate">Mobile + Roll</span></>}
-                              {m === 'mob_adm' && <><Smartphone className="w-3 h-3 text-teal-600 shrink-0" /> <span className="truncate">Mobile + Adm</span></>}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Option 1: Roll No + DOB */}
-                    {activeMethod === 'roll_dob' && (
-                      <>
-                        <div className="space-y-1 animate-fadeIn">
-                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                            Student Roll Number
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              placeholder="e.g. 10"
-                              value={parentRollNoInput}
-                              onChange={(e) => {
-                                setParentRollNoInput(e.target.value.trim());
-                                if (authError) setAuthError('');
-                              }}
-                              required
-                              className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10"
-                            />
-                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                              <Hash className="w-3.5 h-3.5" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1 animate-fadeIn">
-                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                            Student Date of Birth (DOB)
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="date"
-                              value={parentDOBInput}
-                              onChange={(e) => {
-                                setParentDOBInput(e.target.value);
-                                if (authError) setAuthError('');
-                              }}
-                              required
-                              className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all"
-                            />
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Option 2: Admission No + DOB */}
-                    {activeMethod === 'adm_dob' && (
-                      <>
-                        <div className="space-y-1 animate-fadeIn">
-                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                            Student Admission Number
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              placeholder="e.g. ADM-2024-001"
-                              value={parentAdmissionNoInput}
-                              onChange={(e) => {
-                                setParentAdmissionNoInput(e.target.value.trim());
-                                if (authError) setAuthError('');
-                              }}
-                              required
-                              className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10"
-                            />
-                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                              <KeyRound className="w-3.5 h-3.5" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1 animate-fadeIn">
-                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                            Student Date of Birth (DOB)
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="date"
-                              value={parentDOBInput}
-                              onChange={(e) => {
-                                setParentDOBInput(e.target.value);
-                                if (authError) setAuthError('');
-                              }}
-                              required
-                              className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all"
-                            />
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Option 3: Mobile Number + Roll Number */}
-                    {activeMethod === 'mob_roll' && (
-                      <>
-                        <div className="space-y-1 animate-fadeIn">
-                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                            Parent Registered Mobile Number
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="tel"
-                              placeholder="e.g. 9876543210"
-                              value={parentMobileInput}
-                              onChange={(e) => {
-                                setParentMobileInput(e.target.value.trim());
-                                if (authError) setAuthError('');
-                              }}
-                              required
-                              className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10 font-mono"
-                            />
-                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                              <Smartphone className="w-3.5 h-3.5" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1 animate-fadeIn">
-                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                            Student Roll Number
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              placeholder="e.g. 10"
-                              value={parentRollNoInput}
-                              onChange={(e) => {
-                                setParentRollNoInput(e.target.value.trim());
-                                if (authError) setAuthError('');
-                              }}
-                              required
-                              className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10"
-                            />
-                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                              <Hash className="w-3.5 h-3.5" />
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Option 4: Mobile Number + Admission Number */}
-                    {activeMethod === 'mob_adm' && (
-                      <>
-                        <div className="space-y-1 animate-fadeIn">
-                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                            Parent Registered Mobile Number
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="tel"
-                              placeholder="e.g. 9876543210"
-                              value={parentMobileInput}
-                              onChange={(e) => {
-                                setParentMobileInput(e.target.value.trim());
-                                if (authError) setAuthError('');
-                              }}
-                              required
-                              className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10 font-mono"
-                            />
-                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                              <Smartphone className="w-3.5 h-3.5" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1 animate-fadeIn">
-                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                            Student Admission Number
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              placeholder="e.g. ADM-2024-001"
-                              value={parentAdmissionNoInput}
-                              onChange={(e) => {
-                                setParentAdmissionNoInput(e.target.value.trim());
-                                if (authError) setAuthError('');
-                              }}
-                              required
-                              className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10"
-                            />
-                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                              <KeyRound className="w-3.5 h-3.5" />
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })()}
- 
-              {/* Access Password / Passcode */}
-              {loginTab !== 'parent' && loginTab !== 'owner' && (
-                <div className="space-y-1 animate-fadeIn">
-                  <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">
-                    Access Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      placeholder="Enter login password..."
-                      value={passwordInput}
-                      onChange={(e) => {
-                        setPasswordInput(e.target.value);
-                        if (authError) setAuthError('');
-                      }}
-                      required
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-lg py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none transition-all pr-10"
-                    />
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                      <Lock className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* SaaS Owner fields block */}
-              {loginTab === 'owner' && (
-                <div className="space-y-3.5 bg-teal-50 border border-teal-150 p-4 rounded-2xl text-left animate-fadeIn">
-                  <div className="flex items-start gap-2.5">
-                    <Shield className="w-5 h-5 text-teal-600 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-teal-700">
-                        Cryptographic OAuth Protection
-                      </h4>
-                      <p className="text-[10.5px] text-slate-655 leading-relaxed font-sans font-semibold">
-                        To protect the School Report Card network, the Owner Dashboard is restricted exclusively to verified administrators via Google Sign-In. Simulated OTP or master PIN bypass credentials are disabled to comply with enterprise safety standard mandates.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-[10px] text-slate-500 leading-normal bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono flex flex-col gap-1">
-                    <div>Authorized Email: <strong className="text-slate-900 select-all font-bold">mbarahul99@gmail.com</strong></div>
-                    <div>Secondary Admin: <strong className="text-slate-900 select-all font-bold">gyanbox1@gmail.com</strong></div>
-                    <div className="text-[9px] text-teal-650 mt-1 font-semibold">Please authenticate with one of these accounts below.</div>
-                  </div>
-                </div>
-              )}
- 
-              {authError && (
-                <div className="space-y-3">
-                  <p className="text-[10px] font-semibold text-rose-605 bg-rose-50 border border-rose-150 p-2 rounded-lg text-center animate-shake leading-relaxed">
-                    ⚠️ {authError}
-                  </p>
-
-                  {authError.toLowerCase().includes('network-request-failed') && (
-                    <div className="bg-amber-50 border border-amber-150 p-3.5 rounded-xl text-[10.5px] text-amber-800 leading-relaxed font-sans space-y-2 text-left shadow-xs animate-fadeIn font-medium">
-                      <p className="font-bold flex items-center gap-1.5 text-amber-900">
-                        <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                        Google Auth Iframe Block Workaround:
-                      </p>
-                      <p>
-                        This error is caused by **browser-level third-party cookie or cross-site tracking restrictions** inside the nested AI Studio preview iframe. Chrome and Safari block the secure popups from sending credentials back to the iframe.
-                      </p>
-                      <div className="space-y-1 bg-white p-2.5 rounded-lg border border-slate-200">
-                        <p className="text-slate-900 font-bold flex items-center gap-1 text-[11px]">🚀 Instant Solution:</p>
-                        <p className="text-slate-700">
-                          Click the <strong className="text-teal-600">"Open in New Tab"</strong> button in the top-right corner of the preview panel. Running the application in its own tab completely bypasses iframe limitations and allows Google Sign-In to complete successfully!
-                        </p>
-                      </div>
-                      <p className="text-[9.5px] text-slate-550">
-                        Please try signing in directly with your school, teacher, or parent accounts to test the corresponding panels.
-                      </p>
-                    </div>
-                  )}
-                  
-                  {(authError.toLowerCase().includes('unauthorized-domain') || authError.toLowerCase().includes('unauthorized domain')) && (() => {
-                    const primaryHostname = window.location.hostname;
-                    let counterpartHostname = "";
-                    if (primaryHostname.startsWith("ais-dev-")) {
-                      counterpartHostname = primaryHostname.replace("ais-dev-", "ais-pre-");
-                    } else if (primaryHostname.startsWith("ais-pre-")) {
-                      counterpartHostname = primaryHostname.replace("ais-pre-", "ais-dev-");
-                    }
-                    return (
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left space-y-3 leading-normal">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
-                          <h4 className="text-teal-700 text-[10px] font-extrabold uppercase tracking-wider">
-                            Auth Sandbox & Domain Guide
-                          </h4>
-                        </div>
-                        
-                        <div className="bg-amber-55/60 border border-amber-150 p-3 rounded-xl text-[10px] text-amber-800 leading-relaxed font-sans space-y-1.5 shadow-xs font-medium">
-                          <p className="font-bold flex items-center gap-1 text-amber-900">
-                            ⚠️ Managed AI Studio Sandbox Note:
-                          </p>
-                          <p>
-                            In the AI Studio environment, the Firestore database is auto-provisioned inside a managed background platform project. Because your personal Google account does not own this background system, opening the Firebase Console link below will display: <em className="text-rose-605 font-semibold">"The project does not exist or you do not have permission to list apps."</em>
-                          </p>
-                          <p className="text-amber-850">
-                            <strong>This is expected and normal!</strong> The database is actively running and connected in the background. You can sign in directly using your school, teacher, or parent login details to proceed.
-                          </p>
-                        </div>
-                        
-                        <p className="text-[10px] text-slate-500 leading-relaxed font-sans font-medium">
-                          If you have loaded your own personal custom Firebase configuration, you must authorize these host domains in your console:
-                        </p>
-                        
-                        <ol className="text-[10px] text-slate-600 space-y-2 list-decimal list-inside pl-1 leading-relaxed font-medium">
-                          <li>
-                            Open the <a href={`https://console.firebase.google.com/project/${firebaseProjectId}/authentication/providers`} target="_blank" rel="noopener noreferrer" className="text-teal-600 font-bold underline hover:text-teal-700">Firebase Console (Auth Settings)</a> in your browser (works only if using a custom personal project).
-                          </li>
-                          <li>
-                            Navigate to the <strong className="text-slate-800 font-bold">Settings</strong> tab at the top.
-                          </li>
-                          <li>
-                            Click on <strong className="text-slate-800 font-bold">Authorized domains</strong> in the left/side menu.
-                          </li>
-                          <li>
-                            Click the <strong className="text-teal-650 font-extrabold cursor-pointer">Add domain</strong> button.
-                          </li>
-                          <li>
-                            Add your exact AI Studio hostnames. Copy and paste both entries below to ensure development preview and shared links all work seamlessly:
-                            <div className="space-y-1.5 mt-2">
-                              <div className="flex items-center gap-2 font-mono text-[9px] bg-white px-2 py-1.5 rounded border border-slate-200 text-slate-800 select-all">
-                                <span className="text-slate-400 font-sans text-[8px] mr-1 select-none">Primary:</span>
-                                <span>{primaryHostname}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(primaryHostname);
-                                    setCopiedHostname(true);
-                                    setTimeout(() => setCopiedHostname(false), 2000);
-                                  }}
-                                  className="text-[9px] text-teal-600 hover:underline ml-auto font-sans font-bold cursor-pointer"
-                                >
-                                  {copiedHostname ? "Copied!" : "Copy"}
-                                </button>
-                              </div>
-                              {counterpartHostname && (
-                                <div className="flex items-center gap-2 font-mono text-[9px] bg-white px-2 py-1.5 rounded border border-slate-200 text-slate-800 select-all">
-                                  <span className="text-slate-400 font-sans text-[8px] mr-1 select-none">Companion:</span>
-                                  <span>{counterpartHostname}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(counterpartHostname);
-                                      setCopiedCounterpart(true);
-                                      setTimeout(() => setCopiedCounterpart(false), 2050);
-                                    }}
-                                    className="text-[9px] text-teal-600 hover:underline ml-auto font-sans font-bold cursor-pointer"
-                                  >
-                                    {copiedCounterpart ? "Copied!" : "Copy"}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </li>
-                          <li>
-                            Save changes, wait about 1 minute for Google services to update, then click the Google Login button again!
-                          </li>
-                        </ol>
-                        
-                        <div className="bg-teal-50 border border-teal-150 p-2.5 rounded-lg text-[9.5px] text-slate-500 leading-relaxed font-sans">
-                          💡 <strong className="text-slate-750">Firebase Config details:</strong> Your Firebase project ID is <code className="text-teal-700 font-mono font-semibold">{firebaseProjectId || "N/A"}</code>. Live authorization is strictly required for domains running Firebase.
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
- 
-              {loginTab !== 'owner' && (
-                <div className="py-1">
-                  <GoogleReCaptcha
-                    onVerify={(token) => setRecaptchaToken(token)}
-                    onExpired={() => setRecaptchaToken(null)}
-                    resetTrigger={recaptchaResetTrigger}
-                  />
-                </div>
-              )}
- 
-              {loginTab !== 'owner' && (
-                <button
-                  type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-850 text-white font-bold text-xs py-2 px-3 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Unlock className="w-3.5 h-3.5" />
-                  {loginTab === 'parent' ? 'Access Parent Portal' : loginTab === 'teacher' ? 'Sign In as Teachers' : 'Sign In as School Admin'}
-                </button>
-              )}
-            </form>
-            )}
- 
-            {/* Firebase Auth Integration Segment */}
-            {loginTab !== 'parent' && !isRegistering && (
-              <div className="border-t border-slate-200 pt-2.5 mt-2 space-y-2">
-                
-                {/* Onboard New School Dynamic Tenant UI */}
-                {loginTab !== 'owner' && (
-                  <div className="bg-slate-50 p-2 rounded-lg border border-slate-200 text-center space-y-1 animate-fadeIn" id="school-onboarding-panel">
-                    <div className="text-[9.5px] text-slate-500 font-semibold font-sans leading-tight">
-                      Want to use Sand Box for your own school?
-                    </div>
-                    <button
-                      type="button"
-                      id="btn-register-school-onboarding"
-                      onClick={() => {
-                        setIsRegistering(true);
-                        setAuthError('');
-                      }}
-                      className="w-full bg-gradient-to-r from-indigo-50 to-indigo-50/50 hover:from-indigo-100/50 hover:to-indigo-50 text-indigo-700 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-300 font-extrabold text-[10px] py-1.5 px-2 rounded-lg shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-[0.98]"
-                    >
-                      <Building2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                      Register / Onboard New School
-                    </button>
-                  </div>
-                )}
-
-                {isCloudSyncing ? (
-                  <div className="flex items-center justify-center gap-2 text-xs font-mono text-teal-700 bg-slate-50 border border-slate-200 p-2 rounded-lg">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-600" />
-                    <span>{cloudSyncMessage || "Syncing with cloud database..."}</span>
-                  </div>
-                ) : (
+                <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-7 py-4 border-t border-slate-100 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] shrink-0 z-20">
                   <button
                     type="button"
                     onClick={async () => {
                       setAuthError('');
                       setIsCloudSyncing(true);
-                      setCloudSyncMessage("Opening Google Login popup...");
+                      setCloudSyncMessage("Opening Google Login for Partners...");
                       try {
                         await signInWithPopup(auth, googleProvider);
                       } catch (err: any) {
@@ -4873,14 +4307,14 @@ export default function App() {
                                             err?.message?.includes('AbortError') ||
                                             err?.message?.includes('closed') ||
                                             err?.message?.includes('cancelled');
-                        setAuthError(isCancelled ? "Google Sign-In was closed or cancelled. Please try again." : (err?.message || "Google Sign-In cancelled or blocked."));
+                        setAuthError(isCancelled ? "Google Sign-In was closed or cancelled. Please try again." : (err?.message || "Sign-In cancelled."));
                       } finally {
                         setIsCloudSyncing(false);
                       }
                     }}
-                    className="w-full bg-gradient-to-r from-teal-50 to-indigo-50 hover:from-teal-100 hover:to-indigo-100 text-indigo-700 border border-indigo-200 hover:border-indigo-300 font-extrabold text-[10px] py-2 px-3 rounded-lg shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path
                         fill="currentColor"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -4898,39 +4332,500 @@ export default function App() {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                       />
                     </svg>
-                    Sign In with Google
+                    <span>Partner Login / Sign Up</span>
                   </button>
-                )}
+                </div>
               </div>
+            ) : (
+              <form onSubmit={handleLogin} className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto px-7 py-3 space-y-4">
+                  {authError && (
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-2xl text-center animate-shake leading-relaxed">
+                        ⚠️ {authError}
+                      </p>
+
+                      {authError.toLowerCase().includes('network-request-failed') && (
+                        <div className="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl text-xs text-amber-800 leading-relaxed font-sans space-y-2 text-left shadow-xs animate-fadeIn font-medium">
+                          <p className="font-bold flex items-center gap-1.5 text-amber-900">
+                            <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                            Google Auth Iframe Block Workaround:
+                          </p>
+                          <p>
+                            This error is caused by browser-level third-party cookie restrictions inside the preview iframe.
+                          </p>
+                          <div className="space-y-1 bg-white p-2.5 rounded-xl border border-slate-200">
+                            <p className="text-slate-900 font-bold flex items-center gap-1 text-xs">🚀 Instant Solution:</p>
+                            <p className="text-slate-700">
+                              Click <strong className="text-teal-700">"Open in New Tab"</strong> in the top-right corner to allow Google Sign-In to complete smoothly.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Conditional School ID column */}
+                  {(loginTab === 'school' || loginTab === 'teacher') && (
+                    <div className="space-y-1 animate-fadeIn">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                        School Login ID
+                      </label>
+                      <div className="relative flex items-center">
+                        <div className="absolute left-4 text-slate-400 pointer-events-none">
+                          <Building2 className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="e.g. xavier101, dps2026..."
+                          value={schoolInput}
+                          onChange={(e) => {
+                            setSchoolInput(e.target.value.toLowerCase().replace(/\s+/g, ''));
+                            if (authError) setAuthError('');
+                          }}
+                          required
+                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Conditional Teacher username column */}
+                  {loginTab === 'teacher' && (
+                    <div className="space-y-1 animate-fadeIn">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                        Teacher Login ID
+                      </label>
+                      <div className="relative flex items-center">
+                        <div className="absolute left-4 text-slate-400 pointer-events-none">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="e.g. sharmateach..."
+                          value={teacherInput}
+                          onChange={(e) => {
+                            setTeacherInput(e.target.value.toLowerCase().replace(/\s+/g, ''));
+                            if (authError) setAuthError('');
+                          }}
+                          required
+                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Conditional Parents Portal Login Fields */}
+                  {loginTab === 'parent' && (() => {
+                    const cleanPortalCode = parentPortalCodeInput.trim().toUpperCase();
+                    const matchedSchool = schools.find(s => {
+                      const sCode = (s.portalCode || '').toUpperCase().trim();
+                      if (sCode === cleanPortalCode) return true;
+                      if (s.id === 'sc_xavier' && (cleanPortalCode === 'XAVI-9821' || cleanPortalCode.startsWith('STXA-') || cleanPortalCode.includes('XAVI'))) return true;
+                      if (s.id === 'sc_dps' && (cleanPortalCode === 'DELH-3091' || cleanPortalCode.startsWith('DELH-') || cleanPortalCode.includes('DPS') || cleanPortalCode.includes('DELH'))) return true;
+                      return false;
+                    }) || schools[0];
+
+                    const currentSchoolBranding = matchedSchool?.branding || (currentSchoolId === matchedSchool?.id ? branding : initialBranding);
+                    const currentSchoolStructures = (currentSchoolId === matchedSchool?.id ? reportCardStructures : []);
+                    const resolvedConfig = getParentPortalLoginConfig(currentSchoolBranding, currentSchoolStructures);
+                    const availableMethods = resolvedConfig.availableMethods;
+                    const activeMethod = availableMethods.includes(parentLoginMethod) ? parentLoginMethod : resolvedConfig.defaultLoginMode;
+
+                    return (
+                      <div className="space-y-3 animate-fadeIn">
+                        {/* Portal Access Code (Locked) */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            Parents Portal Code
+                          </label>
+                          <div className="relative flex items-center">
+                            <div className="absolute left-4 text-slate-400 pointer-events-none">
+                              <KeyRound className="w-4 h-4" />
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="e.g. XAVI-9821..."
+                              value={parentPortalCodeInput}
+                              readOnly
+                              required
+                              className="w-full bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed select-none rounded-full py-3.5 pl-11 pr-24 text-sm font-medium outline-none transition-all font-mono"
+                            />
+                            <div className="absolute right-4 text-rose-600 font-mono text-[9px] font-bold flex items-center gap-1 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
+                              <Lock className="w-2.5 h-2.5" /> LOCKED
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Dynamic Method Switcher tabs if school enabled multiple methods */}
+                        {availableMethods.length > 1 && (
+                          <div className="space-y-1.5 pt-0.5">
+                            <label className="text-[10px] uppercase font-bold text-[#007474] tracking-wider pl-3.5">
+                              Authentication Option
+                            </label>
+                            <div className={`grid ${availableMethods.length === 2 ? 'grid-cols-2' : availableMethods.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-1.5 bg-[#f1f5f9] p-1 rounded-full border border-slate-200/80`}>
+                              {availableMethods.map(m => (
+                                <button
+                                  key={m}
+                                  type="button"
+                                  onClick={() => {
+                                    setParentLoginMethod(m);
+                                    if (authError) setAuthError('');
+                                  }}
+                                  className={`py-2 px-2 rounded-full text-[11px] font-bold tracking-tight transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                    activeMethod === m
+                                      ? 'bg-[#007474] text-white shadow-xs font-extrabold'
+                                      : 'text-slate-500 hover:text-slate-800'
+                                  }`}
+                                >
+                                  {m === 'roll_dob' && <><Hash className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Roll + DOB</span></>}
+                                  {m === 'adm_dob' && <><KeyRound className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Adm + DOB</span></>}
+                                  {m === 'mob_roll' && <><Smartphone className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Mobile + Roll</span></>}
+                                  {m === 'mob_adm' && <><Smartphone className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Mobile + Adm</span></>}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Option 1: Roll No + DOB */}
+                        {activeMethod === 'roll_dob' && (
+                          <>
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                                Student Roll Number
+                              </label>
+                              <div className="relative flex items-center">
+                                <div className="absolute left-4 text-slate-400 pointer-events-none">
+                                  <Hash className="w-4 h-4" />
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 10"
+                                  value={parentRollNoInput}
+                                  onChange={(e) => {
+                                    setParentRollNoInput(e.target.value.trim());
+                                    if (authError) setAuthError('');
+                                  }}
+                                  required
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                                Student Date of Birth (DOB)
+                              </label>
+                              <div className="relative flex items-center">
+                                <input
+                                  type="date"
+                                  value={parentDOBInput}
+                                  onChange={(e) => {
+                                    setParentDOBInput(e.target.value);
+                                    if (authError) setAuthError('');
+                                  }}
+                                  required
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 px-5 text-sm font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                />
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Option 2: Admission No + DOB */}
+                        {activeMethod === 'adm_dob' && (
+                          <>
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                                Student Admission Number
+                              </label>
+                              <div className="relative flex items-center">
+                                <div className="absolute left-4 text-slate-400 pointer-events-none">
+                                  <KeyRound className="w-4 h-4" />
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. ADM-2024-001"
+                                  value={parentAdmissionNoInput}
+                                  onChange={(e) => {
+                                    setParentAdmissionNoInput(e.target.value.trim());
+                                    if (authError) setAuthError('');
+                                  }}
+                                  required
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                                Student Date of Birth (DOB)
+                              </label>
+                              <div className="relative flex items-center">
+                                <input
+                                  type="date"
+                                  value={parentDOBInput}
+                                  onChange={(e) => {
+                                    setParentDOBInput(e.target.value);
+                                    if (authError) setAuthError('');
+                                  }}
+                                  required
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 px-5 text-sm font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                />
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Option 3: Mobile Number + Roll Number */}
+                        {activeMethod === 'mob_roll' && (
+                          <>
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                                Parent Registered Mobile Number
+                              </label>
+                              <div className="relative flex items-center">
+                                <div className="absolute left-4 text-slate-400 pointer-events-none">
+                                  <Smartphone className="w-4 h-4" />
+                                </div>
+                                <input
+                                  type="tel"
+                                  placeholder="e.g. 9876543210"
+                                  value={parentMobileInput}
+                                  onChange={(e) => {
+                                    setParentMobileInput(e.target.value.trim());
+                                    if (authError) setAuthError('');
+                                  }}
+                                  required
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                                Student Roll Number
+                              </label>
+                              <div className="relative flex items-center">
+                                <div className="absolute left-4 text-slate-400 pointer-events-none">
+                                  <Hash className="w-4 h-4" />
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 10"
+                                  value={parentRollNoInput}
+                                  onChange={(e) => {
+                                    setParentRollNoInput(e.target.value.trim());
+                                    if (authError) setAuthError('');
+                                  }}
+                                  required
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                />
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Option 4: Mobile Number + Admission Number */}
+                        {activeMethod === 'mob_adm' && (
+                          <>
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                                Parent Registered Mobile Number
+                              </label>
+                              <div className="relative flex items-center">
+                                <div className="absolute left-4 text-slate-400 pointer-events-none">
+                                  <Smartphone className="w-4 h-4" />
+                                </div>
+                                <input
+                                  type="tel"
+                                  placeholder="e.g. 9876543210"
+                                  value={parentMobileInput}
+                                  onChange={(e) => {
+                                    setParentMobileInput(e.target.value.trim());
+                                    if (authError) setAuthError('');
+                                  }}
+                                  required
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                                Student Admission Number
+                              </label>
+                              <div className="relative flex items-center">
+                                <div className="absolute left-4 text-slate-400 pointer-events-none">
+                                  <KeyRound className="w-4 h-4" />
+                                </div>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. ADM-2024-001"
+                                  value={parentAdmissionNoInput}
+                                  onChange={(e) => {
+                                    setParentAdmissionNoInput(e.target.value.trim());
+                                    if (authError) setAuthError('');
+                                  }}
+                                  required
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                />
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Access Password / Passcode */}
+                  {loginTab !== 'parent' && loginTab !== 'owner' && (
+                    <div className="space-y-1 animate-fadeIn">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                        Access Password
+                      </label>
+                      <div className="relative flex items-center">
+                        <div className="absolute left-4 text-slate-400 pointer-events-none">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="password"
+                          placeholder="Enter login password..."
+                          value={passwordInput}
+                          onChange={(e) => {
+                            setPasswordInput(e.target.value);
+                            if (authError) setAuthError('');
+                          }}
+                          required
+                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SaaS Owner fields block */}
+                  {loginTab === 'owner' && (
+                    <div className="space-y-3 bg-teal-50 border border-teal-200 p-4 rounded-2xl text-left animate-fadeIn">
+                      <div className="flex items-start gap-2.5">
+                        <Shield className="w-5 h-5 text-[#007474] mt-0.5 shrink-0" />
+                        <div className="space-y-1">
+                          <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[#00605c]">
+                            Cryptographic OAuth Protection
+                          </h4>
+                          <p className="text-xs text-slate-600 leading-relaxed font-sans">
+                            To protect the School Report Card network, the Owner Dashboard is restricted exclusively to verified administrators via Google Sign-In.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-slate-600 leading-normal bg-white p-2.5 rounded-xl border border-teal-150 font-mono flex flex-col gap-1">
+                        <div>Authorized Email: <strong className="text-slate-900 select-all font-bold">mbarahul99@gmail.com</strong></div>
+                        <div>Secondary Admin: <strong className="text-slate-900 select-all font-bold">gyanbox1@gmail.com</strong></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {loginTab !== 'owner' && (
+                    <div className="py-1">
+                      <GoogleReCaptcha
+                        onVerify={(token) => setRecaptchaToken(token)}
+                        onExpired={() => setRecaptchaToken(null)}
+                        resetTrigger={recaptchaResetTrigger}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Sticky bottom Action Bar matching Registration Screen */}
+                <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-7 py-3 border-t border-slate-100 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] shrink-0 z-20 space-y-2.5">
+                  {loginTab !== 'owner' && (
+                    <button
+                      type="submit"
+                      className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Unlock className="w-4 h-4" />
+                      <span>{loginTab === 'parent' ? 'Access Parent Portal' : loginTab === 'teacher' ? 'Sign In as Teachers' : 'Sign In as School Admin'}</span>
+                    </button>
+                  )}
+
+                  {/* Onboard New School Button */}
+                  {loginTab !== 'owner' && !isSeparateParentPortal && (
+                    <button
+                      type="button"
+                      id="btn-register-school-onboarding"
+                      onClick={() => {
+                        setIsRegistering(true);
+                        setAuthError('');
+                      }}
+                      className="w-full bg-teal-50 hover:bg-teal-100/70 text-[#007474] hover:text-[#005555] border border-teal-200/80 font-bold text-xs py-2.5 px-4 rounded-full transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-[0.99]"
+                    >
+                      <Building2 className="w-3.5 h-3.5 text-[#007474] shrink-0" />
+                      <span>Register / Onboard New School</span>
+                    </button>
+                  )}
+
+                  {/* Sign In with Google */}
+                  {loginTab !== 'parent' && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setAuthError('');
+                        setIsCloudSyncing(true);
+                        setCloudSyncMessage("Opening Google Login popup...");
+                        try {
+                          await signInWithPopup(auth, googleProvider);
+                        } catch (err: any) {
+                          console.warn("Google Auth info:", err);
+                          const isCancelled = err?.code === 'auth/popup-closed-by-user' || 
+                                              err?.code === 'auth/cancelled-popup-request' ||
+                                              err?.message?.includes('aborted') ||
+                                              err?.message?.includes('AbortError') ||
+                                              err?.message?.includes('closed') ||
+                                              err?.message?.includes('cancelled');
+                          setAuthError(isCancelled ? "Google Sign-In was closed or cancelled. Please try again." : (err?.message || "Google Sign-In cancelled or blocked."));
+                        } finally {
+                          setIsCloudSyncing(false);
+                        }
+                      }}
+                      className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 font-bold text-xs py-2.5 px-4 rounded-full shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                        <path
+                          fill="#4285F4"
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                        />
+                      </svg>
+                      <span>{loginTab === 'owner' ? 'Authenticate Owner with Google' : 'Sign In with Google'}</span>
+                    </button>
+                  )}
+
+                  {/* Privacy Policy link */}
+                  <div className="flex items-center justify-center pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowPrivacyPolicy(true)}
+                      className="text-[9.5px] text-slate-400 hover:text-slate-600 font-medium cursor-pointer transition-colors"
+                    >
+                      🛡️ K-12 Student Privacy & Sandbox Policy
+                    </button>
+                  </div>
+                </div>
+              </form>
             )}
-
           </div>
-        </div>
-
-        {(loginTab === 'agent' || loginTab === 'owner') && (
-          <div className="text-center pt-2.5 mt-2 flex flex-col items-center gap-1.5 select-none w-full max-w-[320px]">
-            <button
-              type="button"
-              onClick={() => { setLoginTab('school'); setAuthError(''); setIsRegistering(false); }}
-              className="text-[9.5px] text-teal-650 hover:text-teal-700 font-extrabold flex items-center justify-center gap-1 cursor-pointer transition-colors hover:underline"
-            >
-              &larr; Return to Public School Portal
-            </button>
-          </div>
-        )}
-
-        {/* Footer info */}
-        <div className="flex flex-col items-center gap-1.5 mt-3 select-none text-center w-full max-w-[350px]">
-          <p className="text-[9px] text-slate-400 font-mono tracking-tight leading-none mt-1">
-            School Report Card Systems &copy; 2026
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowPrivacyPolicy(true)}
-            className="text-[9px] text-indigo-600 hover:text-indigo-800 font-extrabold tracking-tight cursor-pointer transition-colors hover:underline flex items-center gap-1"
-          >
-            🛡️ K-12 Student Privacy & Sandbox Policy
-          </button>
         </div>
 
         {/* Sibling / Multiple Match Selection Modal */}
