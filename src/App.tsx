@@ -54,7 +54,7 @@ import {
   TrendingUp, BookMarked, UserCheck, AlertTriangle, Medal, BarChart2, HelpCircle, ArrowLeft, Home,
   Bell, CheckCircle, Info, X, Menu, ChevronLeft, ChevronRight, PieChart, Calendar, CloudLightning,
   Send, MessageSquare, History, School, AlertCircle, Database, LayoutGrid, CreditCard,
-  Smartphone, Phone
+  Smartphone, Phone, MapPin, Tag
 } from 'lucide-react';
 
 // Recharts components import for full visual reports
@@ -3741,6 +3741,318 @@ export default function App() {
     };
   }, [parentStudentRaw, parentGradesRaw, parentPortalSessionFilter, branding.session]);
 
+  if (!currentRole && isRegistering) {
+    return (
+      <div className="min-h-screen w-screen bg-slate-100 sm:bg-slate-200/70 flex items-center justify-center sm:p-4 font-sans select-none sm:select-auto">
+        {/* Soft background ambient glow on desktop */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none select-none">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-200/40 rounded-full blur-[140px]" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-200/40 rounded-full blur-[140px]" />
+        </div>
+
+        {/* Card Container mimicking mobile/modern app container matching user reference */}
+        <div className="w-full sm:max-w-[440px] h-screen sm:h-[92vh] sm:max-h-[900px] bg-[#007474] sm:rounded-[40px] shadow-2xl flex flex-col overflow-hidden relative z-10 sm:border border-teal-800/30">
+          
+          {/* Top Teal Header with organic abstract shapes matching reference image */}
+          <div className="h-28 sm:h-32 bg-[#007474] relative overflow-hidden shrink-0 select-none">
+            {/* Top status bar aesthetic */}
+            <div className="flex justify-between items-center px-7 pt-3 text-white/90 text-xs font-semibold">
+              <span className="tracking-tight font-medium">9:41</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] tracking-widest font-mono">●●●</span>
+                <span className="text-xs">📶</span>
+                <span className="text-xs">🔋</span>
+              </div>
+            </div>
+
+            {/* Organic mint shapes in top-left matching reference image */}
+            <svg 
+              className="absolute -top-4 -left-4 w-36 h-36 text-[#4cbfa8]/85 pointer-events-none" 
+              viewBox="0 0 100 100" 
+              fill="currentColor"
+            >
+              <path d="M15,0 C55,-5 85,25 85,60 C85,90 60,98 35,90 C12,82 -2,62 0,30 Z" />
+            </svg>
+            <svg 
+              className="absolute top-3 left-7 w-20 h-20 text-[#66d2bc]/60 pointer-events-none" 
+              viewBox="0 0 100 100" 
+              fill="currentColor"
+            >
+              <path d="M10,10 C45,0 75,20 75,50 C75,75 50,85 25,75 C5,65 0,40 10,10 Z" />
+            </svg>
+          </div>
+
+          {/* Main White Card with rounded-t-[36px] */}
+          <div className="flex-1 bg-white rounded-t-[36px] flex flex-col overflow-hidden shadow-2xl relative">
+            
+            {/* Back button and Sign Up title */}
+            <div className="px-7 pt-6 pb-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegistering(false);
+                  setAuthError('');
+                }}
+                className="inline-flex items-center gap-2 text-xs font-bold text-[#007474] hover:text-[#005555] transition-colors cursor-pointer group"
+              >
+                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                <span>Back to login</span>
+              </button>
+
+              <h1 className="text-3xl font-extrabold text-[#00605c] tracking-tight mt-5">
+                Sign Up
+              </h1>
+              <p className="text-xs text-slate-400 font-medium mt-1">
+                School Registration &amp; Onboarding
+              </p>
+            </div>
+
+            {/* Scrollable Form Body with Sticky Bottom Action */}
+            <form onSubmit={handleRegisterSchoolSubmit} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto px-7 py-3 space-y-4">
+                {matchedAgentName && (
+                  <div className="bg-teal-50 border border-teal-150 rounded-2xl p-3 text-center text-teal-800 space-y-0.5 animate-fadeIn">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-teal-700">🤝 Linked with Partner Agent</p>
+                    <p className="text-xs font-extrabold">{matchedAgentName}</p>
+                    <p className="text-[10px] text-teal-600 font-mono">Code: {regReferralCode.toUpperCase()}</p>
+                  </div>
+                )}
+
+                {authError && (
+                  <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-2xl text-center animate-shake leading-relaxed">
+                    ⚠️ {authError}
+                  </p>
+                )}
+
+                {/* Field 1: Person Name */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    Person Name
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-slate-400 pointer-events-none">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Principal Sharma"
+                      value={regContactPerson}
+                      onChange={(e) => setRegContactPerson(e.target.value)}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Field 2: School Name */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    School Name
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-slate-400 pointer-events-none">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Greenwood Academy"
+                      value={regSchoolName}
+                      onChange={(e) => setRegSchoolName(e.target.value)}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Field 3: Mobile Number */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    Mobile Number
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-slate-400 pointer-events-none">
+                      <Smartphone className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="e.g. +91 98765 43210"
+                      value={regMobile}
+                      onChange={(e) => setRegMobile(e.target.value)}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Field 4: Email Address */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    Email Address
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-slate-400 pointer-events-none">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. desk@greenwood.com"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value.trim())}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Field 5: Board of School */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    Board of School
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-slate-400 pointer-events-none">
+                      <GraduationCap className="w-4 h-4" />
+                    </div>
+                    <select
+                      value={regBoard}
+                      onChange={(e) => setRegBoard(e.target.value)}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-10 text-sm font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20 cursor-pointer appearance-none"
+                    >
+                      <option value="CBSE">CBSE Board</option>
+                      <option value="ICSE">ICSE Board</option>
+                      <option value="State Board">State Board</option>
+                      <option value="IGCSE">IGCSE / IB Board</option>
+                    </select>
+                    <div className="absolute right-4 text-slate-400 pointer-events-none text-xs">▼</div>
+                  </div>
+                </div>
+
+                {/* Field 6: School Address */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    Address
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-slate-400 pointer-events-none">
+                      <MapPin className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Sector 4, New Delhi"
+                      value={regAddress}
+                      onChange={(e) => setRegAddress(e.target.value)}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Field 7: Referral Code (Optional) */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between px-3.5">
+                    <label className="text-[10px] uppercase font-bold text-teal-700 tracking-wider">
+                      Referral Code (Optional)
+                    </label>
+                    {urlReferralCode && (
+                      <span className="text-[9px] bg-teal-50 text-teal-700 font-mono font-bold px-2 py-0.5 rounded-full border border-teal-200">
+                        Auto-Detected
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-teal-600 pointer-events-none">
+                      <Tag className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="e.g. AGENT100"
+                      value={regReferralCode}
+                      onChange={(e) => setRegReferralCode(e.target.value.toUpperCase().trim())}
+                      className="w-full bg-white border border-teal-200 text-teal-900 font-mono uppercase font-bold rounded-full py-3.5 pl-11 pr-5 text-sm placeholder:text-slate-400 outline-none transition-all shadow-xs focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                    />
+                  </div>
+                  <p className="text-[9px] text-slate-400 pl-3.5 leading-tight">
+                    Enter the referral code to link your school registry with their referral program.
+                  </p>
+                </div>
+
+                {/* Field 8: Login ID (School ID) */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    Login ID (School ID)
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-slate-400 pointer-events-none">
+                      <KeyRound className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. greenwood (letters & numbers only)"
+                      value={regUsername}
+                      onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Field 9: Admin Password */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    Admin Password
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 text-slate-400 pointer-events-none">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Setup password..."
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                    />
+                  </div>
+                  <p className="text-[9px] text-slate-400 pl-3.5 leading-tight">
+                    Min 6 chars with 1 capital, 1 number &amp; 1 special char.
+                  </p>
+                </div>
+
+                {/* reCAPTCHA */}
+                <div className="py-1">
+                  <GoogleReCaptcha
+                    onVerify={(token) => setRecaptchaToken(token)}
+                    onExpired={() => setRecaptchaToken(null)}
+                    resetTrigger={recaptchaResetTrigger}
+                  />
+                </div>
+              </div>
+
+              {/* Sticky bottom Register and Explore button */}
+              <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-7 py-4 border-t border-slate-100 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] shrink-0 z-20">
+                <button
+                  type="submit"
+                  disabled={isCloudSyncing}
+                  className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  {isCloudSyncing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                      <span>Saving Registry...</span>
+                    </>
+                  ) : (
+                    <span>Register and Explore</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentRole) {
     return (
       <div className="bg-slate-50 h-screen w-screen overflow-hidden text-slate-800 flex flex-col justify-center items-center p-2 sm:p-3 relative font-sans">
@@ -3758,7 +4070,6 @@ export default function App() {
                 <div className="relative w-12 h-12">
                   <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
                   <div className="absolute inset-0 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                  <Sparkles className="w-5 h-5 text-amber-500 absolute inset-0 m-auto animate-pulse" />
                 </div>
                 <div className="space-y-1 max-w-[240px]">
                   <h4 className="text-slate-900 font-black text-[11px] uppercase tracking-widest animate-pulse">Running Sandbox Sync</h4>
@@ -3859,186 +4170,7 @@ export default function App() {
             ) : null}
 
             {/* Login form */}
-            {isRegistering ? (
-              <form onSubmit={handleRegisterSchoolSubmit} className="space-y-2.5 pt-0.5 animate-fadeIn text-left">
-                <div className="text-center space-y-0.5 pb-0.5">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 border border-indigo-150 rounded text-indigo-700 text-[8.5px] font-bold uppercase tracking-wider mx-auto">
-                    <Sparkles className="w-2.5 h-2.5 text-amber-500 animate-pulse" />
-                    New School Registration
-                  </span>
-                </div>
-
-                {matchedAgentName && (
-                  <div className="bg-teal-50 border border-teal-150 rounded-xl p-2 text-center text-teal-800 space-y-0.5 animate-fadeIn">
-                    <p className="text-[9px] font-black uppercase tracking-wider text-teal-700">🤝 Linked with Partner Agent</p>
-                    <p className="text-xs font-extrabold">{matchedAgentName}</p>
-                    <p className="text-[9px] text-teal-600 font-mono">Code: {regReferralCode.toUpperCase()}</p>
-                  </div>
-                )}
-
-                {authError && (
-                  <p className="text-[10px] font-semibold text-rose-605 bg-rose-50 border border-rose-150 p-2 rounded-lg text-center animate-shake leading-relaxed">
-                    ⚠️ {authError}
-                  </p>
-                )}
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Person Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Principal Sharma"
-                      value={regContactPerson}
-                      onChange={(e) => setRegContactPerson(e.target.value)}
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">School Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Greenwood Academy"
-                      value={regSchoolName}
-                      onChange={(e) => setRegSchoolName(e.target.value)}
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Mobile Number</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="e.g. +91 98765 43210"
-                      value={regMobile}
-                      onChange={(e) => setRegMobile(e.target.value)}
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Email Address</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. desk@greenwood.com"
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value.trim())}
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Board of School</label>
-                    <select
-                      value={regBoard}
-                      onChange={(e) => setRegBoard(e.target.value)}
-                      className="w-full bg-white border border-slate-200 select-none text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold outline-none transition-all cursor-pointer"
-                    >
-                      <option value="CBSE">CBSE Board</option>
-                      <option value="ICSE">ICSE Board</option>
-                      <option value="State Board">State Board</option>
-                      <option value="IGCSE">IGCSE / IB Board</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Address</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Sector 4, New Delhi"
-                      value={regAddress}
-                      onChange={(e) => setRegAddress(e.target.value)}
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase font-bold text-teal-600 tracking-wider flex items-center gap-1">
-                    <span>Referral Code (Optional)</span>
-                    {urlReferralCode && <span className="text-[8px] bg-teal-50 px-1 py-0.2 rounded font-mono text-teal-850 font-bold">Auto-Detected</span>}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. AGENT100"
-                    value={regReferralCode}
-                    onChange={(e) => setRegReferralCode(e.target.value.toUpperCase().trim())}
-                    className="w-full bg-white border border-teal-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30 text-teal-900 rounded-xl py-1.5 px-3 text-xs font-bold placeholder:text-slate-400 outline-none uppercase font-mono"
-                  />
-                  <p className="text-[8px] text-gray-400 mt-0.5 leading-none">Enter the referral code to link your school registry with their referral program.</p>
-                </div>
-
-                <div className="pt-2 border-t border-slate-150">
-                  <span className="text-[9px] uppercase font-extrabold text-indigo-600 tracking-wider block mb-1 font-sans">
-                    Create Admin Credentials
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Login ID (School ID)</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. greenwood"
-                      value={regUsername}
-                      onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Admin Password</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Setup password..."
-                      value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
-                      className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-slate-800 rounded-xl py-1.5 px-3 text-xs font-semibold placeholder:text-slate-400 outline-none font-mono"
-                    />
-                    <p className="text-[8px] text-slate-400 mt-0.5 leading-none">Min 6 chars with 1 capital, 1 number &amp; 1 special char.</p>
-                  </div>
-                </div>
-
-                <div className="py-2">
-                  <GoogleReCaptcha
-                    onVerify={(token) => setRecaptchaToken(token)}
-                    onExpired={() => setRecaptchaToken(null)}
-                    resetTrigger={recaptchaResetTrigger}
-                  />
-                </div>
-
-                <div className="pt-3 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsRegistering(false);
-                      setAuthError('');
-                    }}
-                    className="w-1/3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs py-2 px-3 rounded-xl transition-all cursor-pointer text-center"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCloudSyncing}
-                    className="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    {isCloudSyncing ? "Saving Registry..." : "Register & Explore"}
-                  </button>
-                </div>
-              </form>
-            ) : isAgentOnboardingForm ? (
+            {isAgentOnboardingForm ? (
               <form onSubmit={handleAgentOnboardingSubmit} className="space-y-3 pt-1 animate-fadeIn">
                 <div className="bg-teal-50 border border-teal-100 p-2.5 rounded-xl text-center space-y-1">
                   <h4 className="text-[10.5px] font-extrabold text-teal-850">🌟 Partner Profile Creation</h4>
@@ -4700,7 +4832,7 @@ export default function App() {
                       }}
                       className="w-full bg-gradient-to-r from-indigo-50 to-indigo-50/50 hover:from-indigo-100/50 hover:to-indigo-50 text-indigo-700 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-300 font-extrabold text-[10px] py-1.5 px-2 rounded-lg shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-[0.98]"
                     >
-                      <Sparkles className="w-3 h-3 text-amber-550 shrink-0" />
+                      <Building2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                       Register / Onboard New School
                     </button>
                   </div>
@@ -4774,25 +4906,9 @@ export default function App() {
           </div>
         )}
 
-        {/* Master Admin Bypass & Quick Access Tools */}
+        {/* Quick Access Tools */}
         <div className="flex flex-col items-center gap-1.5 mt-3 select-none text-center w-full max-w-[350px]">
           <div className="flex items-center gap-2 w-full justify-center">
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentRole('main_admin');
-                setCurrentSchoolId(null);
-                setIsImpersonating(false);
-                setIsSaaSAdmin(true);
-                localStorage.setItem('class_on_saas_role', 'main_admin');
-                localStorage.setItem('class_on_saas_is_saas_admin', 'true');
-                setActiveTab('saas_owner');
-              }}
-              className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold text-[10px] rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
-            >
-              <Shield className="w-3.5 h-3.5 text-amber-100 animate-pulse" />
-              ⚡ Master Admin Bypass &rarr;
-            </button>
             <button
               type="button"
               onClick={() => {
@@ -4801,10 +4917,10 @@ export default function App() {
                 setSchoolInput('demo');
                 setPasswordInput('Demo@123');
               }}
-              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-extrabold text-[10px] rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1 cursor-pointer uppercase tracking-wider"
+              className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-extrabold text-[10px] rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Demo School
+              <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+              Demo School Credentials
             </button>
           </div>
           <p className="text-[9px] text-slate-400 font-mono tracking-tight leading-none mt-1">

@@ -171,15 +171,6 @@ export default function GoogleReCaptcha({ onVerify, onExpired, resetTrigger }: G
         className="g-recaptcha scale-[0.9] origin-center sm:scale-100"
       />
 
-      {isDevOrPreview && (
-        <button
-          type="button"
-          onClick={() => onVerify('dev-bypass-token')}
-          className="text-[9px] text-indigo-500 hover:underline hover:text-indigo-600 font-mono font-bold tracking-wider uppercase mt-1 cursor-pointer"
-        >
-          ⚡ Dev Sandbox Bypass
-        </button>
-      )}
     </div>
   );
 }
