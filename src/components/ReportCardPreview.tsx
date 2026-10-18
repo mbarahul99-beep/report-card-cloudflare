@@ -244,15 +244,22 @@ export default function ReportCardPreview({
     const isDragging = activeDragKey === colKey;
     return (
       <div
-        title={`↔ Drag line to resize "${colTitle}" width (Current: ${currentWidth}%)`}
+        title={`↔ Drag divider to adjust "${colTitle}" column width (Current: ${currentWidth}%)`}
         onMouseDown={(e) => startColumnResize(e, colKey, currentWidth)}
-        className={`absolute right-0 top-0 bottom-0 w-3 -mr-1.5 cursor-col-resize select-none z-30 flex items-center justify-center transition-all ${
+        className={`absolute right-0 top-0 bottom-0 w-3.5 -mr-[7px] cursor-col-resize select-none z-40 flex items-center justify-center transition-all group/handle ${
           isDragging
-            ? 'bg-indigo-600 opacity-100 ring-2 ring-indigo-400'
-            : 'opacity-40 hover:opacity-100 hover:bg-indigo-500/30'
+            ? 'opacity-100 bg-indigo-600/20'
+            : 'opacity-70 hover:opacity-100 hover:bg-indigo-500/20'
         } print:hidden`}
       >
-        <div className={`w-[2px] h-full ${isDragging ? 'bg-indigo-600' : 'bg-indigo-400/90 hover:bg-indigo-600'}`} />
+        <div className={`w-[2.5px] h-full transition-colors ${
+          isDragging ? 'bg-indigo-600 ring-2 ring-indigo-400' : 'bg-indigo-400 group-hover/handle:bg-indigo-600'
+        }`} />
+        <span className={`absolute top-1/2 -translate-y-1/2 w-2.5 h-4.5 rounded bg-indigo-600 text-white text-[8px] flex items-center justify-center pointer-events-none shadow-xs font-mono transition-opacity ${
+          isDragging ? 'opacity-100' : 'opacity-0 group-hover/handle:opacity-100'
+        }`}>
+          ⋮
+        </span>
       </div>
     );
   };
@@ -3223,82 +3230,141 @@ export default function ReportCardPreview({
                           <tr className="bg-gray-100/60 border-b border-gray-900 text-[8.5px] font-bold text-gray-800">
                             {scholT1Enabled && (
                               <>
-                                {t1Columns.map(col => (
-                                  <React.Fragment key={`t1_subh_${col.id}`}>
-                                    {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(minMarksHeaderLabel)}</th>}
-                                    {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(maxMarksHeaderLabel)}</th>}
-                                    {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
-                                  </React.Fragment>
-                                ))}
-                                {showT1Total && (
-                                  <React.Fragment key="t1_tot_subh">
-                                    {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel)}</th>}
-                                    {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel)}</th>}
-                                    {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
-                                  </React.Fragment>
-                                )}
+                                {t1Columns.map(col => {
+                                  const thisColW = getColW(`t1_${col.id}`, testColWidth);
+                                  return (
+                                    <React.Fragment key={`t1_subh_${col.id}`}>
+                                      {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center relative group">{renderSubHeader(minMarksHeaderLabel)}</th>}
+                                      {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center relative group">{renderSubHeader(maxMarksHeaderLabel)}</th>}
+                                      {showObtainedMarksColumn && (
+                                        <th className="border border-gray-950 p-0.5 text-center relative group">
+                                          {renderSubHeader(obtainedMarksHeaderLabel)}
+                                          {renderColResizeHandle(`t1_${col.id}`, thisColW, col.name)}
+                                        </th>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                                {showT1Total && (() => {
+                                  const thisTotW = getColW('t1_total', termTotalColWidth);
+                                  return (
+                                    <React.Fragment key="t1_tot_subh">
+                                      {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80 relative group">{renderSubHeader(minMarksHeaderLabel)}</th>}
+                                      {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80 relative group">{renderSubHeader(maxMarksHeaderLabel)}</th>}
+                                      {showObtainedMarksColumn && (
+                                        <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80 relative group">
+                                          {renderSubHeader(obtainedMarksHeaderLabel)}
+                                          {renderColResizeHandle('t1_total', thisTotW, term1TotalLabel)}
+                                        </th>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })()}
                                 {showT1Grade && omitExamHeaderRow && (
-                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader("Grade")}
+                                    {renderColResizeHandle('t1_grade', getColW('t1_grade', termGradeColWidth), 'Term 1 Grade')}
                                   </th>
                                 )}
                               </>
                             )}
                             {scholT2Enabled && (
                               <>
-                                {t2Columns.map(col => (
-                                  <React.Fragment key={`t2_subh_${col.id}`}>
-                                    {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(minMarksHeaderLabel)}</th>}
-                                    {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(maxMarksHeaderLabel)}</th>}
-                                    {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
-                                  </React.Fragment>
-                                ))}
-                                {showT2Total && (
-                                  <React.Fragment key="t2_tot_subh">
-                                    {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel)}</th>}
-                                    {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel)}</th>}
-                                    {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
-                                  </React.Fragment>
-                                )}
+                                {t2Columns.map(col => {
+                                  const thisColW = getColW(`t2_${col.id}`, testColWidth);
+                                  return (
+                                    <React.Fragment key={`t2_subh_${col.id}`}>
+                                      {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center relative group">{renderSubHeader(minMarksHeaderLabel)}</th>}
+                                      {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center relative group">{renderSubHeader(maxMarksHeaderLabel)}</th>}
+                                      {showObtainedMarksColumn && (
+                                        <th className="border border-gray-950 p-0.5 text-center relative group">
+                                          {renderSubHeader(obtainedMarksHeaderLabel)}
+                                          {renderColResizeHandle(`t2_${col.id}`, thisColW, col.name)}
+                                        </th>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                                {showT2Total && (() => {
+                                  const thisTotW = getColW('t2_total', termTotalColWidth);
+                                  return (
+                                    <React.Fragment key="t2_tot_subh">
+                                      {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80 relative group">{renderSubHeader(minMarksHeaderLabel)}</th>}
+                                      {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80 relative group">{renderSubHeader(maxMarksHeaderLabel)}</th>}
+                                      {showObtainedMarksColumn && (
+                                        <th className="border border-gray-950 p-0.5 text-center bg-gray-100/80 relative group">
+                                          {renderSubHeader(obtainedMarksHeaderLabel)}
+                                          {renderColResizeHandle('t2_total', thisTotW, term2TotalLabel)}
+                                        </th>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })()}
                                 {showT2Grade && omitExamHeaderRow && (
-                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader("Grade")}
+                                    {renderColResizeHandle('t2_grade', getColW('t2_grade', termGradeColWidth), 'Term 2 Grade')}
                                   </th>
                                 )}
                               </>
                             )}
                             {scholT3Enabled && (
                               <>
-                                {t3Columns.map(col => (
-                                  <React.Fragment key={`t3_subh_${col.id}`}>
-                                    {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(minMarksHeaderLabel)}</th>}
-                                    {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(maxMarksHeaderLabel)}</th>}
-                                    {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
-                                  </React.Fragment>
-                                ))}
-                                {showT3Total && (
-                                  <React.Fragment key="t3_tot_subh">
-                                    {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80">{renderSubHeader(minMarksHeaderLabel)}</th>}
-                                    {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80">{renderSubHeader(maxMarksHeaderLabel)}</th>}
-                                    {showObtainedMarksColumn && <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
-                                  </React.Fragment>
-                                )}
+                                {t3Columns.map(col => {
+                                  const thisColW = getColW(`t3_${col.id}`, testColWidth);
+                                  return (
+                                    <React.Fragment key={`t3_subh_${col.id}`}>
+                                      {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center relative group">{renderSubHeader(minMarksHeaderLabel)}</th>}
+                                      {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center relative group">{renderSubHeader(maxMarksHeaderLabel)}</th>}
+                                      {showObtainedMarksColumn && (
+                                        <th className="border border-gray-950 p-0.5 text-center relative group">
+                                          {renderSubHeader(obtainedMarksHeaderLabel)}
+                                          {renderColResizeHandle(`t3_${col.id}`, thisColW, col.name)}
+                                        </th>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                                {showT3Total && (() => {
+                                  const thisTotW = getColW('t3_total', termTotalColWidth);
+                                  return (
+                                    <React.Fragment key="t3_tot_subh">
+                                      {showMinMarksColumn && <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80 relative group">{renderSubHeader(minMarksHeaderLabel)}</th>}
+                                      {showMaxMarksColumn && <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80 relative group">{renderSubHeader(maxMarksHeaderLabel)}</th>}
+                                      {showObtainedMarksColumn && (
+                                        <th className="border border-gray-955 p-0.5 text-center bg-gray-100/80 relative group">
+                                          {renderSubHeader(obtainedMarksHeaderLabel)}
+                                          {renderColResizeHandle('t3_total', thisTotW, term3TotalLabel)}
+                                        </th>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })()}
                                 {showT3Grade && omitExamHeaderRow && (
-                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader("Grade")}
+                                    {renderColResizeHandle('t3_grade', getColW('t3_grade', termGradeColWidth), 'Term 3 Grade')}
                                   </th>
                                 )}
                               </>
                             )}
                             {showOverall && overallExtraCols > 0 && (
                               <>
-                                {showOverallTotal && (
-                                  <React.Fragment key="ov_tot_subh">
-                                    {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-sky-100/60">{renderSubHeader(minMarksHeaderLabel)}</th>}
-                                    {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-sky-100/60">{renderSubHeader(maxMarksHeaderLabel)}</th>}
-                                    {showObtainedMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-sky-100/60">{renderSubHeader(obtainedMarksHeaderLabel)}</th>}
-                                  </React.Fragment>
-                                )}
+                                {showOverallTotal && (() => {
+                                  const thisTotW = getColW('ov_total', overallTotalColWidth);
+                                  return (
+                                    <React.Fragment key="ov_tot_subh">
+                                      {showMinMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-sky-100/60 relative group">{renderSubHeader(minMarksHeaderLabel)}</th>}
+                                      {showMaxMarksColumn && <th className="border border-gray-950 p-0.5 text-center bg-sky-100/60 relative group">{renderSubHeader(maxMarksHeaderLabel)}</th>}
+                                      {showObtainedMarksColumn && (
+                                        <th className="border border-gray-950 p-0.5 text-center bg-sky-100/60 relative group">
+                                          {renderSubHeader(obtainedMarksHeaderLabel)}
+                                          {renderColResizeHandle('ov_total', thisTotW, totalMarksHeaderLabel)}
+                                        </th>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })()}
                               </>
                             )}
                           </tr>

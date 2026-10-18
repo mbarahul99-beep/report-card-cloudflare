@@ -1570,6 +1570,13 @@ export default function ReportCardStructureSettings({
                       termSpecificScoreColumnsEnabled={termSpecificScoreColumnsEnabled}
                       term1ScoreColumns={term1ScoreColumns}
                       term2ScoreColumns={term2ScoreColumns}
+                      showMinMarksColumn={showMinMarksColumn}
+                      showMaxMarksColumn={showMaxMarksColumn}
+                      showObtainedMarksColumn={showObtainedMarksColumn}
+                      landscapeMarksHeaders={landscapeMarksHeaders}
+                      minMarksHeaderLabel={minMarksHeaderLabel}
+                      maxMarksHeaderLabel={maxMarksHeaderLabel}
+                      obtainedMarksHeaderLabel={obtainedMarksHeaderLabel}
                       columnWidths={columnWidths}
                       isDraggableColumnMode={true}
                       onUpdateColumnWidths={(newWidths) => setColumnWidths(newWidths)}
@@ -4849,7 +4856,23 @@ export default function ReportCardStructureSettings({
                 <span className="text-[9.5px] uppercase tracking-widest text-indigo-400 font-extrabold">Report Card Preview Replica</span>
                 <span className="block text-white font-black text-base">Format Design: {previewStructure?.name}</span>
               </div>
-              <button type="button" onClick={() => setViewingReplicaId(null)} className="text-slate-400 hover:text-white bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center transition-all">✕</button>
+              <div className="flex items-center gap-2">
+                {previewStructure && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const s = previewStructure;
+                      setViewingReplicaId(null);
+                      handleEditStructure(s);
+                    }}
+                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition"
+                  >
+                    <Edit className="w-3.5 h-3.5" />
+                    <span>Edit Layout &amp; Spacing</span>
+                  </button>
+                )}
+                <button type="button" onClick={() => setViewingReplicaId(null)} className="text-slate-400 hover:text-white bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center transition-all">✕</button>
+              </div>
             </div>
 
             <div className="overflow-x-hidden overflow-y-auto py-2 sm:py-4 flex-grow my-2 sm:my-3 scrollbar-thin flex justify-center items-start w-full">
@@ -4898,6 +4921,13 @@ export default function ReportCardStructureSettings({
                   termSpecificScoreColumnsEnabled={previewStructure?.termSpecificScoreColumnsEnabled}
                   term1ScoreColumns={previewStructure?.term1ScoreColumns}
                   term2ScoreColumns={previewStructure?.term2ScoreColumns}
+                  showMinMarksColumn={previewStructure?.showMinMarksColumn}
+                  showMaxMarksColumn={previewStructure?.showMaxMarksColumn}
+                  showObtainedMarksColumn={previewStructure?.showObtainedMarksColumn}
+                  landscapeMarksHeaders={previewStructure?.landscapeMarksHeaders}
+                  minMarksHeaderLabel={previewStructure?.minMarksHeaderLabel}
+                  maxMarksHeaderLabel={previewStructure?.maxMarksHeaderLabel}
+                  obtainedMarksHeaderLabel={previewStructure?.obtainedMarksHeaderLabel}
                   columnWidths={editingStructureId === viewingReplicaId ? columnWidths : (previewStructure?.columnWidths || {})}
                   isDraggableColumnMode={true}
                   onUpdateColumnWidths={(newWidths) => {
