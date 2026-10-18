@@ -51,6 +51,9 @@ interface PreviewProps {
   minMarksHeaderLabel?: string;
   maxMarksHeaderLabel?: string;
   obtainedMarksHeaderLabel?: string;
+  columnWidths?: import('../types').TableColumnWidthOverrides;
+  onUpdateColumnWidths?: (newWidths: import('../types').TableColumnWidthOverrides) => void;
+  isDraggableColumnMode?: boolean;
   onUpdateRemarks?: (newRemarks: string, promotionStatus?: string) => void;
 }
 
@@ -97,9 +100,105 @@ export default function ReportCardPreview({
   minMarksHeaderLabel: propMinMarksHeaderLabel,
   maxMarksHeaderLabel: propMaxMarksHeaderLabel,
   obtainedMarksHeaderLabel: propObtainedMarksHeaderLabel,
+  columnWidths,
+  onUpdateColumnWidths,
+  isDraggableColumnMode = false,
   onUpdateRemarks
 }: PreviewProps) {
   const [isAiRemarksOpen, setIsAiRemarksOpen] = useState(false);
+
+  // Column drag resizing state
+  const latestWidthsRef = useRef(columnWidths);
+  useEffect(() => {
+    latestWidthsRef.current = columnWidths;
+  }, [columnWidths]);
+
+  const draggingRef = useRef<{
+    colKey: 'subject' | 'test' | 'termTotal' | 'termGrade' | 'overallTotal' | 'overallGrade';
+    startX: number;
+    startWidth: number;
+    tableWidth: number;
+  } | null>(null);
+
+  const [activeDragKey, setActiveDragKey] = useState<string | null>(null);
+
+  const startColumnResize = (
+    e: React.MouseEvent,
+    colKey: 'subject' | 'test' | 'termTotal' | 'termGrade' | 'overallTotal' | 'overallGrade',
+    currentWidth: number
+  ) => {
+    if (!onUpdateColumnWidths) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const tableEl = (e.currentTarget as HTMLElement).closest('table');
+    const tableWidth = tableEl ? tableEl.getBoundingClientRect().width : 800;
+
+    draggingRef.current = {
+      colKey,
+      startX: e.clientX,
+      startWidth: currentWidth,
+      tableWidth: Math.max(300, tableWidth)
+    };
+    setActiveDragKey(colKey);
+
+    const onMouseMove = (moveEvt: MouseEvent) => {
+      if (!draggingRef.current || !onUpdateColumnWidths) return;
+      const { colKey, startX, startWidth, tableWidth } = draggingRef.current;
+      const deltaPx = moveEvt.clientX - startX;
+      const deltaPct = (deltaPx / tableWidth) * 100;
+
+      let newWidth = parseFloat((startWidth + deltaPct).toFixed(1));
+
+      if (colKey === 'subject') {
+        newWidth = Math.max(15, Math.min(50, newWidth));
+        onUpdateColumnWidths({
+          ...(latestWidthsRef.current || {}),
+          subjectColWidth: newWidth
+        });
+      } else if (colKey === 'test') {
+        newWidth = Math.max(4, Math.min(25, newWidth));
+        onUpdateColumnWidths({
+          ...(latestWidthsRef.current || {}),
+          testColWidth: newWidth
+        });
+      } else if (colKey === 'termTotal') {
+        newWidth = Math.max(5, Math.min(25, newWidth));
+        onUpdateColumnWidths({
+          ...(latestWidthsRef.current || {}),
+          termTotalWidth: newWidth
+        });
+      } else if (colKey === 'termGrade') {
+        newWidth = Math.max(3, Math.min(18, newWidth));
+        onUpdateColumnWidths({
+          ...(latestWidthsRef.current || {}),
+          termGradeWidth: newWidth
+        });
+      } else if (colKey === 'overallTotal') {
+        newWidth = Math.max(6, Math.min(30, newWidth));
+        onUpdateColumnWidths({
+          ...(latestWidthsRef.current || {}),
+          overallTotalWidth: newWidth
+        });
+      } else if (colKey === 'overallGrade') {
+        newWidth = Math.max(3, Math.min(18, newWidth));
+        onUpdateColumnWidths({
+          ...(latestWidthsRef.current || {}),
+          overallGradeWidth: newWidth
+        });
+      }
+    };
+
+    const onMouseUp = () => {
+      draggingRef.current = null;
+      setActiveDragKey(null);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
   
   const branding = rawBranding || {} as SchoolBranding;
   const showMinMarksColumn = propShowMinMarksColumn ?? branding.showMinMarksColumn ?? false;
@@ -444,6 +543,28 @@ export default function ReportCardPreview({
     overallTotalColWidth = getColPct(weightOverallTotal);
     overallGradeColWidth = getColPct(weightGradeCol);
     singleColWidth = cRem > 0 ? (remainingWidth / cRem) : 10;
+  }
+
+  // Apply layout-specific manual column width overrides if explicitly configured
+  if (columnWidths) {
+    if (typeof columnWidths.subjectColWidth === 'number' && columnWidths.subjectColWidth > 0) {
+      subjWidth = Math.max(12, Math.min(60, columnWidths.subjectColWidth));
+    }
+    if (typeof columnWidths.testColWidth === 'number' && columnWidths.testColWidth > 0) {
+      testColWidth = Math.max(2, Math.min(30, columnWidths.testColWidth));
+    }
+    if (typeof columnWidths.termTotalWidth === 'number' && columnWidths.termTotalWidth > 0) {
+      termTotalColWidth = Math.max(2, Math.min(30, columnWidths.termTotalWidth));
+    }
+    if (typeof columnWidths.termGradeWidth === 'number' && columnWidths.termGradeWidth > 0) {
+      termGradeColWidth = Math.max(2, Math.min(25, columnWidths.termGradeWidth));
+    }
+    if (typeof columnWidths.overallTotalWidth === 'number' && columnWidths.overallTotalWidth > 0) {
+      overallTotalColWidth = Math.max(2, Math.min(35, columnWidths.overallTotalWidth));
+    }
+    if (typeof columnWidths.overallGradeWidth === 'number' && columnWidths.overallGradeWidth > 0) {
+      overallGradeColWidth = Math.max(2, Math.min(25, columnWidths.overallGradeWidth));
+    }
   }
 
   const totalTableColumns = 1 + cTerm1 + cTerm2 + cTerm3 + cOverall;
@@ -2869,7 +2990,7 @@ export default function ReportCardPreview({
                         <tr className="bg-gray-50/50 border-b border-gray-900">
                           <th 
                             rowSpan={omitExamHeaderRow ? 2 : (subColCount > 1 ? 3 : 2)} 
-                            className={`border border-gray-950 ${subjectCellPaddingClass} text-center font-bold text-gray-900 break-words leading-tight align-middle`}
+                            className={`border border-gray-950 ${subjectCellPaddingClass} text-center font-bold text-gray-900 break-words leading-tight align-middle relative group`}
                           >
                             {(() => {
                               const renderedText = scholasticSubjectsHeaderLabel.includes('<br/>') || scholasticSubjectsHeaderLabel.includes('<br />') ? (
@@ -2898,6 +3019,19 @@ export default function ReportCardPreview({
                                 );
                               }
                             })()}
+
+                            {/* Drag handle to adjust subject column width */}
+                            {onUpdateColumnWidths && (
+                              <div
+                                title="Drag to adjust Subjects Column width"
+                                onMouseDown={(e) => startColumnResize(e, 'subject', subjWidth)}
+                                className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
+                                  activeDragKey === 'subject' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
+                                }`}
+                              >
+                                <div className="w-0.5 h-4 bg-indigo-500 rounded-full" />
+                              </div>
+                            )}
                           </th>
                           {scholT1Enabled && (
                             <th colSpan={t1Columns.length * subColCount + (showT1Total ? subColCount : 0) + (showT1Grade ? 1 : 0)} className={`border border-gray-950 ${cellPaddingClass} font-black text-black uppercase tracking-wide bg-gray-100/30 text-[9px] sm:text-[10px]`}>
@@ -2923,23 +3057,56 @@ export default function ReportCardPreview({
                             {/* Term 1 columns */}
                             {scholT1Enabled && (
                               <>
-                                {t1Columns.map(col => {
+                                {t1Columns.map((col, cIdx) => {
                                   const text = (col.id === 'hy') ? term1ExamLabel : col.name;
                                   const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
                                   return (
-                                    <th key={`t1_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                                    <th key={`t1_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center relative group">
                                       {renderExamHeader(text, subtext)}
+                                      {onUpdateColumnWidths && cIdx === t1Columns.length - 1 && (
+                                        <div
+                                          title="Drag to adjust Exam Component Column width"
+                                          onMouseDown={(e) => startColumnResize(e, 'test', testColWidth)}
+                                          className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
+                                            activeDragKey === 'test' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
+                                          }`}
+                                        >
+                                          <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
+                                        </div>
+                                      )}
                                     </th>
                                   );
                                 })}
                                 {showT1Total && (
-                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader(term1TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT1ColumnMaxMarks})` : undefined)}
+                                    {onUpdateColumnWidths && (
+                                      <div
+                                        title="Drag to adjust Term Total Column width"
+                                        onMouseDown={(e) => startColumnResize(e, 'termTotal', termTotalColWidth)}
+                                        className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
+                                          activeDragKey === 'termTotal' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
+                                        }`}
+                                      >
+                                        <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
+                                      </div>
+                                    )}
                                   </th>
                                 )}
                                 {showT1Grade && (
-                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader("Grade")}
+                                    {onUpdateColumnWidths && (
+                                      <div
+                                        title="Drag to adjust Grade Column width"
+                                        onMouseDown={(e) => startColumnResize(e, 'termGrade', termGradeColWidth)}
+                                        className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
+                                          activeDragKey === 'termGrade' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
+                                        }`}
+                                      >
+                                        <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
+                                      </div>
+                                    )}
                                   </th>
                                 )}
                               </>
@@ -3003,13 +3170,35 @@ export default function ReportCardPreview({
                             {showOverall && overallExtraCols > 0 && (
                               <>
                                 {showOverallTotal && (
-                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-sky-50/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-sky-50/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader(totalMarksHeaderLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${singleSubjectMaxOverall})` : undefined)}
+                                    {onUpdateColumnWidths && (
+                                      <div
+                                        title="Drag to adjust Overall Total Column width"
+                                        onMouseDown={(e) => startColumnResize(e, 'overallTotal', overallTotalColWidth)}
+                                        className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
+                                          activeDragKey === 'overallTotal' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
+                                        }`}
+                                      >
+                                        <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
+                                      </div>
+                                    )}
                                   </th>
                                 )}
                                 {showOverallGrade && (
-                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-rose-50/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-rose-50/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader(gradeHeaderLabel)}
+                                    {onUpdateColumnWidths && (
+                                      <div
+                                        title="Drag to adjust Overall Grade Column width"
+                                        onMouseDown={(e) => startColumnResize(e, 'overallGrade', overallGradeColWidth)}
+                                        className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
+                                          activeDragKey === 'overallGrade' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
+                                        }`}
+                                      >
+                                        <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
+                                      </div>
+                                    )}
                                   </th>
                                 )}
                               </>

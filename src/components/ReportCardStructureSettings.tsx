@@ -243,6 +243,9 @@ export default function ReportCardStructureSettings({
   const [hideOverallTotal, setHideOverallTotal] = useState(false);
   const [hideOverallGrade, setHideOverallGrade] = useState(false);
 
+  // Layout-specific drag and adjust column widths
+  const [columnWidths, setColumnWidths] = useState<import('../types').TableColumnWidthOverrides>({});
+
   const [activeAccordion, setActiveAccordion] = useState<string>('general');
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -413,6 +416,7 @@ export default function ReportCardStructureSettings({
     setHideTerm3Grade(false);
     setHideOverallTotal(false);
     setHideOverallGrade(false);
+    setColumnWidths({});
 
     setCompletedSections(['general']);
     setActiveAccordion('branding');
@@ -554,6 +558,7 @@ export default function ReportCardStructureSettings({
     setHideTerm3Grade(struct.hideTerm3Grade || false);
     setHideOverallTotal(struct.hideOverallTotal || false);
     setHideOverallGrade(struct.hideOverallGrade || false);
+    setColumnWidths(struct.columnWidths || {});
 
     setCompletedSections(struct.completedSections || ['general']);
     setActiveAccordion('branding');
@@ -1034,7 +1039,8 @@ export default function ReportCardStructureSettings({
       demoRollNo: existingStruct?.demoRollNo,
       demoClassName: existingStruct?.demoClassName || classesArray[0],
       demoFatherName: existingStruct?.demoFatherName,
-      demoMotherName: existingStruct?.demoMotherName
+      demoMotherName: existingStruct?.demoMotherName,
+      columnWidths
     };
 
     let updatedList: ReportCardStructure[] = [];
@@ -3971,6 +3977,169 @@ export default function ReportCardStructureSettings({
                     </label>
                   </div>
 
+                  {/* CUSTOM DRAG & ADJUST COLUMN WIDTHS CONFIGURATION */}
+                  <div className="p-4 sm:p-5 bg-gradient-to-br from-indigo-50/70 to-blue-50/40 border border-indigo-200/80 rounded-2xl space-y-4 mt-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-indigo-100">
+                      <div>
+                        <span className="text-xs font-black text-indigo-950 flex items-center gap-1.5">
+                          <Sliders className="w-4 h-4 text-indigo-600" />
+                          Adjust Table Column Widths (Specific to this Layout)
+                        </span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Fine-tune column proportions separately for this layout to prevent text wrapping or gaping voids.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setColumnWidths({})}
+                        className="self-start sm:self-auto px-3 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-[10.5px] font-bold shadow-2xs transition-all flex items-center gap-1"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                        Reset to Smart Auto Sizing
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {/* Subject Name Column Width */}
+                      <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-extrabold text-slate-800">Subjects Column</span>
+                          <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[11px]">
+                            {columnWidths.subjectColWidth ? `${columnWidths.subjectColWidth.toFixed(1)}%` : 'Auto (~26%)'}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="15"
+                          max="50"
+                          step="0.5"
+                          value={columnWidths.subjectColWidth || 26}
+                          onChange={(e) => setColumnWidths(prev => ({ ...prev, subjectColWidth: parseFloat(e.target.value) }))}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        />
+                        <div className="flex justify-between text-[9.5px] text-slate-400 font-bold">
+                          <span>Compact (15%)</span>
+                          <span>Spacious (50%)</span>
+                        </div>
+                      </div>
+
+                      {/* Component Exam Columns */}
+                      <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-extrabold text-slate-800">Exam Component Columns</span>
+                          <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[11px]">
+                            {columnWidths.testColWidth ? `${columnWidths.testColWidth.toFixed(1)}%` : 'Auto (~10%)'}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="4"
+                          max="22"
+                          step="0.5"
+                          value={columnWidths.testColWidth || 10}
+                          onChange={(e) => setColumnWidths(prev => ({ ...prev, testColWidth: parseFloat(e.target.value) }))}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        />
+                        <div className="flex justify-between text-[9.5px] text-slate-400 font-bold">
+                          <span>Narrow (4%)</span>
+                          <span>Wide (22%)</span>
+                        </div>
+                      </div>
+
+                      {/* Term Total Columns */}
+                      <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-extrabold text-slate-800">Term Total Columns</span>
+                          <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[11px]">
+                            {columnWidths.termTotalWidth ? `${columnWidths.termTotalWidth.toFixed(1)}%` : 'Auto (~11%)'}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="5"
+                          max="22"
+                          step="0.5"
+                          value={columnWidths.termTotalWidth || 11}
+                          onChange={(e) => setColumnWidths(prev => ({ ...prev, termTotalWidth: parseFloat(e.target.value) }))}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        />
+                        <div className="flex justify-between text-[9.5px] text-slate-400 font-bold">
+                          <span>Narrow (5%)</span>
+                          <span>Wide (22%)</span>
+                        </div>
+                      </div>
+
+                      {/* Term Grade Columns */}
+                      <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-extrabold text-slate-800">Term Grade Columns</span>
+                          <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[11px]">
+                            {columnWidths.termGradeWidth ? `${columnWidths.termGradeWidth.toFixed(1)}%` : 'Auto (~8%)'}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="3"
+                          max="16"
+                          step="0.5"
+                          value={columnWidths.termGradeWidth || 8}
+                          onChange={(e) => setColumnWidths(prev => ({ ...prev, termGradeWidth: parseFloat(e.target.value) }))}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        />
+                        <div className="flex justify-between text-[9.5px] text-slate-400 font-bold">
+                          <span>Compact (3%)</span>
+                          <span>Wide (16%)</span>
+                        </div>
+                      </div>
+
+                      {/* Overall Total Column */}
+                      <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-extrabold text-slate-800">Overall Total Column</span>
+                          <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[11px]">
+                            {columnWidths.overallTotalWidth ? `${columnWidths.overallTotalWidth.toFixed(1)}%` : 'Auto (~14%)'}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="6"
+                          max="26"
+                          step="0.5"
+                          value={columnWidths.overallTotalWidth || 14}
+                          onChange={(e) => setColumnWidths(prev => ({ ...prev, overallTotalWidth: parseFloat(e.target.value) }))}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        />
+                        <div className="flex justify-between text-[9.5px] text-slate-400 font-bold">
+                          <span>Compact (6%)</span>
+                          <span>Comfortable (26%)</span>
+                        </div>
+                      </div>
+
+                      {/* Overall Grade Column */}
+                      <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-extrabold text-slate-800">Overall Grade Column</span>
+                          <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[11px]">
+                            {columnWidths.overallGradeWidth ? `${columnWidths.overallGradeWidth.toFixed(1)}%` : 'Auto (~8%)'}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="3"
+                          max="16"
+                          step="0.5"
+                          value={columnWidths.overallGradeWidth || 8}
+                          onChange={(e) => setColumnWidths(prev => ({ ...prev, overallGradeWidth: parseFloat(e.target.value) }))}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                        />
+                        <div className="flex justify-between text-[9.5px] text-slate-400 font-bold">
+                          <span>Compact (3%)</span>
+                          <span>Wide (16%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex justify-end pt-2">
                     <button type="button" onClick={() => markSectionCompletedAndNext('custom_addons', 'portal_visibility')} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-black flex items-center gap-1.5 shadow">
                       <Check className="w-4 h-4" /> Finalize Work & Save Green Ticks
@@ -4401,13 +4570,23 @@ export default function ReportCardStructureSettings({
                   termSpecificScoreColumnsEnabled={previewStructure?.termSpecificScoreColumnsEnabled}
                   term1ScoreColumns={previewStructure?.term1ScoreColumns}
                   term2ScoreColumns={previewStructure?.term2ScoreColumns}
-                  term3ScoreColumns={previewStructure?.term3ScoreColumns}
+                  columnWidths={editingStructureId === viewingReplicaId ? columnWidths : (previewStructure?.columnWidths || {})}
+                  isDraggableColumnMode={true}
+                  onUpdateColumnWidths={(newWidths) => {
+                    if (editingStructureId && viewingReplicaId === editingStructureId) {
+                      setColumnWidths(newWidths);
+                    }
+                    if (previewStructure) {
+                      const updated = reportCardStructures.map(s => s.id === previewStructure.id ? { ...s, columnWidths: newWidths } : s);
+                      onUpdateStructures(updated);
+                    }
+                  }}
                 />
               </div>
             </div>
 
             <div className="border-t border-slate-800 pt-3.5 flex items-center justify-between leading-none font-sans select-none shrink-0">
-              <span className="text-[10px] text-slate-455 flex items-center gap-1"><HelpCircle className="w-3.5 h-3.5" /> Generates highly realistic printable replicas for live audits.</span>
+              <span className="text-[10.5px] text-slate-300 flex items-center gap-1.5"><HelpCircle className="w-3.5 h-3.5 text-amber-400" /> <strong className="text-white">Live Drag Enabled:</strong> Hover over table column dividers and drag horizontally to resize columns for this layout in real-time.</span>
               <div className="flex gap-2.5">
                 <button type="button" onClick={() => setViewingReplicaId(null)} className="px-4.5 py-2 text-xs font-bold text-slate-400 bg-slate-900 border border-slate-800 rounded-xl hover:text-white">Close</button>
                 <button type="button" onClick={() => window.print()} className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 font-extrabold text-[11px] rounded-xl text-slate-950 flex items-center gap-1.5"><Printer className="w-4 h-4 stroke-[2.5]" /> Print Layout Format</button>

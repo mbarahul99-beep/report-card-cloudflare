@@ -360,6 +360,19 @@ export interface ReportCardStructure {
   demoClassName?: string;
   demoFatherName?: string;
   demoMotherName?: string;
+  columnWidths?: TableColumnWidthOverrides;
+}
+
+export interface TableColumnWidthOverrides {
+  subjectColWidth?: number;            // percentage width (e.g. 26.5)
+  testColWidth?: number;               // individual exam component test column width %
+  termTotalWidth?: number;             // term total column width %
+  termGradeWidth?: number;             // term grade column width %
+  overallTotalWidth?: number;          // overall total column width %
+  overallGradeWidth?: number;          // overall grade column width %
+  customSpecificCols?: {               // granular column ID overrides if needed
+    [columnKey: string]: number;
+  };
 }
 
 export interface SaasNotification {
@@ -456,6 +469,7 @@ export interface ReportCardTemplate {
   demoStudentName?: string;
   demoRollNo?: string;
   demoClassName?: string;
+  columnWidths?: TableColumnWidthOverrides;
   createdAt: string;
 }
 

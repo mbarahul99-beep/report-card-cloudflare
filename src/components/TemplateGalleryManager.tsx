@@ -1657,6 +1657,7 @@ export default function TemplateGalleryManager({
               hideTerm3Grade={previewTemplate.hideTerm3Grade}
               hideOverallTotal={previewTemplate.hideOverallTotal}
               hideOverallGrade={previewTemplate.hideOverallGrade}
+              columnWidths={previewTemplate.columnWidths}
               student={{
                 ...defaultDemoStudent,
                 name: previewTemplate.demoStudentName || defaultDemoStudent.name,
@@ -4211,6 +4212,7 @@ export default function TemplateGalleryManager({
                     hideTerm3Grade={editingTemplate.hideTerm3Grade}
                     hideOverallTotal={editingTemplate.hideOverallTotal}
                     hideOverallGrade={editingTemplate.hideOverallGrade}
+                    columnWidths={editingTemplate.columnWidths}
                     student={{
                       ...defaultDemoStudent,
                       name: editingTemplate.demoStudentName || defaultDemoStudent.name,

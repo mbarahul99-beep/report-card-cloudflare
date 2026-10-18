@@ -2795,7 +2795,8 @@ export default function App() {
         resolvedHideTerm3Total: false,
         resolvedHideTerm3Grade: false,
         resolvedHideOverallTotal: false,
-        resolvedHideOverallGrade: false
+        resolvedHideOverallGrade: false,
+        resolvedColumnWidths: undefined
       };
     }
     const matchedStruct = matchStructureForStudent(reportCardStructures, student.className, student.section);
@@ -2948,7 +2949,8 @@ export default function App() {
         resolvedHideTerm3Total: matchedStruct.hideTerm3Total ?? false,
         resolvedHideTerm3Grade: matchedStruct.hideTerm3Grade ?? false,
         resolvedHideOverallTotal: matchedStruct.hideOverallTotal ?? false,
-        resolvedHideOverallGrade: matchedStruct.hideOverallGrade ?? false
+        resolvedHideOverallGrade: matchedStruct.hideOverallGrade ?? false,
+        resolvedColumnWidths: matchedStruct.columnWidths
       };
     }
 
@@ -2993,6 +2995,7 @@ export default function App() {
       resolvedMinMarksHeaderLabel: activeSessionBranding.minMarksHeaderLabel || "Min Marks",
       resolvedMaxMarksHeaderLabel: activeSessionBranding.maxMarksHeaderLabel || "Max Marks",
       resolvedObtainedMarksHeaderLabel: activeSessionBranding.obtainedMarksHeaderLabel || "Marks Obtained",
+      resolvedColumnWidths: undefined
     };
   }, [reportCardStructures, branding, subjects, scoreColumns, gradeScales, selectedSessionFilter]);
 
@@ -4977,7 +4980,8 @@ export default function App() {
       resolvedTermSpecificScoreColumnsEnabled,
       resolvedTerm1ScoreColumns,
       resolvedTerm2ScoreColumns,
-      resolvedTerm3ScoreColumns
+      resolvedTerm3ScoreColumns,
+      resolvedColumnWidths
     } = parentStudent ? resolveStudentStructure(parentStudent, parentPortalSessionFilter) : {
       resolvedBranding: parentPortalSessionFilter 
         ? { 
@@ -5018,7 +5022,8 @@ export default function App() {
       resolvedTermSpecificScoreColumnsEnabled: false,
       resolvedTerm1ScoreColumns: [],
       resolvedTerm2ScoreColumns: [],
-      resolvedTerm3ScoreColumns: []
+      resolvedTerm3ScoreColumns: [],
+      resolvedColumnWidths: undefined
     };
 
     const scholT1Active = resolvedBranding.term1Enabled && !resolvedScholasticTerm1Disabled && (parentPortalTermFilter === 'all' || parentPortalTermFilter === 'term1');
@@ -5934,6 +5939,7 @@ export default function App() {
                             term1ScoreColumns={resolvedTerm1ScoreColumns}
                             term2ScoreColumns={resolvedTerm2ScoreColumns}
                             term3ScoreColumns={resolvedTerm3ScoreColumns}
+                            columnWidths={resolvedColumnWidths}
                           />
                         ) : (
                           <div className="bg-amber-50 border border-amber-100 rounded-xl p-6 text-center text-xs text-amber-800 font-medium">
@@ -7419,7 +7425,7 @@ export default function App() {
                           {/* Adaptive responsive wrapper containing ReportCardPreview */}
                           <div className="w-full border border-gray-150 rounded-xl p-1 sm:p-4 bg-white shadow-xs print:overflow-visible print:border-none print:shadow-none print:p-0">
                                                 {(() => {
-                                  const { resolvedBranding, resolvedSubjects, resolvedScoreColumns, resolvedGradeScales, resolvedScholasticTerm1Disabled, resolvedScholasticTerm2Disabled, resolvedScholasticTerm3Disabled, resolvedCoScholasticOneColumn, resolvedCoScholasticSections, resolvedCoGradeScales, resolvedSignatures, resolvedHideGradingScale, resolvedHideAttendance, resolvedPureGradeBased, resolvedGradingScaleAfterSignatures, resolvedGradingScaleLayout, resolvedVerticalExamHeaders, resolvedLandscapeMarksHeaders, resolvedVerticalSubjectsHeader, resolvedSubjectSpecificMaxMarksEnabled, resolvedEnableSubjectGrouping, resolvedCustomSubjectGroups, resolvedHideTerm1Total, resolvedHideTerm1Grade, resolvedHideTerm2Total, resolvedHideTerm2Grade, resolvedHideTerm3Total, resolvedHideTerm3Grade, resolvedHideOverallTotal, resolvedHideOverallGrade, resolvedTermSpecificScoreColumnsEnabled, resolvedTerm1ScoreColumns, resolvedTerm2ScoreColumns, resolvedTerm3ScoreColumns } = resolveStudentStructure(std);
+                                  const { resolvedBranding, resolvedSubjects, resolvedScoreColumns, resolvedGradeScales, resolvedScholasticTerm1Disabled, resolvedScholasticTerm2Disabled, resolvedScholasticTerm3Disabled, resolvedCoScholasticOneColumn, resolvedCoScholasticSections, resolvedCoGradeScales, resolvedSignatures, resolvedHideGradingScale, resolvedHideAttendance, resolvedPureGradeBased, resolvedGradingScaleAfterSignatures, resolvedGradingScaleLayout, resolvedVerticalExamHeaders, resolvedLandscapeMarksHeaders, resolvedVerticalSubjectsHeader, resolvedSubjectSpecificMaxMarksEnabled, resolvedEnableSubjectGrouping, resolvedCustomSubjectGroups, resolvedHideTerm1Total, resolvedHideTerm1Grade, resolvedHideTerm2Total, resolvedHideTerm2Grade, resolvedHideTerm3Total, resolvedHideTerm3Grade, resolvedHideOverallTotal, resolvedHideOverallGrade, resolvedTermSpecificScoreColumnsEnabled, resolvedTerm1ScoreColumns, resolvedTerm2ScoreColumns, resolvedTerm3ScoreColumns, resolvedColumnWidths } = resolveStudentStructure(std);
                                   return (
                                     <ReportCardPreview
                                       branding={resolvedBranding}
@@ -7458,6 +7464,7 @@ export default function App() {
                                       term1ScoreColumns={resolvedTerm1ScoreColumns}
                                       term2ScoreColumns={resolvedTerm2ScoreColumns}
                                       term3ScoreColumns={resolvedTerm3ScoreColumns}
+                                      columnWidths={resolvedColumnWidths}
                                       onUpdateRemarks={(remarks, promo) => handleUpdateRemarks(std.id, remarks, promo)}
                                     />
                                   );
@@ -7485,7 +7492,7 @@ export default function App() {
                       <div className="w-full max-w-full p-0 sm:p-1 print:min-w-0 print:p-0">
                         <div className="bg-white print:bg-transparent w-full">
                           {(() => {
-                            const { resolvedBranding, resolvedSubjects, resolvedScoreColumns, resolvedGradeScales, resolvedScholasticTerm1Disabled, resolvedScholasticTerm2Disabled, resolvedScholasticTerm3Disabled, resolvedCoScholasticOneColumn, resolvedCoScholasticSections, resolvedCoGradeScales, resolvedSignatures, resolvedHideGradingScale, resolvedHideAttendance, resolvedPureGradeBased, resolvedGradingScaleAfterSignatures, resolvedGradingScaleLayout, resolvedVerticalExamHeaders, resolvedLandscapeMarksHeaders, resolvedVerticalSubjectsHeader, resolvedSubjectSpecificMaxMarksEnabled, resolvedEnableSubjectGrouping, resolvedCustomSubjectGroups, resolvedHideTerm1Total, resolvedHideTerm1Grade, resolvedHideTerm2Total, resolvedHideTerm2Grade, resolvedHideTerm3Total, resolvedHideTerm3Grade, resolvedHideOverallTotal, resolvedHideOverallGrade, resolvedTermSpecificScoreColumnsEnabled, resolvedTerm1ScoreColumns, resolvedTerm2ScoreColumns, resolvedTerm3ScoreColumns } = resolveStudentStructure(currentStudent);
+                            const { resolvedBranding, resolvedSubjects, resolvedScoreColumns, resolvedGradeScales, resolvedScholasticTerm1Disabled, resolvedScholasticTerm2Disabled, resolvedScholasticTerm3Disabled, resolvedCoScholasticOneColumn, resolvedCoScholasticSections, resolvedCoGradeScales, resolvedSignatures, resolvedHideGradingScale, resolvedHideAttendance, resolvedPureGradeBased, resolvedGradingScaleAfterSignatures, resolvedGradingScaleLayout, resolvedVerticalExamHeaders, resolvedLandscapeMarksHeaders, resolvedVerticalSubjectsHeader, resolvedSubjectSpecificMaxMarksEnabled, resolvedEnableSubjectGrouping, resolvedCustomSubjectGroups, resolvedHideTerm1Total, resolvedHideTerm1Grade, resolvedHideTerm2Total, resolvedHideTerm2Grade, resolvedHideTerm3Total, resolvedHideTerm3Grade, resolvedHideOverallTotal, resolvedHideOverallGrade, resolvedTermSpecificScoreColumnsEnabled, resolvedTerm1ScoreColumns, resolvedTerm2ScoreColumns, resolvedTerm3ScoreColumns, resolvedColumnWidths } = resolveStudentStructure(currentStudent);
                             return (
                               <ReportCardPreview
                                 branding={resolvedBranding}
@@ -7524,6 +7531,7 @@ export default function App() {
                                 term1ScoreColumns={resolvedTerm1ScoreColumns}
                                 term2ScoreColumns={resolvedTerm2ScoreColumns}
                                 term3ScoreColumns={resolvedTerm3ScoreColumns}
+                                columnWidths={resolvedColumnWidths}
                                 onUpdateRemarks={(remarks, promo) => handleUpdateRemarks(currentStudent.id, remarks, promo)}
                               />
                             );
