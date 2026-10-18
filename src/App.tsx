@@ -3766,28 +3766,18 @@ export default function App() {
         {/* Card Container mimicking mobile/modern app container matching user reference */}
         <div className="w-full sm:max-w-[440px] h-screen sm:h-[92vh] sm:max-h-[900px] bg-[#007474] sm:rounded-[40px] shadow-2xl flex flex-col overflow-hidden relative z-10 sm:border border-teal-800/30">
           
-          {/* Top Teal Header with organic abstract shapes matching reference image */}
-          <div className="h-28 sm:h-32 bg-[#007474] relative overflow-hidden shrink-0 select-none">
-            {/* Top status bar aesthetic */}
-            <div className="flex justify-between items-center px-7 pt-3 text-white/90 text-xs font-semibold">
-              <span className="tracking-tight font-medium">9:41</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] tracking-widest font-mono">●●●</span>
-                <span className="text-xs">📶</span>
-                <span className="text-xs">🔋</span>
-              </div>
-            </div>
-
-            {/* Organic mint shapes in top-left matching reference image */}
+          {/* Top Teal Header with organic abstract shapes */}
+          <div className="h-10 sm:h-12 bg-[#007474] relative overflow-hidden shrink-0 select-none">
+            {/* Organic mint shapes in top-left */}
             <svg 
-              className="absolute -top-4 -left-4 w-36 h-36 text-[#4cbfa8]/85 pointer-events-none" 
+              className="absolute -top-4 -left-4 w-20 h-20 text-[#4cbfa8]/85 pointer-events-none" 
               viewBox="0 0 100 100" 
               fill="currentColor"
             >
               <path d="M15,0 C55,-5 85,25 85,60 C85,90 60,98 35,90 C12,82 -2,62 0,30 Z" />
             </svg>
             <svg 
-              className="absolute top-3 left-7 w-20 h-20 text-[#66d2bc]/60 pointer-events-none" 
+              className="absolute top-0.5 left-5 w-12 h-12 text-[#66d2bc]/60 pointer-events-none" 
               viewBox="0 0 100 100" 
               fill="currentColor"
             >
@@ -4078,28 +4068,18 @@ export default function App() {
         {/* Card Container mimicking mobile/modern app container matching user reference */}
         <div className="w-full sm:max-w-[440px] h-screen sm:h-[92vh] sm:max-h-[900px] bg-[#007474] sm:rounded-[40px] shadow-2xl flex flex-col overflow-hidden relative z-10 sm:border border-teal-800/30">
           
-          {/* Top Teal Header with organic abstract shapes matching reference image */}
-          <div className="h-28 sm:h-32 bg-[#007474] relative overflow-hidden shrink-0 select-none">
-            {/* Top status bar aesthetic */}
-            <div className="flex justify-between items-center px-7 pt-3 text-white/90 text-xs font-semibold">
-              <span className="tracking-tight font-medium">9:41</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] tracking-widest font-mono">●●●</span>
-                <span className="text-xs">📶</span>
-                <span className="text-xs">🔋</span>
-              </div>
-            </div>
-
-            {/* Organic mint shapes in top-left matching reference image */}
+          {/* Top Teal Header with organic abstract shapes */}
+          <div className="h-10 sm:h-12 bg-[#007474] relative overflow-hidden shrink-0 select-none">
+            {/* Organic mint shapes in top-left */}
             <svg 
-              className="absolute -top-4 -left-4 w-36 h-36 text-[#4cbfa8]/85 pointer-events-none" 
+              className="absolute -top-4 -left-4 w-20 h-20 text-[#4cbfa8]/85 pointer-events-none" 
               viewBox="0 0 100 100" 
               fill="currentColor"
             >
               <path d="M15,0 C55,-5 85,25 85,60 C85,90 60,98 35,90 C12,82 -2,62 0,30 Z" />
             </svg>
             <svg 
-              className="absolute top-3 left-7 w-20 h-20 text-[#66d2bc]/60 pointer-events-none" 
+              className="absolute top-0.5 left-5 w-12 h-12 text-[#66d2bc]/60 pointer-events-none" 
               viewBox="0 0 100 100" 
               fill="currentColor"
             >
