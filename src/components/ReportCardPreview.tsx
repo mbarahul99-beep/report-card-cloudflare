@@ -114,7 +114,7 @@ export default function ReportCardPreview({
   }, [columnWidths]);
 
   const draggingRef = useRef<{
-    colKey: 'subject' | 'test' | 'termTotal' | 'termGrade' | 'overallTotal' | 'overallGrade';
+    colKey: string;
     startX: number;
     startWidth: number;
     tableWidth: number;
@@ -124,7 +124,7 @@ export default function ReportCardPreview({
 
   const startColumnResize = (
     e: React.MouseEvent,
-    colKey: 'subject' | 'test' | 'termTotal' | 'termGrade' | 'overallTotal' | 'overallGrade',
+    colKey: string,
     currentWidth: number
   ) => {
     if (!onUpdateColumnWidths) return;
@@ -151,40 +151,40 @@ export default function ReportCardPreview({
       let newWidth = parseFloat((startWidth + deltaPct).toFixed(1));
 
       if (colKey === 'subject') {
-        newWidth = Math.max(15, Math.min(50, newWidth));
+        newWidth = Math.max(12, Math.min(55, newWidth));
         onUpdateColumnWidths({
           ...(latestWidthsRef.current || {}),
           subjectColWidth: newWidth
         });
-      } else if (colKey === 'test') {
+      } else if (colKey.endsWith('_total')) {
         newWidth = Math.max(4, Math.min(25, newWidth));
         onUpdateColumnWidths({
           ...(latestWidthsRef.current || {}),
-          testColWidth: newWidth
+          termTotalWidth: newWidth,
+          customSpecificCols: {
+            ...(latestWidthsRef.current?.customSpecificCols || {}),
+            [colKey]: newWidth
+          }
         });
-      } else if (colKey === 'termTotal') {
-        newWidth = Math.max(5, Math.min(25, newWidth));
-        onUpdateColumnWidths({
-          ...(latestWidthsRef.current || {}),
-          termTotalWidth: newWidth
-        });
-      } else if (colKey === 'termGrade') {
+      } else if (colKey.endsWith('_grade')) {
         newWidth = Math.max(3, Math.min(18, newWidth));
         onUpdateColumnWidths({
           ...(latestWidthsRef.current || {}),
-          termGradeWidth: newWidth
+          termGradeWidth: newWidth,
+          customSpecificCols: {
+            ...(latestWidthsRef.current?.customSpecificCols || {}),
+            [colKey]: newWidth
+          }
         });
-      } else if (colKey === 'overallTotal') {
-        newWidth = Math.max(6, Math.min(30, newWidth));
+      } else {
+        // Individual test component column or custom column
+        newWidth = Math.max(3, Math.min(28, newWidth));
         onUpdateColumnWidths({
           ...(latestWidthsRef.current || {}),
-          overallTotalWidth: newWidth
-        });
-      } else if (colKey === 'overallGrade') {
-        newWidth = Math.max(3, Math.min(18, newWidth));
-        onUpdateColumnWidths({
-          ...(latestWidthsRef.current || {}),
-          overallGradeWidth: newWidth
+          customSpecificCols: {
+            ...(latestWidthsRef.current?.customSpecificCols || {}),
+            [colKey]: newWidth
+          }
         });
       }
     };
@@ -198,6 +198,63 @@ export default function ReportCardPreview({
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const startRowResize = (e: React.MouseEvent) => {
+    if (!onUpdateColumnWidths) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const startY = e.clientY;
+    const startRowHeight = latestWidthsRef.current?.rowHeight ?? 28;
+    const startPadding = latestWidthsRef.current?.cellPaddingY ?? 4;
+    setActiveDragKey('row_height');
+
+    const onMouseMove = (moveEvt: MouseEvent) => {
+      const deltaY = moveEvt.clientY - startY;
+      const newHeight = Math.max(20, Math.min(85, Math.round(startRowHeight + deltaY * 0.4)));
+      const newPadding = Math.max(2, Math.min(24, Math.round(startPadding + deltaY * 0.15)));
+
+      onUpdateColumnWidths({
+        ...(latestWidthsRef.current || {}),
+        rowHeight: newHeight,
+        cellPaddingY: newPadding
+      });
+    };
+
+    const onMouseUp = () => {
+      setActiveDragKey(null);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const getColW = (key: string, fallback: number): number => {
+    if (columnWidths?.customSpecificCols && columnWidths.customSpecificCols[key] !== undefined) {
+      return columnWidths.customSpecificCols[key];
+    }
+    return fallback;
+  };
+
+  const renderColResizeHandle = (colKey: string, currentWidth: number, colTitle: string) => {
+    if (!onUpdateColumnWidths) return null;
+    const isDragging = activeDragKey === colKey;
+    return (
+      <div
+        title={`↔ Drag line to resize "${colTitle}" width (Current: ${currentWidth}%)`}
+        onMouseDown={(e) => startColumnResize(e, colKey, currentWidth)}
+        className={`absolute right-0 top-0 bottom-0 w-3 -mr-1.5 cursor-col-resize select-none z-30 flex items-center justify-center transition-all ${
+          isDragging
+            ? 'bg-indigo-600 opacity-100 ring-2 ring-indigo-400'
+            : 'opacity-40 hover:opacity-100 hover:bg-indigo-500/30'
+        } print:hidden`}
+      >
+        <div className={`w-[2px] h-full ${isDragging ? 'bg-indigo-600' : 'bg-indigo-400/90 hover:bg-indigo-600'}`} />
+      </div>
+    );
   };
   
   const branding = rawBranding || {} as SchoolBranding;
@@ -2870,13 +2927,15 @@ export default function ReportCardPreview({
                   const firstSubMaxOverall = (firstScholasticSubject ? getSubjectMetrics(firstScholasticSubject.id).maxOverallMarksPossible : (sumOfT1ColumnMaxMarks + sumOfT2ColumnMaxMarks));
                   const singleSubjectMaxOverall = firstSubMaxOverall;
                   return (
-                    <table className={`w-full table-fixed border-collapse border border-gray-900 text-center leading-tight ${tableFontSizeClass}`}>
+                    <>
+                      <table className={`w-full table-fixed border-collapse border border-gray-900 text-center leading-tight ${tableFontSizeClass}`}>
                       <colgroup>
                         <col style={{ width: `${subjWidth}%` }} />
                         {scholT1Enabled && (
                           <>
                             {t1Columns.map(col => {
-                              const { minPct, maxPct, obtPct } = getSubColWidths(testColWidth);
+                              const thisColW = getColW(`t1_${col.id}`, testColWidth);
+                              const { minPct, maxPct, obtPct } = getSubColWidths(thisColW);
                               return subColCount > 1 ? (
                                 <React.Fragment key={`col_t1_grp_${col.id}`}>
                                   {showMinMarksColumn && <col key={`col_t1_min_${col.id}`} style={{ width: `${minPct}%` }} />}
@@ -2884,11 +2943,12 @@ export default function ReportCardPreview({
                                   {showObtainedMarksColumn && <col key={`col_t1_obt_${col.id}`} style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
-                                <col key={`col_t1_${col.id}`} style={{ width: `${testColWidth}%` }} />
+                                <col key={`col_t1_${col.id}`} style={{ width: `${thisColW}%` }} />
                               );
                             })}
                             {showT1Total && (() => {
-                              const { minPct, maxPct, obtPct } = getSubColWidths(termTotalColWidth);
+                              const thisTotW = getColW('t1_total', termTotalColWidth);
+                              const { minPct, maxPct, obtPct } = getSubColWidths(thisTotW);
                               return subColCount > 1 ? (
                                 <React.Fragment key="col_t1_tot_grp">
                                   {showMinMarksColumn && <col style={{ width: `${minPct}%` }} />}
@@ -2896,16 +2956,17 @@ export default function ReportCardPreview({
                                   {showObtainedMarksColumn && <col style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
-                                <col style={{ width: `${termTotalColWidth}%` }} />
+                                <col style={{ width: `${thisTotW}%` }} />
                               );
                             })()}
-                            {showT1Grade && <col style={{ width: `${termGradeColWidth}%` }} />}
+                            {showT1Grade && <col style={{ width: `${getColW('t1_grade', termGradeColWidth)}%` }} />}
                           </>
                         )}
                         {scholT2Enabled && (
                           <>
                             {t2Columns.map(col => {
-                              const { minPct, maxPct, obtPct } = getSubColWidths(testColWidth);
+                              const thisColW = getColW(`t2_${col.id}`, testColWidth);
+                              const { minPct, maxPct, obtPct } = getSubColWidths(thisColW);
                               return subColCount > 1 ? (
                                 <React.Fragment key={`col_t2_grp_${col.id}`}>
                                   {showMinMarksColumn && <col key={`col_t2_min_${col.id}`} style={{ width: `${minPct}%` }} />}
@@ -2913,11 +2974,12 @@ export default function ReportCardPreview({
                                   {showObtainedMarksColumn && <col key={`col_t2_obt_${col.id}`} style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
-                                <col key={`col_t2_${col.id}`} style={{ width: `${testColWidth}%` }} />
+                                <col key={`col_t2_${col.id}`} style={{ width: `${thisColW}%` }} />
                               );
                             })}
                             {showT2Total && (() => {
-                              const { minPct, maxPct, obtPct } = getSubColWidths(termTotalColWidth);
+                              const thisTotW = getColW('t2_total', termTotalColWidth);
+                              const { minPct, maxPct, obtPct } = getSubColWidths(thisTotW);
                               return subColCount > 1 ? (
                                 <React.Fragment key="col_t2_tot_grp">
                                   {showMinMarksColumn && <col style={{ width: `${minPct}%` }} />}
@@ -2925,16 +2987,17 @@ export default function ReportCardPreview({
                                   {showObtainedMarksColumn && <col style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
-                                <col style={{ width: `${termTotalColWidth}%` }} />
+                                <col style={{ width: `${thisTotW}%` }} />
                               );
                             })()}
-                            {showT2Grade && <col style={{ width: `${termGradeColWidth}%` }} />}
+                            {showT2Grade && <col style={{ width: `${getColW('t2_grade', termGradeColWidth)}%` }} />}
                           </>
                         )}
                         {scholT3Enabled && (
                           <>
                             {t3Columns.map(col => {
-                              const { minPct, maxPct, obtPct } = getSubColWidths(testColWidth);
+                              const thisColW = getColW(`t3_${col.id}`, testColWidth);
+                              const { minPct, maxPct, obtPct } = getSubColWidths(thisColW);
                               return subColCount > 1 ? (
                                 <React.Fragment key={`col_t3_grp_${col.id}`}>
                                   {showMinMarksColumn && <col key={`col_t3_min_${col.id}`} style={{ width: `${minPct}%` }} />}
@@ -2942,11 +3005,12 @@ export default function ReportCardPreview({
                                   {showObtainedMarksColumn && <col key={`col_t3_obt_${col.id}`} style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
-                                <col key={`col_t3_${col.id}`} style={{ width: `${testColWidth}%` }} />
+                                <col key={`col_t3_${col.id}`} style={{ width: `${thisColW}%` }} />
                               );
                             })}
                             {showT3Total && (() => {
-                              const { minPct, maxPct, obtPct } = getSubColWidths(termTotalColWidth);
+                              const thisTotW = getColW('t3_total', termTotalColWidth);
+                              const { minPct, maxPct, obtPct } = getSubColWidths(thisTotW);
                               return subColCount > 1 ? (
                                 <React.Fragment key="col_t3_tot_grp">
                                   {showMinMarksColumn && <col style={{ width: `${minPct}%` }} />}
@@ -2954,16 +3018,17 @@ export default function ReportCardPreview({
                                   {showObtainedMarksColumn && <col style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
-                                <col style={{ width: `${termTotalColWidth}%` }} />
+                                <col style={{ width: `${thisTotW}%` }} />
                               );
                             })()}
-                            {showT3Grade && <col style={{ width: `${termGradeColWidth}%` }} />}
+                            {showT3Grade && <col style={{ width: `${getColW('t3_grade', termGradeColWidth)}%` }} />}
                           </>
                         )}
                         {showOverall && overallExtraCols > 0 && (
                           <>
                             {showOverallTotal && (() => {
-                              const { minPct, maxPct, obtPct } = getSubColWidths(overallTotalColWidth);
+                              const thisTotW = getColW('ov_total', overallTotalColWidth);
+                              const { minPct, maxPct, obtPct } = getSubColWidths(thisTotW);
                               return subColCount > 1 ? (
                                 <React.Fragment key="col_ov_tot_grp">
                                   {showMinMarksColumn && <col style={{ width: `${minPct}%` }} />}
@@ -2971,10 +3036,10 @@ export default function ReportCardPreview({
                                   {showObtainedMarksColumn && <col style={{ width: `${obtPct}%` }} />}
                                 </React.Fragment>
                               ) : (
-                                <col style={{ width: `${overallTotalColWidth}%` }} />
+                                <col style={{ width: `${thisTotW}%` }} />
                               );
                             })()}
-                            {showOverallGrade && <col style={{ width: `${overallGradeColWidth}%` }} />}
+                            {showOverallGrade && <col style={{ width: `${getColW('ov_grade', overallGradeColWidth)}%` }} />}
                           </>
                         )}
                       </colgroup>
@@ -3021,17 +3086,7 @@ export default function ReportCardPreview({
                             })()}
 
                             {/* Drag handle to adjust subject column width */}
-                            {onUpdateColumnWidths && (
-                              <div
-                                title="Drag to adjust Subjects Column width"
-                                onMouseDown={(e) => startColumnResize(e, 'subject', subjWidth)}
-                                className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
-                                  activeDragKey === 'subject' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
-                                }`}
-                              >
-                                <div className="w-0.5 h-4 bg-indigo-500 rounded-full" />
-                              </div>
-                            )}
+                            {renderColResizeHandle('subject', subjWidth, 'Subjects')}
                           </th>
                           {scholT1Enabled && (
                             <th colSpan={t1Columns.length * subColCount + (showT1Total ? subColCount : 0) + (showT1Grade ? 1 : 0)} className={`border border-gray-950 ${cellPaddingClass} font-black text-black uppercase tracking-wide bg-gray-100/30 text-[9px] sm:text-[10px]`}>
@@ -3057,56 +3112,27 @@ export default function ReportCardPreview({
                             {/* Term 1 columns */}
                             {scholT1Enabled && (
                               <>
-                                {t1Columns.map((col, cIdx) => {
+                                {t1Columns.map((col) => {
                                   const text = (col.id === 'hy') ? term1ExamLabel : col.name;
                                   const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                                  const colWidthVal = getColW(`t1_${col.id}`, testColWidth);
                                   return (
                                     <th key={`t1_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center relative group">
                                       {renderExamHeader(text, subtext)}
-                                      {onUpdateColumnWidths && cIdx === t1Columns.length - 1 && (
-                                        <div
-                                          title="Drag to adjust Exam Component Column width"
-                                          onMouseDown={(e) => startColumnResize(e, 'test', testColWidth)}
-                                          className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
-                                            activeDragKey === 'test' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
-                                          }`}
-                                        >
-                                          <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
-                                        </div>
-                                      )}
+                                      {renderColResizeHandle(`t1_${col.id}`, colWidthVal, col.name)}
                                     </th>
                                   );
                                 })}
                                 {showT1Total && (
                                   <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader(term1TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT1ColumnMaxMarks})` : undefined)}
-                                    {onUpdateColumnWidths && (
-                                      <div
-                                        title="Drag to adjust Term Total Column width"
-                                        onMouseDown={(e) => startColumnResize(e, 'termTotal', termTotalColWidth)}
-                                        className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
-                                          activeDragKey === 'termTotal' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
-                                        }`}
-                                      >
-                                        <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
-                                      </div>
-                                    )}
+                                    {renderColResizeHandle('t1_total', getColW('t1_total', termTotalColWidth), term1TotalLabel)}
                                   </th>
                                 )}
                                 {showT1Grade && (
                                   <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader("Grade")}
-                                    {onUpdateColumnWidths && (
-                                      <div
-                                        title="Drag to adjust Grade Column width"
-                                        onMouseDown={(e) => startColumnResize(e, 'termGrade', termGradeColWidth)}
-                                        className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
-                                          activeDragKey === 'termGrade' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
-                                        }`}
-                                      >
-                                        <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
-                                      </div>
-                                    )}
+                                    {renderColResizeHandle('t1_grade', getColW('t1_grade', termGradeColWidth), 'Term 1 Grade')}
                                   </th>
                                 )}
                               </>
@@ -3120,20 +3146,24 @@ export default function ReportCardPreview({
                                   const colName = isMidTerm ? 'Annual' : col.name;
                                   const text = (col.id === 'hy') ? term2ExamLabel : colName;
                                   const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                                  const colWidthVal = getColW(`t2_${col.id}`, testColWidth);
                                   return (
-                                    <th key={`t2_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                                    <th key={`t2_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center relative group">
                                       {renderExamHeader(text, subtext)}
+                                      {renderColResizeHandle(`t2_${col.id}`, colWidthVal, col.name)}
                                     </th>
                                   );
                                 })}
                                 {showT2Total && (
-                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader(term2TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT2ColumnMaxMarks})` : undefined)}
+                                    {renderColResizeHandle('t2_total', getColW('t2_total', termTotalColWidth), term2TotalLabel)}
                                   </th>
                                 )}
                                 {showT2Grade && (
-                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader("Grade")}
+                                    {renderColResizeHandle('t2_grade', getColW('t2_grade', termGradeColWidth), 'Term 2 Grade')}
                                   </th>
                                 )}
                               </>
@@ -3147,20 +3177,24 @@ export default function ReportCardPreview({
                                   const colName = isMidTerm ? 'Annual' : col.name;
                                   const text = (col.id === 'hy') ? term3ExamLabel : colName;
                                   const subtext = (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${col.maxMarks})` : undefined;
+                                  const colWidthVal = getColW(`t3_${col.id}`, testColWidth);
                                   return (
-                                    <th key={`t3_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center">
+                                    <th key={`t3_h_${col.id}`} colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-50/10 text-[9.5px] font-black text-black align-middle text-center relative group">
                                       {renderExamHeader(text, subtext)}
+                                      {renderColResizeHandle(`t3_${col.id}`, colWidthVal, col.name)}
                                     </th>
                                   );
                                 })}
                                 {showT3Total && (
-                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th colSpan={subColCount} className="border border-gray-950 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader(term3TotalLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${sumOfT3ColumnMaxMarks})` : undefined)}
+                                    {renderColResizeHandle('t3_total', getColW('t3_total', termTotalColWidth), term3TotalLabel)}
                                   </th>
                                 )}
                                 {showT3Grade && (
-                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center">
+                                  <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-gray-100/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader("Grade")}
+                                    {renderColResizeHandle('t3_grade', getColW('t3_grade', termGradeColWidth), 'Term 3 Grade')}
                                   </th>
                                 )}
                               </>
@@ -3172,33 +3206,13 @@ export default function ReportCardPreview({
                                 {showOverallTotal && (
                                   <th colSpan={subColCount} className="border border-gray-950 p-1 bg-sky-50/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader(totalMarksHeaderLabel, (!pureGradeBased && !subjectSpecificMaxMarksEnabled && subColCount === 1) ? `(${singleSubjectMaxOverall})` : undefined)}
-                                    {onUpdateColumnWidths && (
-                                      <div
-                                        title="Drag to adjust Overall Total Column width"
-                                        onMouseDown={(e) => startColumnResize(e, 'overallTotal', overallTotalColWidth)}
-                                        className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
-                                          activeDragKey === 'overallTotal' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
-                                        }`}
-                                      >
-                                        <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
-                                      </div>
-                                    )}
+                                    {renderColResizeHandle('ov_total', getColW('ov_total', overallTotalColWidth), totalMarksHeaderLabel)}
                                   </th>
                                 )}
                                 {showOverallGrade && (
                                   <th rowSpan={subColCount > 1 ? 2 : 1} className="border border-gray-955 p-1 bg-rose-50/50 text-[10px] font-black text-black align-middle text-center relative group">
                                     {renderExamHeader(gradeHeaderLabel)}
-                                    {onUpdateColumnWidths && (
-                                      <div
-                                        title="Drag to adjust Overall Grade Column width"
-                                        onMouseDown={(e) => startColumnResize(e, 'overallGrade', overallGradeColWidth)}
-                                        className={`absolute right-0 top-0 bottom-0 w-2.5 cursor-col-resize hover:bg-indigo-500/40 select-none z-20 flex items-center justify-center transition-opacity ${
-                                          activeDragKey === 'overallGrade' ? 'bg-indigo-600 opacity-100' : 'opacity-0 group-hover:opacity-100 print:hidden'
-                                        }`}
-                                      >
-                                        <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
-                                      </div>
-                                    )}
+                                    {renderColResizeHandle('ov_grade', getColW('ov_grade', overallGradeColWidth), gradeHeaderLabel)}
                                   </th>
                                 )}
                               </>
@@ -3295,6 +3309,11 @@ export default function ReportCardPreview({
                           const scholasticList = subjects.filter(s => s.type === 'scholastic');
                           const totalScholCols = totalTableColumns;
 
+                          const customRowHeight = columnWidths?.rowHeight;
+                          const customCellPaddingY = columnWidths?.cellPaddingY;
+                          const rowStyle = customRowHeight ? { height: `${customRowHeight}px` } : undefined;
+                          const customTdPaddingStyle = customCellPaddingY !== undefined ? { paddingTop: `${customCellPaddingY}px`, paddingBottom: `${customCellPaddingY}px` } : undefined;
+
                           return scholasticList.map((sub, idx) => {
                             const showGroupHdr = isGroupingActive && Boolean(sub.group && sub.group.trim()) && (idx === 0 || scholasticList[idx - 1]?.group !== sub.group);
                             const studentGrades = grades.scholastic[sub.id] || { term1: {}, term2: {}, term3: {} };
@@ -3312,8 +3331,8 @@ export default function ReportCardPreview({
                                     </td>
                                   </tr>
                                 )}
-                                <tr id={`preview_subject_row_${sub.id}`} className="hover:bg-gray-50/20 font-sans border-b border-gray-955">
-                                  <td className={`border border-gray-955 ${subjectCellPaddingClass} text-left font-black text-black ${subjectNameFontSizeClass} ${pureGradeBased ? 'whitespace-nowrap' : 'break-words leading-tight'}`}>
+                                <tr id={`preview_subject_row_${sub.id}`} style={rowStyle} className="hover:bg-gray-50/20 font-sans border-b border-gray-955">
+                                  <td style={customTdPaddingStyle} className={`border border-gray-955 ${subjectCellPaddingClass} text-left font-black text-black ${subjectNameFontSizeClass} ${pureGradeBased ? 'whitespace-nowrap' : 'break-words leading-tight'}`}>
                                     {isGroupingActive && sub.group ? (
                                       <span className="inline-flex items-center pl-2.5">
                                         <span className="text-gray-600 font-bold mr-1.5">-</span>
@@ -3597,8 +3616,72 @@ export default function ReportCardPreview({
                         })()}
                       </tbody>
                     </table>
-                  );
-                })()}
+                    {onUpdateColumnWidths && (
+                      <div
+                        title="↕ Drag down to expand row height and fill empty space on the report card"
+                        onMouseDown={(e) => startRowResize(e)}
+                        className="w-full py-1.5 cursor-row-resize flex items-center justify-center select-none print:hidden transition-all group"
+                      >
+                        <div className="w-full flex flex-wrap items-center justify-between py-1.5 px-3 rounded-xl bg-indigo-50/95 hover:bg-indigo-100/95 border-2 border-dashed border-indigo-300 text-indigo-900 text-[10.5px] font-bold shadow-xs gap-2">
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-xs">↕</span>
+                            <span>Drag Border to Adjust Row Height: <span className="text-indigo-600 font-extrabold">{columnWidths?.rowHeight || 28}px</span> &middot; Padding: <span className="text-indigo-600 font-extrabold">{columnWidths?.cellPaddingY !== undefined ? columnWidths.cellPaddingY : 4}px</span></span>
+                          </span>
+                          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                            <span className="text-[9.5px] text-slate-500 font-semibold mr-1">Row Spacing Presets:</span>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateColumnWidths({ ...(latestWidthsRef.current || {}), rowHeight: 24, cellPaddingY: 2 })}
+                              className="px-2 py-0.5 rounded-lg bg-white hover:bg-indigo-600 hover:text-white border text-[9.5px] font-bold shadow-2xs transition-all"
+                            >
+                              Compact (10+ Subs)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateColumnWidths({ ...(latestWidthsRef.current || {}), rowHeight: 32, cellPaddingY: 5 })}
+                              className="px-2 py-0.5 rounded-lg bg-white hover:bg-indigo-600 hover:text-white border text-[9.5px] font-bold shadow-2xs transition-all"
+                            >
+                              Standard
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateColumnWidths({ ...(latestWidthsRef.current || {}), rowHeight: 46, cellPaddingY: 10 })}
+                              className="px-2 py-0.5 rounded-lg bg-white hover:bg-indigo-600 hover:text-white border text-[9.5px] font-bold shadow-2xs transition-all"
+                            >
+                              Spacious (6-8 Subs)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateColumnWidths({ ...(latestWidthsRef.current || {}), rowHeight: 62, cellPaddingY: 15 })}
+                              className="px-2.5 py-0.5 rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-950 border border-amber-500 text-[9.5px] font-black shadow-2xs transition-all"
+                            >
+                              🌟 Fill A4 Page (4-6 Subs)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateColumnWidths({
+                                subjectColWidth: undefined,
+                                testColWidth: undefined,
+                                termTotalWidth: undefined,
+                                termGradeWidth: undefined,
+                                overallTotalWidth: undefined,
+                                overallGradeWidth: undefined,
+                                rowHeight: undefined,
+                                cellPaddingY: undefined,
+                                customSpecificCols: undefined
+                              })}
+                              className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 border text-[9.5px] font-bold ml-1"
+                              title="Reset all column widths and row heights to automatic defaults"
+                            >
+                              ↺ Reset All
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
               </div>              {/* Separate Scholastic Total & Percentage Table (Only shown when multiple terms are active and NOT in pure grade-only mode) */}
               {activeTermsCount > 1 && !pureGradeBased && (
                 <div className="overflow-x-auto no-scrollbar print:overflow-visible mt-1">

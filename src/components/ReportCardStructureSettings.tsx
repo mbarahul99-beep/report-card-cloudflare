@@ -246,6 +246,9 @@ export default function ReportCardStructureSettings({
   // Layout-specific drag and adjust column widths
   const [columnWidths, setColumnWidths] = useState<import('../types').TableColumnWidthOverrides>({});
 
+  // Editor mode tab: 'visual' (Live Interactive Visual Card & Spacing Canvas) or 'form' (Accordions & Rules)
+  const [editorModeTab, setEditorModeTab] = useState<'visual' | 'form'>('visual');
+
   const [activeAccordion, setActiveAccordion] = useState<string>('general');
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -1190,13 +1193,93 @@ export default function ReportCardStructureSettings({
         let val = "A+";
         if (field.label.toLowerCase().includes("blood")) val = "O +ve";
         else if (field.label.toLowerCase().includes("aadhar") || field.label.toLowerCase().includes("uid")) val = "9087-3212-0098";
-        else if (field.label.toLowerCase().includes("roll")) val = isEarlyYears ? "01" : "18";
+        acc[field.id] = val;
+      }
+      return acc;
+    }, {} as any)
+  };
+
+  // Compute active editor mockup data for the Live Visual Designer Canvas
+  const activeEditorBranding = {
+    ...branding,
+    ...structureBranding,
+    schoolName: (structureBranding.schoolName && structureBranding.schoolName.trim() !== '') ? structureBranding.schoolName : (branding.schoolName || "My School"),
+    schoolNameFontSize: structureBranding.schoolNameFontSize ?? branding.schoolNameFontSize ?? 32,
+    schoolNameFontFamily: structureBranding.schoolNameFontFamily || branding.schoolNameFontFamily || "Georgia, serif",
+    headerDetailsFontSize: structureBranding.headerDetailsFontSize ?? branding.headerDetailsFontSize ?? 10.5,
+    headerDetailsFontFamily: structureBranding.headerDetailsFontFamily || branding.headerDetailsFontFamily || "sans-serif",
+    reportCardTitleFontSize: structureBranding.reportCardTitleFontSize ?? branding.reportCardTitleFontSize,
+    tagline: (structureBranding.tagline !== undefined && structureBranding.tagline.trim() !== '') ? structureBranding.tagline : (branding.tagline || ""),
+    address: (structureBranding.address !== undefined && structureBranding.address.trim() !== '') ? structureBranding.address : (branding.address || ""),
+    helpline: (structureBranding.helpline !== undefined && structureBranding.helpline.trim() !== '') ? structureBranding.helpline : (branding.helpline || ""),
+    email: (structureBranding.email !== undefined && structureBranding.email.trim() !== '') ? structureBranding.email : (branding.email || ""),
+    website: (structureBranding.website !== undefined && structureBranding.website.trim() !== '') ? structureBranding.website : (branding.website || ""),
+    logoUrl: (structureBranding.logoUrl !== undefined && structureBranding.logoUrl.trim() !== '') ? structureBranding.logoUrl : (branding.logoUrl || ""),
+    logoSize: structureBranding.logoSize !== undefined ? structureBranding.logoSize : (branding.logoSize ?? 92),
+    logoCircular: structureBranding.logoCircular !== undefined ? structureBranding.logoCircular : (branding.logoCircular ?? true),
+    logoBorder: structureBranding.logoBorder !== undefined ? structureBranding.logoBorder : (branding.logoBorder ?? true),
+    rightLogoUrl: (structureBranding.rightLogoUrl !== undefined && structureBranding.rightLogoUrl.trim() !== '') ? structureBranding.rightLogoUrl : (branding.rightLogoUrl || ""),
+    rightLogoSize: structureBranding.rightLogoSize !== undefined ? structureBranding.rightLogoSize : (branding.rightLogoSize ?? 92),
+    nameBannerUrl: structureBranding.nameBannerUrl || branding.nameBannerUrl || "",
+    hideSchoolDetails: structureBranding.hideSchoolDetails !== undefined ? structureBranding.hideSchoolDetails : false,
+    themeColor: structureBranding.themeColor || branding.themeColor || "#DE2F2F",
+    borderColor: structureBranding.borderColor || branding.borderColor || "#C22121",
+    reportCardTitle: structureBranding.reportCardTitle || branding.reportCardTitle || "Annual Examination Report Card",
+    session: structureBranding.session || branding.session || "2024-2025",
+    showWatermark: structureBranding.showWatermark !== undefined ? structureBranding.showWatermark : (branding.showWatermark ?? true),
+    watermarkType: structureBranding.watermarkType || 'logo',
+    watermarkText: structureBranding.watermarkText !== undefined ? structureBranding.watermarkText : (structureBranding.schoolName || branding.schoolName || ""),
+    watermarkLogoUrl: structureBranding.watermarkLogoUrl !== undefined ? structureBranding.watermarkLogoUrl : (structureBranding.logoUrl || branding.logoUrl || ""),
+    watermarkOpacity: structureBranding.watermarkOpacity ?? 0.08,
+    watermarkSize: structureBranding.watermarkSize ?? 320,
+    watermarkLayout: structureBranding.watermarkLayout || 'center',
+    watermarkFit: structureBranding.watermarkFit || 'contain',
+    signParentName: structureBranding.signParentName || branding.signParentName || "Parent's Signature",
+    signInchargeName: structureBranding.signInchargeName || branding.signInchargeName || "Class Incharge Signature",
+    signPrincipalName: structureBranding.signPrincipalName || branding.signPrincipalName || "Principal Signature",
+    studentFields: structureBranding.studentFields || branding.studentFields
+  };
+
+  const activeEditorSubjects = structureSubjects && structureSubjects.length > 0 ? structureSubjects : subjects;
+  const activeEditorScoreColumns = pureGradeBased ? [] : (structureScoreColumns && structureScoreColumns.length > 0 ? structureScoreColumns : scoreColumns);
+  const activeEditorMockGrades = makeMockGradesForPreview(
+    activeEditorSubjects,
+    activeEditorScoreColumns,
+    termSpecificScoreColumnsEnabled,
+    term1ScoreColumns,
+    term2ScoreColumns,
+    term3ScoreColumns
+  );
+
+  const activeEditorClasses = assignedClassesText.split(',').map(s => s.trim()).filter(Boolean);
+  const activeEditorClassForMock = activeEditorClasses[0] || targetClassForMock;
+  const activeEditorIsEarly = activeEditorClassForMock.toLowerCase().includes("nursery") || activeEditorClassForMock.toLowerCase().includes("kg") || activeEditorClassForMock.toLowerCase().includes("kindergarten");
+
+  const activeEditorMockStudent = {
+    ...defaultMockStudent,
+    className: activeEditorClassForMock,
+    name: activeEditorIsEarly ? "Aditya Vardhan" : defaultMockStudent.name,
+    rollNo: activeEditorIsEarly ? "01" : defaultMockStudent.rollNo,
+    fatherName: formatFatherName(activeEditorIsEarly ? "Mr. Ramesh Vardhan" : defaultMockStudent.fatherName),
+    motherName: formatMotherName(activeEditorIsEarly ? "Mrs. Shreya Vardhan" : defaultMockStudent.motherName),
+    dob: activeEditorIsEarly ? "05/08/2018" : defaultMockStudent.dob,
+    admissionNo: activeEditorIsEarly ? "ADM-2024/001" : defaultMockStudent.admissionNo,
+    height: formatHeight(activeEditorIsEarly ? "115 CM" : defaultMockStudent.height),
+    weight: formatWeight(activeEditorIsEarly ? "21 KG" : defaultMockStudent.weight),
+    remarks: activeEditorIsEarly ? "Aditya has shown spectacular progress in early literacy and motor skills." : defaultMockStudent.remarks,
+    promotionStatus: activeEditorIsEarly ? "Promoted to Kindergarten with outstanding praise." : defaultMockStudent.promotionStatus,
+    ...((activeEditorBranding.studentFields || []).reduce((acc: any, field: any) => {
+      if (!defaultMockStudent.hasOwnProperty(field.id)) {
+        let val = "A+";
+        if (field.label.toLowerCase().includes("blood")) val = "O +ve";
+        else if (field.label.toLowerCase().includes("aadhar") || field.label.toLowerCase().includes("uid")) val = "9087-3212-0098";
+        else if (field.label.toLowerCase().includes("roll")) val = activeEditorIsEarly ? "01" : "18";
         else if (field.label.toLowerCase().includes("house")) val = "Gandhi House";
         else if (field.label.toLowerCase().includes("route")) val = "Route #14";
         acc[field.id] = val;
       }
       return acc;
-    }, {} as any)
+    }, {} as any))
   };
 
   return (
@@ -1240,20 +1323,265 @@ export default function ReportCardStructureSettings({
 
       {editingStructureId !== null ? (
         <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
-          <div className="flex items-center justify-between border-b pb-4">
-            <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-              <Settings className="w-5 h-5 text-indigo-500" />
-              {editingStructureId === 'new' ? 'Create Custom Card Format' : `Modify Format Details: ${name}`}
-            </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
+            <div>
+              <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                <Settings className="w-5 h-5 text-indigo-500" />
+                {editingStructureId === 'new' ? 'Create Custom Card Format' : `Modify Format Details: ${name}`}
+              </h2>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Drag column dividers and table borders on the live card, or configure layout options and subjects in settings.
+              </p>
+            </div>
+
+            {/* Mode Switcher Tabs */}
             <div className="flex items-center gap-2">
-              <button type="button" onClick={handleCancelDesign} className="px-4 py-2 text-xs font-bold text-slate-500 bg-white border rounded-xl hover:bg-slate-50">Cancel</button>
-              <button type="button" onClick={handleSaveWholeStructure} className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 flex items-center gap-1.5 shadow-sm">
-                <Save className="w-4 h-4" /> Save Template
-              </button>
+              <div className="bg-slate-200/80 p-1 rounded-xl flex items-center gap-1 border border-slate-300">
+                <button
+                  type="button"
+                  onClick={() => setEditorModeTab('visual')}
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    editorModeTab === 'visual'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                  }`}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>🎨 Live Visual Card Canvas</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditorModeTab('form')}
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    editorModeTab === 'form'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                  }`}
+                >
+                  <Sliders className="w-3.5 h-3.5" />
+                  <span>⚙️ Layout Form &amp; Rules</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 border-l border-slate-200 pl-2">
+                <button type="button" onClick={handleCancelDesign} className="px-3.5 py-2 text-xs font-bold text-slate-500 bg-white border rounded-xl hover:bg-slate-100 cursor-pointer">Cancel</button>
+                <button type="button" onClick={handleSaveWholeStructure} className="px-5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 flex items-center gap-1.5 shadow-sm cursor-pointer">
+                  <Save className="w-4 h-4" /> Save Template
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          {/* VISUAL DESIGNER TAB */}
+          {editorModeTab === 'visual' && (
+            <div className="space-y-4">
+              {/* Spacing & Layout Quick Controls Bar */}
+              <div className="bg-white border border-indigo-100 rounded-2xl p-4 shadow-xs space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2.5 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+                      <Sliders className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <span className="text-xs font-black text-slate-800 block">Live Column &amp; Row Spacing Controls</span>
+                      <p className="text-[10px] text-slate-500">
+                        Drag any column vertical line or bottom horizontal line directly on the report card below. Or use the quick sliders and presets here:
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Page Fill Presets */}
+                  <div className="flex items-center flex-wrap gap-1.5 shrink-0">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 mr-1">Presets:</span>
+                    <button
+                      type="button"
+                      onClick={() => setColumnWidths(prev => ({ ...prev, rowHeight: 28, cellPaddingY: 4 }))}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-pointer transition"
+                    >
+                      Compact
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setColumnWidths(prev => ({ ...prev, rowHeight: 38, cellPaddingY: 7 }))}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-pointer transition"
+                    >
+                      Standard
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setColumnWidths(prev => ({ ...prev, rowHeight: 50, cellPaddingY: 11 }))}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-pointer transition"
+                    >
+                      Spacious
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const numSubs = Math.max(1, activeEditorSubjects.filter(s => s.type === 'scholastic' || s.type === 'additional').length);
+                        const targetH = Math.min(85, Math.max(34, Math.round(380 / numSubs)));
+                        const targetPad = Math.min(22, Math.max(6, Math.round(targetH * 0.22)));
+                        setColumnWidths(prev => ({ ...prev, rowHeight: targetH, cellPaddingY: targetPad }));
+                      }}
+                      className="px-3 py-1 text-[11px] font-black rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 cursor-pointer shadow-xs transition flex items-center gap-1"
+                    >
+                      <span>🌟 Fill A4 Page</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setColumnWidths({})}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-600 text-slate-500 cursor-pointer transition"
+                      title="Reset all column width and row height adjustments"
+                    >
+                      ↺ Reset All
+                    </button>
+                  </div>
+                </div>
+
+                {/* Direct Sliders */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                  {/* Row Height Slider */}
+                  <div className="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="font-bold text-slate-700">Subject Row Height:</span>
+                      <span className="font-mono font-black text-indigo-600 bg-white px-1.5 py-0.5 rounded border text-[10.5px]">
+                        {columnWidths.rowHeight ? `${columnWidths.rowHeight}px` : 'Auto (~32px)'}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="22"
+                      max="85"
+                      step="1"
+                      value={columnWidths.rowHeight || 32}
+                      onChange={(e) => setColumnWidths(prev => ({ ...prev, rowHeight: parseInt(e.target.value, 10) }))}
+                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    />
+                    <div className="flex justify-between text-[9px] text-slate-400 font-semibold">
+                      <span>22px (Tight)</span>
+                      <span>85px (Max Spread)</span>
+                    </div>
+                  </div>
+
+                  {/* Cell Vertical Padding Slider */}
+                  <div className="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="font-bold text-slate-700">Vertical Cell Padding:</span>
+                      <span className="font-mono font-black text-indigo-600 bg-white px-1.5 py-0.5 rounded border text-[10.5px]">
+                        {columnWidths.cellPaddingY ? `${columnWidths.cellPaddingY}px` : 'Auto (~5px)'}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="2"
+                      max="22"
+                      step="1"
+                      value={columnWidths.cellPaddingY || 5}
+                      onChange={(e) => setColumnWidths(prev => ({ ...prev, cellPaddingY: parseInt(e.target.value, 10) }))}
+                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    />
+                    <div className="flex justify-between text-[9px] text-slate-400 font-semibold">
+                      <span>2px</span>
+                      <span>22px</span>
+                    </div>
+                  </div>
+
+                  {/* Subject Name Column Width Slider */}
+                  <div className="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="font-bold text-slate-700">Subjects Column Width:</span>
+                      <span className="font-mono font-black text-indigo-600 bg-white px-1.5 py-0.5 rounded border text-[10.5px]">
+                        {columnWidths.subjectColWidth ? `${columnWidths.subjectColWidth.toFixed(1)}%` : 'Auto (~30%)'}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="15"
+                      max="55"
+                      step="0.5"
+                      value={columnWidths.subjectColWidth || 30}
+                      onChange={(e) => setColumnWidths(prev => ({ ...prev, subjectColWidth: parseFloat(e.target.value) }))}
+                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    />
+                    <div className="flex justify-between text-[9px] text-slate-400 font-semibold">
+                      <span>15%</span>
+                      <span>55%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive Live Report Card Container */}
+              <div className="bg-slate-900/90 p-3 sm:p-5 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800 text-white">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="text-xs font-black tracking-wide text-indigo-200">
+                      LIVE INTERACTIVE CANVAS (Drag any column line or table bottom to resize)
+                    </span>
+                  </div>
+                  <span className="text-[10.5px] text-slate-400 font-mono">
+                    Layout: {name || 'Custom'} | Classes: {assignedClassesText || 'All'}
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto flex justify-center items-start py-2 scrollbar-thin">
+                  <div className="bg-white rounded-xl p-3 sm:p-6 text-black border border-slate-300 w-full max-w-full shadow-lg">
+                    <ReportCardPreview
+                      branding={activeEditorBranding}
+                      subjects={activeEditorSubjects}
+                      scoreColumns={activeEditorScoreColumns}
+                      gradeScales={structureGradeScales.length > 0 ? structureGradeScales : [
+                        { minPercent: 91, maxPercent: 100, grade: 'A1' },
+                        { minPercent: 81, maxPercent: 90, grade: 'A2' },
+                        { minPercent: 71, maxPercent: 80, grade: 'B1' },
+                        { minPercent: 61, maxPercent: 70, grade: 'B2' },
+                        { minPercent: 51, maxPercent: 60, grade: 'C1' },
+                        { minPercent: 41, maxPercent: 50, grade: 'C2' },
+                        { minPercent: 33, maxPercent: 40, grade: 'D' },
+                        { minPercent: 0, maxPercent: 32, grade: 'E' }
+                      ]}
+                      student={activeEditorMockStudent}
+                      grades={activeEditorMockGrades}
+                      scholasticTerm1Disabled={scholasticTerm1Disabled}
+                      scholasticTerm2Disabled={scholasticTerm2Disabled}
+                      scholasticTerm3Disabled={scholasticTerm3Disabled}
+                      coScholasticOneColumn={coScholasticOneColumn}
+                      coScholasticSections={coScholasticSections}
+                      coGradeScales={structureCoGradeScales}
+                      signatures={signatures}
+                      hideGradingScale={hideGradingScale}
+                      hideAttendance={hideAttendance}
+                      pureGradeBased={pureGradeBased}
+                      verticalExamHeaders={verticalExamHeaders}
+                      verticalSubjectsHeader={verticalSubjectsHeader}
+                      subjectSpecificMaxMarksEnabled={subjectSpecificMaxMarksEnabled}
+                      gradingScaleAfterSignatures={gradingScaleAfterSignatures}
+                      gradingScaleLayout={gradingScaleLayout}
+                      enableSubjectGrouping={enableSubjectGrouping}
+                      customSubjectGroups={customSubjectGroups}
+                      hideTerm1Total={hideTerm1Total}
+                      hideTerm1Grade={hideTerm1Grade}
+                      hideTerm2Total={hideTerm2Total}
+                      hideTerm2Grade={hideTerm2Grade}
+                      hideTerm3Total={hideTerm3Total}
+                      hideTerm3Grade={hideTerm3Grade}
+                      hideOverallTotal={hideOverallTotal}
+                      hideOverallGrade={hideOverallGrade}
+                      termSpecificScoreColumnsEnabled={termSpecificScoreColumnsEnabled}
+                      term1ScoreColumns={term1ScoreColumns}
+                      term2ScoreColumns={term2ScoreColumns}
+                      columnWidths={columnWidths}
+                      isDraggableColumnMode={true}
+                      onUpdateColumnWidths={(newWidths) => setColumnWidths(newWidths)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* FORM & ACCORDIONS TAB */}
+          <div className={`bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs ${editorModeTab !== 'form' ? 'hidden' : ''}`}>
             
             {/* ACCORDION 1: CLASSES */}
             <div className="border-b">

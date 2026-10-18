@@ -365,12 +365,15 @@ export interface ReportCardStructure {
 
 export interface TableColumnWidthOverrides {
   subjectColWidth?: number;            // percentage width (e.g. 26.5)
-  testColWidth?: number;               // individual exam component test column width %
-  termTotalWidth?: number;             // term total column width %
-  termGradeWidth?: number;             // term grade column width %
-  overallTotalWidth?: number;          // overall total column width %
-  overallGradeWidth?: number;          // overall grade column width %
-  customSpecificCols?: {               // granular column ID overrides if needed
+  testColWidth?: number;               // fallback test column width %
+  termTotalWidth?: number;             // fallback term total column width %
+  termGradeWidth?: number;             // fallback term grade column width %
+  overallTotalWidth?: number;          // fallback overall total column width %
+  overallGradeWidth?: number;          // fallback overall grade column width %
+  rowHeight?: number;                  // subject row height in px (e.g. 24 to 80)
+  cellPaddingY?: number;               // vertical cell padding in px (e.g. 2 to 24)
+  tableMinHeight?: number;             // optional min-height in px for table container
+  customSpecificCols?: {               // granular column ID overrides (e.g. t1_col_id: 12.5)
     [columnKey: string]: number;
   };
 }
