@@ -4906,23 +4906,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Quick Access Tools */}
+        {/* Footer info */}
         <div className="flex flex-col items-center gap-1.5 mt-3 select-none text-center w-full max-w-[350px]">
-          <div className="flex items-center gap-2 w-full justify-center">
-            <button
-              type="button"
-              onClick={() => {
-                setIsRegistering(false);
-                setAuthError('');
-                setSchoolInput('demo');
-                setPasswordInput('Demo@123');
-              }}
-              className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-extrabold text-[10px] rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
-            >
-              <Building2 className="w-3.5 h-3.5 text-indigo-600" />
-              Demo School Credentials
-            </button>
-          </div>
           <p className="text-[9px] text-slate-400 font-mono tracking-tight leading-none mt-1">
             School Report Card Systems &copy; 2026
           </p>
