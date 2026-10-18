@@ -3756,28 +3756,27 @@ export default function App() {
 
   if (!currentRole && isRegistering) {
     return (
-      <div className="min-h-screen w-screen bg-slate-100 sm:bg-slate-200/70 flex items-center justify-center sm:p-4 font-sans select-none sm:select-auto">
+      <div className="fixed inset-0 w-full h-[100dvh] max-h-[100dvh] bg-slate-100 sm:bg-slate-200/70 flex items-center justify-center sm:p-4 font-sans select-none sm:select-auto overflow-hidden">
         {/* Soft background ambient glow on desktop */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none select-none">
           <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-200/40 rounded-full blur-[140px]" />
           <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-200/40 rounded-full blur-[140px]" />
         </div>
 
-        {/* Card Container mimicking mobile/modern app container matching user reference */}
-        <div className="w-full sm:max-w-[440px] h-screen sm:h-[92vh] sm:max-h-[900px] bg-[#007474] sm:rounded-[40px] shadow-2xl flex flex-col overflow-hidden relative z-10 sm:border border-teal-800/30">
+        {/* Card Container locked to viewport on mobile, beautiful card on desktop */}
+        <div className="w-full sm:max-w-[440px] h-full sm:h-[92vh] sm:max-h-[840px] bg-[#007474] sm:rounded-[36px] shadow-2xl flex flex-col overflow-hidden relative z-10 sm:border border-teal-800/30">
           
-          {/* Top Teal Header with organic abstract shapes */}
-          <div className="h-10 sm:h-12 bg-[#007474] relative overflow-hidden shrink-0 select-none">
-            {/* Organic mint shapes in top-left */}
+          {/* Top Teal Header with subtle mint accents */}
+          <div className="h-6 sm:h-7 bg-[#007474] relative overflow-hidden shrink-0 select-none">
             <svg 
-              className="absolute -top-4 -left-4 w-20 h-20 text-[#4cbfa8]/85 pointer-events-none" 
+              className="absolute -top-3 -left-3 w-16 h-16 text-[#4cbfa8]/85 pointer-events-none" 
               viewBox="0 0 100 100" 
               fill="currentColor"
             >
               <path d="M15,0 C55,-5 85,25 85,60 C85,90 60,98 35,90 C12,82 -2,62 0,30 Z" />
             </svg>
             <svg 
-              className="absolute top-0.5 left-5 w-12 h-12 text-[#66d2bc]/60 pointer-events-none" 
+              className="absolute top-0 left-4 w-10 h-10 text-[#66d2bc]/60 pointer-events-none" 
               viewBox="0 0 100 100" 
               fill="currentColor"
             >
@@ -3785,56 +3784,56 @@ export default function App() {
             </svg>
           </div>
 
-          {/* Main White Card with rounded-t-[36px] */}
-          <div className="flex-1 bg-white rounded-t-[36px] flex flex-col overflow-hidden shadow-2xl relative">
+          {/* Main White Card */}
+          <div className="flex-1 min-h-0 bg-white rounded-t-[26px] sm:rounded-t-[30px] flex flex-col overflow-hidden shadow-2xl relative">
             
-            {/* Back button and Sign Up title */}
-            <div className="px-7 pt-6 pb-2 shrink-0">
+            {/* Header: Back button & Sign Up title */}
+            <div className="px-5 pt-3 pb-1 shrink-0">
               <button
                 type="button"
                 onClick={() => {
                   setIsRegistering(false);
                   setAuthError('');
                 }}
-                className="inline-flex items-center gap-2 text-xs font-bold text-[#007474] hover:text-[#005555] transition-colors cursor-pointer group"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#007474] hover:text-[#005555] transition-colors cursor-pointer group"
               >
-                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
                 <span>Back to login</span>
               </button>
 
-              <h1 className="text-3xl font-extrabold text-[#00605c] tracking-tight mt-5">
+              <h1 className="text-2xl font-black text-[#00605c] tracking-tight mt-1">
                 Sign Up
               </h1>
-              <p className="text-xs text-slate-400 font-medium mt-1">
+              <p className="text-[11px] text-slate-400 font-medium">
                 School Registration &amp; Onboarding
               </p>
             </div>
 
             {/* Scrollable Form Body with Sticky Bottom Action */}
-            <form onSubmit={handleRegisterSchoolSubmit} className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-7 py-3 space-y-4">
+            <form onSubmit={handleRegisterSchoolSubmit} className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2 space-y-2.5 overscroll-contain">
                 {matchedAgentName && (
-                  <div className="bg-teal-50 border border-teal-150 rounded-2xl p-3 text-center text-teal-800 space-y-0.5 animate-fadeIn">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-teal-700">🤝 Linked with Partner Agent</p>
+                  <div className="bg-teal-50 border border-teal-150 rounded-xl p-2 text-center text-teal-800 space-y-0.5 animate-fadeIn">
+                    <p className="text-[9px] font-black uppercase tracking-wider text-teal-700">🤝 Linked with Partner Agent</p>
                     <p className="text-xs font-extrabold">{matchedAgentName}</p>
-                    <p className="text-[10px] text-teal-600 font-mono">Code: {regReferralCode.toUpperCase()}</p>
+                    <p className="text-[9px] text-teal-600 font-mono">Code: {regReferralCode.toUpperCase()}</p>
                   </div>
                 )}
 
                 {authError && (
-                  <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-2xl text-center animate-shake leading-relaxed">
+                  <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2 rounded-xl text-center animate-shake leading-relaxed">
                     ⚠️ {authError}
                   </p>
                 )}
 
                 {/* Field 1: Person Name */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                <div className="space-y-0.5">
+                  <label className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                     Person Name
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-slate-400 pointer-events-none">
-                      <User className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+                      <User className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="text"
@@ -3842,19 +3841,19 @@ export default function App() {
                       placeholder="e.g. Principal Sharma"
                       value={regContactPerson}
                       onChange={(e) => setRegContactPerson(e.target.value)}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2.5 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                     />
                   </div>
                 </div>
 
                 {/* Field 2: School Name */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                <div className="space-y-0.5">
+                  <label className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                     School Name
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-slate-400 pointer-events-none">
-                      <Building2 className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+                      <Building2 className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="text"
@@ -3862,19 +3861,19 @@ export default function App() {
                       placeholder="e.g. Greenwood Academy"
                       value={regSchoolName}
                       onChange={(e) => setRegSchoolName(e.target.value)}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2.5 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                     />
                   </div>
                 </div>
 
                 {/* Field 3: Mobile Number */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                <div className="space-y-0.5">
+                  <label className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                     Mobile Number
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-slate-400 pointer-events-none">
-                      <Smartphone className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+                      <Smartphone className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="tel"
@@ -3882,19 +3881,19 @@ export default function App() {
                       placeholder="e.g. +91 98765 43210"
                       value={regMobile}
                       onChange={(e) => setRegMobile(e.target.value)}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-2.5 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                     />
                   </div>
                 </div>
 
                 {/* Field 4: Email Address */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                <div className="space-y-0.5">
+                  <label className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                     Email Address
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-slate-400 pointer-events-none">
-                      <Mail className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+                      <Mail className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="email"
@@ -3902,42 +3901,42 @@ export default function App() {
                       placeholder="e.g. desk@greenwood.com"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value.trim())}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2.5 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                     />
                   </div>
                 </div>
 
                 {/* Field 5: Board of School */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                <div className="space-y-0.5">
+                  <label className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                     Board of School
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-slate-400 pointer-events-none">
-                      <GraduationCap className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+                      <GraduationCap className="w-3.5 h-3.5" />
                     </div>
                     <select
                       value={regBoard}
                       onChange={(e) => setRegBoard(e.target.value)}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-10 text-sm font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20 cursor-pointer appearance-none"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2.5 pl-9 pr-8 text-xs font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20 cursor-pointer appearance-none"
                     >
                       <option value="CBSE">CBSE Board</option>
                       <option value="ICSE">ICSE Board</option>
                       <option value="State Board">State Board</option>
                       <option value="IGCSE">IGCSE / IB Board</option>
                     </select>
-                    <div className="absolute right-4 text-slate-400 pointer-events-none text-xs">▼</div>
+                    <div className="absolute right-3.5 text-slate-400 pointer-events-none text-[10px]">▼</div>
                   </div>
                 </div>
 
                 {/* Field 6: School Address */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                <div className="space-y-0.5">
+                  <label className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                     Address
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-slate-400 pointer-events-none">
-                      <MapPin className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+                      <MapPin className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="text"
@@ -3945,48 +3944,45 @@ export default function App() {
                       placeholder="e.g. Sector 4, New Delhi"
                       value={regAddress}
                       onChange={(e) => setRegAddress(e.target.value)}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2.5 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                     />
                   </div>
                 </div>
 
                 {/* Field 7: Referral Code (Optional) */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between px-3.5">
-                    <label className="text-[10px] uppercase font-bold text-teal-700 tracking-wider">
+                <div className="space-y-0.5">
+                  <div className="flex items-center justify-between px-3">
+                    <label className="text-[9.5px] uppercase font-bold text-teal-700 tracking-wider">
                       Referral Code (Optional)
                     </label>
                     {urlReferralCode && (
-                      <span className="text-[9px] bg-teal-50 text-teal-700 font-mono font-bold px-2 py-0.5 rounded-full border border-teal-200">
+                      <span className="text-[8.5px] bg-teal-50 text-teal-700 font-mono font-bold px-1.5 py-0.2 rounded-full border border-teal-200">
                         Auto-Detected
                       </span>
                     )}
                   </div>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-teal-600 pointer-events-none">
-                      <Tag className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-teal-600 pointer-events-none">
+                      <Tag className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="text"
                       placeholder="e.g. AGENT100"
                       value={regReferralCode}
                       onChange={(e) => setRegReferralCode(e.target.value.toUpperCase().trim())}
-                      className="w-full bg-white border border-teal-200 text-teal-900 font-mono uppercase font-bold rounded-full py-3.5 pl-11 pr-5 text-sm placeholder:text-slate-400 outline-none transition-all shadow-xs focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      className="w-full bg-white border border-teal-200 text-teal-900 font-mono uppercase font-bold rounded-full py-2.5 pl-9 pr-4 text-xs placeholder:text-slate-400 outline-none transition-all shadow-xs focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                     />
                   </div>
-                  <p className="text-[9px] text-slate-400 pl-3.5 leading-tight">
-                    Enter the referral code to link your school registry with their referral program.
-                  </p>
                 </div>
 
                 {/* Field 8: Login ID (School ID) */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                <div className="space-y-0.5">
+                  <label className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                     Login ID (School ID)
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-slate-400 pointer-events-none">
-                      <KeyRound className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+                      <KeyRound className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="text"
@@ -3994,19 +3990,19 @@ export default function App() {
                       placeholder="e.g. greenwood (letters & numbers only)"
                       value={regUsername}
                       onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-2.5 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                     />
                   </div>
                 </div>
 
                 {/* Field 9: Admin Password */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                <div className="space-y-0.5">
+                  <label className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                     Admin Password
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-4 text-slate-400 pointer-events-none">
-                      <Lock className="w-4 h-4" />
+                    <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+                      <Lock className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="password"
@@ -4014,16 +4010,16 @@ export default function App() {
                       placeholder="Setup password..."
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-2.5 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                     />
                   </div>
-                  <p className="text-[9px] text-slate-400 pl-3.5 leading-tight">
+                  <p className="text-[8.5px] text-slate-400 pl-3 leading-tight">
                     Min 6 chars with 1 capital, 1 number &amp; 1 special char.
                   </p>
                 </div>
 
                 {/* reCAPTCHA */}
-                <div className="py-1">
+                <div className="py-0.5 flex justify-center scale-95 origin-center">
                   <GoogleReCaptcha
                     onVerify={(token) => setRecaptchaToken(token)}
                     onExpired={() => setRecaptchaToken(null)}
@@ -4032,16 +4028,16 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Sticky bottom Register and Explore button */}
-              <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-7 py-4 border-t border-slate-100 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] shrink-0 z-20">
+              {/* Permanently Sticky Bottom Register and Explore button */}
+              <div className="shrink-0 px-5 py-2.5 bg-white border-t border-slate-100 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-20">
                 <button
                   type="submit"
                   disabled={isCloudSyncing}
-                  className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 >
                   {isCloudSyncing ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
                       <span>Saving Registry...</span>
                     </>
                   ) : (
@@ -4058,7 +4054,7 @@ export default function App() {
 
   if (!currentRole) {
     return (
-      <div className="min-h-screen w-screen bg-slate-100 sm:bg-slate-200/70 flex items-center justify-center sm:p-4 font-sans select-none sm:select-auto">
+      <div className="fixed inset-0 w-full h-[100dvh] max-h-[100dvh] bg-slate-100 sm:bg-slate-200/70 flex items-center justify-center sm:p-2 font-sans overflow-hidden select-none sm:select-auto">
         {/* Soft background ambient glow on desktop */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none select-none">
           <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-200/40 rounded-full blur-[140px]" />
@@ -4066,20 +4062,20 @@ export default function App() {
         </div>
 
         {/* Card Container mimicking mobile/modern app container matching user reference */}
-        <div className="w-full sm:max-w-[440px] h-screen sm:h-[92vh] sm:max-h-[900px] bg-[#007474] sm:rounded-[40px] shadow-2xl flex flex-col overflow-hidden relative z-10 sm:border border-teal-800/30">
+        <div className="w-full sm:max-w-[440px] h-full sm:h-[94vh] sm:max-h-[860px] bg-[#007474] sm:rounded-[36px] shadow-2xl flex flex-col overflow-hidden relative z-10 sm:border border-teal-800/30">
           
-          {/* Top Teal Header with organic abstract shapes */}
-          <div className="h-10 sm:h-12 bg-[#007474] relative overflow-hidden shrink-0 select-none">
+          {/* Top Green/Teal Header */}
+          <div className="h-6 sm:h-7 bg-[#007474] relative overflow-hidden shrink-0 select-none">
             {/* Organic mint shapes in top-left */}
             <svg 
-              className="absolute -top-4 -left-4 w-20 h-20 text-[#4cbfa8]/85 pointer-events-none" 
+              className="absolute -top-4 -left-4 w-16 h-16 text-[#4cbfa8]/80 pointer-events-none" 
               viewBox="0 0 100 100" 
               fill="currentColor"
             >
               <path d="M15,0 C55,-5 85,25 85,60 C85,90 60,98 35,90 C12,82 -2,62 0,30 Z" />
             </svg>
             <svg 
-              className="absolute top-0.5 left-5 w-12 h-12 text-[#66d2bc]/60 pointer-events-none" 
+              className="absolute -top-1 left-4 w-10 h-10 text-[#66d2bc]/55 pointer-events-none" 
               viewBox="0 0 100 100" 
               fill="currentColor"
             >
@@ -4087,19 +4083,19 @@ export default function App() {
             </svg>
           </div>
 
-          {/* Main White Card with rounded-t-[36px] */}
-          <div className="flex-1 bg-white rounded-t-[36px] flex flex-col overflow-hidden shadow-2xl relative">
+          {/* Main White Card with rounded-t-[28px] sm:rounded-t-[36px] */}
+          <div className="flex-1 min-h-0 bg-white rounded-t-[28px] sm:rounded-t-[36px] flex flex-col overflow-hidden shadow-2xl relative">
             
             {/* High fidelity loading overlay */}
             {isCloudSyncing && (
-              <div className="absolute inset-0 bg-white/95 backdrop-blur-md rounded-t-[36px] flex flex-col items-center justify-center p-6 text-center space-y-4 z-[100] animate-fadeIn">
-                <div className="relative w-12 h-12">
-                  <div className="absolute inset-0 border-4 border-teal-100 rounded-full"></div>
-                  <div className="absolute inset-0 border-4 border-[#007474] border-t-transparent rounded-full animate-spin"></div>
+              <div className="absolute inset-0 bg-white/95 backdrop-blur-md rounded-t-[28px] sm:rounded-t-[36px] flex flex-col items-center justify-center p-6 text-center space-y-3 z-[100] animate-fadeIn">
+                <div className="relative w-10 h-10">
+                  <div className="absolute inset-0 border-3 border-teal-100 rounded-full"></div>
+                  <div className="absolute inset-0 border-3 border-[#007474] border-t-transparent rounded-full animate-spin"></div>
                 </div>
-                <div className="space-y-1 max-w-[260px]">
-                  <h4 className="text-slate-900 font-black text-xs uppercase tracking-widest animate-pulse">Running Sandbox Sync</h4>
-                  <p className="text-xs text-slate-500 font-mono tracking-tight leading-normal">
+                <div className="space-y-0.5 max-w-[240px]">
+                  <h4 className="text-slate-900 font-black text-[11px] uppercase tracking-widest animate-pulse">Running Sandbox Sync</h4>
+                  <p className="text-[11px] text-slate-500 font-mono tracking-tight leading-normal">
                     {cloudSyncMessage || "Communicating with school cloud database..."}
                   </p>
                 </div>
@@ -4107,22 +4103,22 @@ export default function App() {
             )}
 
             {/* Title & Mode Switcher */}
-            <div className="px-7 pt-6 pb-2 shrink-0">
+            <div className="px-5 pt-3 pb-1 shrink-0">
               {loginTab === 'owner' || loginTab === 'agent' ? (
                 <button
                   type="button"
                   onClick={() => { setLoginTab('school'); setAuthError(''); setIsAgentOnboardingForm(false); }}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#007474] hover:text-[#005555] transition-colors cursor-pointer group mb-2"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#007474] hover:text-[#005555] transition-colors cursor-pointer group mb-1"
                 >
-                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                  <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
                   <span>Return to Public Portal</span>
                 </button>
               ) : null}
 
-              <h1 className="text-3xl font-extrabold text-[#00605c] tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-[#00605c] tracking-tight leading-tight">
                 {isSeparateParentPortal ? "Parent Portal" : loginTab === 'owner' ? "Owner Console" : loginTab === 'agent' ? "Partner Portal" : "Sign In"}
               </h1>
-              <p className="text-xs text-slate-400 font-medium mt-1">
+              <p className="text-[11px] text-slate-400 font-medium mt-0.5 leading-tight truncate">
                 {isSeparateParentPortal 
                   ? (() => {
                       const matchedLoginSchool = schools.find(s => {
@@ -4144,13 +4140,13 @@ export default function App() {
 
               {/* Portal Tab Switcher for School Admin vs Teachers */}
               {!isSeparateParentPortal && loginTab !== 'owner' && loginTab !== 'agent' && (
-                <div className="grid grid-cols-2 bg-[#f1f5f9] p-1 rounded-full text-xs font-bold tracking-wider relative select-none gap-1 mt-3 border border-slate-200/70">
+                <div className="grid grid-cols-2 bg-[#f1f5f9] p-0.5 rounded-full text-xs font-bold tracking-wider relative select-none gap-1 mt-2 border border-slate-200/70">
                   <button
                     type="button"
                     onClick={() => { setLoginTab('school'); setAuthError(''); }}
-                    className={`py-2 text-center rounded-full transition-all cursor-pointer font-bold ${
+                    className={`py-1.5 text-center rounded-full transition-all cursor-pointer font-bold ${
                       loginTab === 'school' 
-                        ? 'bg-[#007474] text-white shadow-sm' 
+                        ? 'bg-[#007474] text-white shadow-xs' 
                         : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >
@@ -4159,9 +4155,9 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => { setLoginTab('teacher'); setAuthError(''); }}
-                    className={`py-2 text-center rounded-full transition-all cursor-pointer font-bold ${
+                    className={`py-1.5 text-center rounded-full transition-all cursor-pointer font-bold ${
                       loginTab === 'teacher' 
-                        ? 'bg-[#007474] text-white shadow-sm' 
+                        ? 'bg-[#007474] text-white shadow-xs' 
                         : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >
@@ -4171,26 +4167,26 @@ export default function App() {
               )}
             </div>
 
-            {/* Scrollable Form Body with Sticky Bottom Action */}
+            {/* Form Body with Non-Scrollable Mobile Optimization and Sticky Bottom Action */}
             {isAgentOnboardingForm ? (
-              <form onSubmit={handleAgentOnboardingSubmit} className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex-1 overflow-y-auto px-7 py-3 space-y-4">
-                  <div className="bg-teal-50 border border-teal-200 p-3 rounded-2xl text-center space-y-1">
+              <form onSubmit={handleAgentOnboardingSubmit} className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2 space-y-2.5">
+                  <div className="bg-teal-50 border border-teal-200 p-2.5 rounded-2xl text-center space-y-0.5">
                     <h4 className="text-xs font-extrabold text-[#00605c]">🌟 Partner Profile Creation</h4>
                     <p className="text-[10px] text-teal-700 leading-tight">Complete your agent profile to activate your custom referral code and start earning commissions.</p>
                   </div>
 
                   {authError && (
-                    <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-2xl text-center animate-shake leading-relaxed">
+                    <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2 rounded-xl text-center animate-shake leading-snug">
                       ⚠️ {authError}
                     </p>
                   )}
 
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">Your Full Name</label>
+                  <div className="space-y-0.5">
+                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">Your Full Name</label>
                     <div className="relative flex items-center">
-                      <div className="absolute left-4 text-slate-400 pointer-events-none">
-                        <User className="w-4 h-4" />
+                      <div className="absolute left-3 text-slate-400 pointer-events-none">
+                        <User className="w-3.5 h-3.5" />
                       </div>
                       <input
                         type="text"
@@ -4198,16 +4194,16 @@ export default function App() {
                         placeholder="e.g. Rahul Sharma"
                         value={agentRegName}
                         onChange={(e) => setAgentRegName(e.target.value)}
-                        className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                        className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">Custom Referral Code</label>
+                  <div className="space-y-0.5">
+                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">Custom Referral Code</label>
                     <div className="relative flex items-center">
-                      <div className="absolute left-4 text-slate-400 pointer-events-none">
-                        <Tag className="w-4 h-4" />
+                      <div className="absolute left-3 text-slate-400 pointer-events-none">
+                        <Tag className="w-3.5 h-3.5" />
                       </div>
                       <input
                         type="text"
@@ -4215,29 +4211,29 @@ export default function App() {
                         placeholder="e.g. SHARMA10"
                         value={agentRegCode}
                         onChange={(e) => setAgentRegCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))}
-                        className="w-full bg-[#f8fafc] border border-slate-200/90 text-teal-950 font-mono uppercase font-bold rounded-full py-3.5 pl-11 pr-5 text-sm outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                        className="w-full bg-[#f8fafc] border border-slate-200/90 text-teal-950 font-mono uppercase font-bold rounded-full py-2 pl-9 pr-4 text-xs outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                       />
                     </div>
-                    <p className="text-[9px] text-slate-400 pl-3.5">This code will form your personal school onboarding link.</p>
+                    <p className="text-[8.5px] text-slate-400 pl-3">This code will form your personal school onboarding link.</p>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">Payout Credentials</label>
+                  <div className="space-y-0.5">
+                    <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">Payout Credentials</label>
                     <textarea
                       required
                       placeholder="Provide details where platform admin can transfer your commission earnings..."
                       value={agentRegPayout}
                       onChange={(e) => setAgentRegPayout(e.target.value)}
-                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-2xl p-3.5 text-sm font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20 h-20 resize-none"
+                      className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-xl p-2.5 text-xs font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20 h-16 resize-none"
                     />
                   </div>
                 </div>
 
-                <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-7 py-4 border-t border-slate-100 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] shrink-0 z-20 space-y-2">
+                <div className="shrink-0 px-5 py-2.5 border-t border-slate-100 bg-white/95 backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-20 space-y-1.5">
                   <button
                     type="submit"
                     disabled={isCloudSyncing}
-                    className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {isCloudSyncing ? "Saving Profile..." : "Activate Partner Hub"}
                   </button>
@@ -4248,29 +4244,29 @@ export default function App() {
                       setAuthError('');
                       await fbSignOut(auth);
                     }}
-                    className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-4 rounded-full transition-all cursor-pointer text-center"
+                    className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] py-1.5 px-3 rounded-full transition-all cursor-pointer text-center"
                   >
                     Cancel
                   </button>
                 </div>
               </form>
             ) : loginTab === 'agent' ? (
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex-1 overflow-y-auto px-7 py-3 space-y-4">
+              <div className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-y-auto px-5 py-3 space-y-3">
                   {authError && (
-                    <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-2xl text-center animate-shake leading-relaxed">
+                    <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2 rounded-xl text-center animate-shake leading-snug">
                       ⚠️ {authError}
                     </p>
                   )}
-                  <div className="bg-teal-50 border border-teal-200 p-4 rounded-2xl text-center space-y-2">
-                    <h4 className="text-sm font-extrabold text-[#00605c]">Partner &amp; Agent Onboarding</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                  <div className="bg-teal-50 border border-teal-200 p-3 rounded-2xl text-center space-y-1">
+                    <h4 className="text-xs font-extrabold text-[#00605c]">Partner &amp; Agent Onboarding</h4>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
                       Sign in with your verified Google account to access your referral dashboard, track referred schools, and manage payout rewards.
                     </p>
                   </div>
                 </div>
 
-                <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-7 py-4 border-t border-slate-100 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] shrink-0 z-20">
+                <div className="shrink-0 px-5 py-2.5 border-t border-slate-100 bg-white/95 backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-20">
                   <button
                     type="button"
                     onClick={async () => {
@@ -4292,9 +4288,9 @@ export default function App() {
                         setIsCloudSyncing(false);
                       }
                     }}
-                    className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
                       <path
                         fill="currentColor"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -4317,25 +4313,25 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleLogin} className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex-1 overflow-y-auto px-7 py-3 space-y-4">
+              <form onSubmit={handleLogin} className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-y-auto px-5 py-1.5 space-y-2 flex flex-col justify-center">
                   {authError && (
-                    <div className="space-y-3">
-                      <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2.5 rounded-2xl text-center animate-shake leading-relaxed">
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 p-2 rounded-xl text-center animate-shake leading-snug">
                         ⚠️ {authError}
                       </p>
 
                       {authError.toLowerCase().includes('network-request-failed') && (
-                        <div className="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl text-xs text-amber-800 leading-relaxed font-sans space-y-2 text-left shadow-xs animate-fadeIn font-medium">
-                          <p className="font-bold flex items-center gap-1.5 text-amber-900">
-                            <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                        <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-xl text-[11px] text-amber-800 leading-relaxed font-sans space-y-1 text-left shadow-xs animate-fadeIn font-medium">
+                          <p className="font-bold flex items-center gap-1 text-amber-900">
+                            <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
                             Google Auth Iframe Block Workaround:
                           </p>
                           <p>
                             This error is caused by browser-level third-party cookie restrictions inside the preview iframe.
                           </p>
-                          <div className="space-y-1 bg-white p-2.5 rounded-xl border border-slate-200">
-                            <p className="text-slate-900 font-bold flex items-center gap-1 text-xs">🚀 Instant Solution:</p>
+                          <div className="space-y-0.5 bg-white p-2 rounded-lg border border-slate-200">
+                            <p className="text-slate-900 font-bold flex items-center gap-1 text-[11px]">🚀 Instant Solution:</p>
                             <p className="text-slate-700">
                               Click <strong className="text-teal-700">"Open in New Tab"</strong> in the top-right corner to allow Google Sign-In to complete smoothly.
                             </p>
@@ -4347,13 +4343,13 @@ export default function App() {
 
                   {/* Conditional School ID column */}
                   {(loginTab === 'school' || loginTab === 'teacher') && (
-                    <div className="space-y-1 animate-fadeIn">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    <div className="space-y-0.5 animate-fadeIn">
+                      <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                         School Login ID
                       </label>
                       <div className="relative flex items-center">
-                        <div className="absolute left-4 text-slate-400 pointer-events-none">
-                          <Building2 className="w-4 h-4" />
+                        <div className="absolute left-3 text-slate-400 pointer-events-none">
+                          <Building2 className="w-3.5 h-3.5" />
                         </div>
                         <input
                           type="text"
@@ -4364,7 +4360,7 @@ export default function App() {
                             if (authError) setAuthError('');
                           }}
                           required
-                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                           autoFocus
                         />
                       </div>
@@ -4373,13 +4369,13 @@ export default function App() {
 
                   {/* Conditional Teacher username column */}
                   {loginTab === 'teacher' && (
-                    <div className="space-y-1 animate-fadeIn">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    <div className="space-y-0.5 animate-fadeIn">
+                      <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                         Teacher Login ID
                       </label>
                       <div className="relative flex items-center">
-                        <div className="absolute left-4 text-slate-400 pointer-events-none">
-                          <User className="w-4 h-4" />
+                        <div className="absolute left-3 text-slate-400 pointer-events-none">
+                          <User className="w-3.5 h-3.5" />
                         </div>
                         <input
                           type="text"
@@ -4390,7 +4386,7 @@ export default function App() {
                             if (authError) setAuthError('');
                           }}
                           required
-                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                         />
                       </div>
                     </div>
@@ -4414,15 +4410,15 @@ export default function App() {
                     const activeMethod = availableMethods.includes(parentLoginMethod) ? parentLoginMethod : resolvedConfig.defaultLoginMode;
 
                     return (
-                      <div className="space-y-3 animate-fadeIn">
+                      <div className="space-y-2 animate-fadeIn">
                         {/* Portal Access Code (Locked) */}
-                        <div className="space-y-1">
-                          <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                        <div className="space-y-0.5">
+                          <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                             Parents Portal Code
                           </label>
                           <div className="relative flex items-center">
-                            <div className="absolute left-4 text-slate-400 pointer-events-none">
-                              <KeyRound className="w-4 h-4" />
+                            <div className="absolute left-3 text-slate-400 pointer-events-none">
+                              <KeyRound className="w-3.5 h-3.5" />
                             </div>
                             <input
                               type="text"
@@ -4430,9 +4426,9 @@ export default function App() {
                               value={parentPortalCodeInput}
                               readOnly
                               required
-                              className="w-full bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed select-none rounded-full py-3.5 pl-11 pr-24 text-sm font-medium outline-none transition-all font-mono"
+                              className="w-full bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed select-none rounded-full py-2 pl-9 pr-20 text-xs font-medium outline-none transition-all font-mono"
                             />
-                            <div className="absolute right-4 text-rose-600 font-mono text-[9px] font-bold flex items-center gap-1 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
+                            <div className="absolute right-3 text-rose-600 font-mono text-[8.5px] font-bold flex items-center gap-1 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
                               <Lock className="w-2.5 h-2.5" /> LOCKED
                             </div>
                           </div>
@@ -4440,11 +4436,11 @@ export default function App() {
 
                         {/* Dynamic Method Switcher tabs if school enabled multiple methods */}
                         {availableMethods.length > 1 && (
-                          <div className="space-y-1.5 pt-0.5">
-                            <label className="text-[10px] uppercase font-bold text-[#007474] tracking-wider pl-3.5">
+                          <div className="space-y-1">
+                            <label className="text-[9px] uppercase font-bold text-[#007474] tracking-wider pl-3">
                               Authentication Option
                             </label>
-                            <div className={`grid ${availableMethods.length === 2 ? 'grid-cols-2' : availableMethods.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-1.5 bg-[#f1f5f9] p-1 rounded-full border border-slate-200/80`}>
+                            <div className={`grid ${availableMethods.length === 2 ? 'grid-cols-2' : availableMethods.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-1 bg-[#f1f5f9] p-0.5 rounded-full border border-slate-200/80`}>
                               {availableMethods.map(m => (
                                 <button
                                   key={m}
@@ -4453,16 +4449,16 @@ export default function App() {
                                     setParentLoginMethod(m);
                                     if (authError) setAuthError('');
                                   }}
-                                  className={`py-2 px-2 rounded-full text-[11px] font-bold tracking-tight transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                  className={`py-1.5 px-1.5 rounded-full text-[10px] font-bold tracking-tight transition-all cursor-pointer flex items-center justify-center gap-1 ${
                                     activeMethod === m
                                       ? 'bg-[#007474] text-white shadow-xs font-extrabold'
                                       : 'text-slate-500 hover:text-slate-800'
                                   }`}
                                 >
-                                  {m === 'roll_dob' && <><Hash className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Roll + DOB</span></>}
-                                  {m === 'adm_dob' && <><KeyRound className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Adm + DOB</span></>}
-                                  {m === 'mob_roll' && <><Smartphone className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Mobile + Roll</span></>}
-                                  {m === 'mob_adm' && <><Smartphone className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Mobile + Adm</span></>}
+                                  {m === 'roll_dob' && <><Hash className="w-3 h-3 shrink-0" /> <span className="truncate">Roll + DOB</span></>}
+                                  {m === 'adm_dob' && <><KeyRound className="w-3 h-3 shrink-0" /> <span className="truncate">Adm + DOB</span></>}
+                                  {m === 'mob_roll' && <><Smartphone className="w-3 h-3 shrink-0" /> <span className="truncate">Mobile + Roll</span></>}
+                                  {m === 'mob_adm' && <><Smartphone className="w-3 h-3 shrink-0" /> <span className="truncate">Mobile + Adm</span></>}
                                 </button>
                               ))}
                             </div>
@@ -4472,13 +4468,13 @@ export default function App() {
                         {/* Option 1: Roll No + DOB */}
                         {activeMethod === 'roll_dob' && (
                           <>
-                            <div className="space-y-1 animate-fadeIn">
-                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            <div className="space-y-0.5 animate-fadeIn">
+                              <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                                 Student Roll Number
                               </label>
                               <div className="relative flex items-center">
-                                <div className="absolute left-4 text-slate-400 pointer-events-none">
-                                  <Hash className="w-4 h-4" />
+                                <div className="absolute left-3 text-slate-400 pointer-events-none">
+                                  <Hash className="w-3.5 h-3.5" />
                                 </div>
                                 <input
                                   type="text"
@@ -4489,13 +4485,13 @@ export default function App() {
                                     if (authError) setAuthError('');
                                   }}
                                   required
-                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                                 />
                               </div>
                             </div>
 
-                            <div className="space-y-1 animate-fadeIn">
-                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            <div className="space-y-0.5 animate-fadeIn">
+                              <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                                 Student Date of Birth (DOB)
                               </label>
                               <div className="relative flex items-center">
@@ -4507,7 +4503,7 @@ export default function App() {
                                     if (authError) setAuthError('');
                                   }}
                                   required
-                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 px-5 text-sm font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2 px-4 text-xs font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                                 />
                               </div>
                             </div>
@@ -4517,13 +4513,13 @@ export default function App() {
                         {/* Option 2: Admission No + DOB */}
                         {activeMethod === 'adm_dob' && (
                           <>
-                            <div className="space-y-1 animate-fadeIn">
-                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            <div className="space-y-0.5 animate-fadeIn">
+                              <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                                 Student Admission Number
                               </label>
                               <div className="relative flex items-center">
-                                <div className="absolute left-4 text-slate-400 pointer-events-none">
-                                  <KeyRound className="w-4 h-4" />
+                                <div className="absolute left-3 text-slate-400 pointer-events-none">
+                                  <KeyRound className="w-3.5 h-3.5" />
                                 </div>
                                 <input
                                   type="text"
@@ -4534,13 +4530,13 @@ export default function App() {
                                     if (authError) setAuthError('');
                                   }}
                                   required
-                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                                 />
                               </div>
                             </div>
 
-                            <div className="space-y-1 animate-fadeIn">
-                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            <div className="space-y-0.5 animate-fadeIn">
+                              <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                                 Student Date of Birth (DOB)
                               </label>
                               <div className="relative flex items-center">
@@ -4552,7 +4548,7 @@ export default function App() {
                                     if (authError) setAuthError('');
                                   }}
                                   required
-                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 px-5 text-sm font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2 px-4 text-xs font-medium outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                                 />
                               </div>
                             </div>
@@ -4562,13 +4558,13 @@ export default function App() {
                         {/* Option 3: Mobile Number + Roll Number */}
                         {activeMethod === 'mob_roll' && (
                           <>
-                            <div className="space-y-1 animate-fadeIn">
-                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            <div className="space-y-0.5 animate-fadeIn">
+                              <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                                 Parent Registered Mobile Number
                               </label>
                               <div className="relative flex items-center">
-                                <div className="absolute left-4 text-slate-400 pointer-events-none">
-                                  <Smartphone className="w-4 h-4" />
+                                <div className="absolute left-3 text-slate-400 pointer-events-none">
+                                  <Smartphone className="w-3.5 h-3.5" />
                                 </div>
                                 <input
                                   type="tel"
@@ -4579,18 +4575,18 @@ export default function App() {
                                     if (authError) setAuthError('');
                                   }}
                                   required
-                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                                 />
                               </div>
                             </div>
 
-                            <div className="space-y-1 animate-fadeIn">
-                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            <div className="space-y-0.5 animate-fadeIn">
+                              <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                                 Student Roll Number
                               </label>
                               <div className="relative flex items-center">
-                                <div className="absolute left-4 text-slate-400 pointer-events-none">
-                                  <Hash className="w-4 h-4" />
+                                <div className="absolute left-3 text-slate-400 pointer-events-none">
+                                  <Hash className="w-3.5 h-3.5" />
                                 </div>
                                 <input
                                   type="text"
@@ -4601,7 +4597,7 @@ export default function App() {
                                     if (authError) setAuthError('');
                                   }}
                                   required
-                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                                 />
                               </div>
                             </div>
@@ -4611,13 +4607,13 @@ export default function App() {
                         {/* Option 4: Mobile Number + Admission Number */}
                         {activeMethod === 'mob_adm' && (
                           <>
-                            <div className="space-y-1 animate-fadeIn">
-                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            <div className="space-y-0.5 animate-fadeIn">
+                              <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                                 Parent Registered Mobile Number
                               </label>
                               <div className="relative flex items-center">
-                                <div className="absolute left-4 text-slate-400 pointer-events-none">
-                                  <Smartphone className="w-4 h-4" />
+                                <div className="absolute left-3 text-slate-400 pointer-events-none">
+                                  <Smartphone className="w-3.5 h-3.5" />
                                 </div>
                                 <input
                                   type="tel"
@@ -4628,18 +4624,18 @@ export default function App() {
                                     if (authError) setAuthError('');
                                   }}
                                   required
-                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 font-mono rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                                 />
                               </div>
                             </div>
 
-                            <div className="space-y-1 animate-fadeIn">
-                              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                            <div className="space-y-0.5 animate-fadeIn">
+                              <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                                 Student Admission Number
                               </label>
                               <div className="relative flex items-center">
-                                <div className="absolute left-4 text-slate-400 pointer-events-none">
-                                  <KeyRound className="w-4 h-4" />
+                                <div className="absolute left-3 text-slate-400 pointer-events-none">
+                                  <KeyRound className="w-3.5 h-3.5" />
                                 </div>
                                 <input
                                   type="text"
@@ -4650,7 +4646,7 @@ export default function App() {
                                     if (authError) setAuthError('');
                                   }}
                                   required
-                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                                  className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                                 />
                               </div>
                             </div>
@@ -4662,13 +4658,13 @@ export default function App() {
 
                   {/* Access Password / Passcode */}
                   {loginTab !== 'parent' && loginTab !== 'owner' && (
-                    <div className="space-y-1 animate-fadeIn">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-3.5">
+                    <div className="space-y-0.5 animate-fadeIn">
+                      <label className="text-[9px] uppercase font-bold text-slate-500 tracking-wider pl-3">
                         Access Password
                       </label>
                       <div className="relative flex items-center">
-                        <div className="absolute left-4 text-slate-400 pointer-events-none">
-                          <Lock className="w-4 h-4" />
+                        <div className="absolute left-3 text-slate-400 pointer-events-none">
+                          <Lock className="w-3.5 h-3.5" />
                         </div>
                         <input
                           type="password"
@@ -4679,7 +4675,7 @@ export default function App() {
                             if (authError) setAuthError('');
                           }}
                           required
-                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-3.5 pl-11 pr-5 text-sm font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
+                          className="w-full bg-[#f8fafc] border border-slate-200/90 text-slate-800 rounded-full py-2 pl-9 pr-4 text-xs font-medium placeholder:text-slate-400 outline-none transition-all shadow-xs focus:bg-white focus:border-[#007474] focus:ring-2 focus:ring-[#007474]/20"
                         />
                       </div>
                     </div>
@@ -4687,19 +4683,19 @@ export default function App() {
 
                   {/* SaaS Owner fields block */}
                   {loginTab === 'owner' && (
-                    <div className="space-y-3 bg-teal-50 border border-teal-200 p-4 rounded-2xl text-left animate-fadeIn">
-                      <div className="flex items-start gap-2.5">
-                        <Shield className="w-5 h-5 text-[#007474] mt-0.5 shrink-0" />
-                        <div className="space-y-1">
-                          <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[#00605c]">
+                    <div className="space-y-2 bg-teal-50 border border-teal-200 p-3 rounded-2xl text-left animate-fadeIn">
+                      <div className="flex items-start gap-2">
+                        <Shield className="w-4 h-4 text-[#007474] mt-0.5 shrink-0" />
+                        <div className="space-y-0.5">
+                          <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-[#00605c]">
                             Cryptographic OAuth Protection
                           </h4>
-                          <p className="text-xs text-slate-600 leading-relaxed font-sans">
+                          <p className="text-[11px] text-slate-600 leading-snug font-sans">
                             To protect the School Report Card network, the Owner Dashboard is restricted exclusively to verified administrators via Google Sign-In.
                           </p>
                         </div>
                       </div>
-                      <div className="text-[10px] text-slate-600 leading-normal bg-white p-2.5 rounded-xl border border-teal-150 font-mono flex flex-col gap-1">
+                      <div className="text-[9.5px] text-slate-600 leading-normal bg-white p-2 rounded-xl border border-teal-150 font-mono flex flex-col gap-0.5">
                         <div>Authorized Email: <strong className="text-slate-900 select-all font-bold">mbarahul99@gmail.com</strong></div>
                         <div>Secondary Admin: <strong className="text-slate-900 select-all font-bold">gyanbox1@gmail.com</strong></div>
                       </div>
@@ -4707,7 +4703,7 @@ export default function App() {
                   )}
 
                   {loginTab !== 'owner' && (
-                    <div className="py-1">
+                    <div className="py-0.5 flex justify-center scale-[0.85] sm:scale-95 origin-center">
                       <GoogleReCaptcha
                         onVerify={(token) => setRecaptchaToken(token)}
                         onExpired={() => setRecaptchaToken(null)}
@@ -4718,13 +4714,13 @@ export default function App() {
                 </div>
 
                 {/* Sticky bottom Action Bar matching Registration Screen */}
-                <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-7 py-3 border-t border-slate-100 shadow-[0_-6px_20px_rgba(0,0,0,0.06)] shrink-0 z-20 space-y-2.5">
+                <div className="shrink-0 px-5 py-2.5 border-t border-slate-100 bg-white/95 backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-20 space-y-1.5">
                   {loginTab !== 'owner' && (
                     <button
                       type="submit"
-                      className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full bg-[#007474] hover:bg-[#005e5e] active:bg-[#004e4e] text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <Unlock className="w-4 h-4" />
+                      <Unlock className="w-3.5 h-3.5" />
                       <span>{loginTab === 'parent' ? 'Access Parent Portal' : loginTab === 'teacher' ? 'Sign In as Teachers' : 'Sign In as School Admin'}</span>
                     </button>
                   )}
@@ -4738,9 +4734,9 @@ export default function App() {
                         setIsRegistering(true);
                         setAuthError('');
                       }}
-                      className="w-full bg-teal-50 hover:bg-teal-100/70 text-[#007474] hover:text-[#005555] border border-teal-200/80 font-bold text-xs py-2.5 px-4 rounded-full transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-[0.99]"
+                      className="w-full bg-teal-50 hover:bg-teal-100/70 text-[#007474] hover:text-[#005555] border border-teal-200/80 font-bold text-[11px] py-1.5 px-3 rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.99]"
                     >
-                      <Building2 className="w-3.5 h-3.5 text-[#007474] shrink-0" />
+                      <Building2 className="w-3 h-3 text-[#007474] shrink-0" />
                       <span>Register / Onboard New School</span>
                     </button>
                   )}
@@ -4768,9 +4764,9 @@ export default function App() {
                           setIsCloudSyncing(false);
                         }
                       }}
-                      className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 font-bold text-xs py-2.5 px-4 rounded-full shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 font-bold text-[11px] py-1.5 px-3 rounded-full shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
-                      <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24">
                         <path
                           fill="#4285F4"
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -4793,11 +4789,11 @@ export default function App() {
                   )}
 
                   {/* Privacy Policy link */}
-                  <div className="flex items-center justify-center pt-0.5">
+                  <div className="flex items-center justify-center">
                     <button
                       type="button"
                       onClick={() => setShowPrivacyPolicy(true)}
-                      className="text-[9.5px] text-slate-400 hover:text-slate-600 font-medium cursor-pointer transition-colors"
+                      className="text-[9px] text-slate-400 hover:text-slate-600 font-medium cursor-pointer transition-colors"
                     >
                       🛡️ K-12 Student Privacy & Sandbox Policy
                     </button>
